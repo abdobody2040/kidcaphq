@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KidCap HQ - Future CEO Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Nunito', 'sans-serif'],
+            },
+            colors: {
+              kid: {
+                primary: '#FFC800', // Yellow
+                secondary: '#58CC02', // Green
+                accent: '#2B70C9', // Blue
+                dark: '#4B4B4B',
+                light: '#F7F7F7',
+                card: '#FFFFFF',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        font-family: 'Nunito', sans-serif;
+        background-color: #f0fdf4; /* Light green bg */
+        overflow-x: hidden;
+      }
+      /* Juicy Button Effect */
+      .btn-juicy {
+        transition: transform 0.1s, box-shadow 0.1s;
+      }
+      .btn-juicy:active {
+        transform: translateY(4px);
+        box-shadow: 0 0px 0 0;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
+    "zustand": "https://aistudiocdn.com/zustand@^5.0.9",
+    "framer-motion": "https://aistudiocdn.com/framer-motion@^12.23.25",
+    "phaser": "https://aistudiocdn.com/phaser@^3.80.1",
+    "vite": "https://aistudiocdn.com/vite@^7.2.6",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
+    "zustand/": "https://aistudiocdn.com/zustand@^5.0.9/"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
