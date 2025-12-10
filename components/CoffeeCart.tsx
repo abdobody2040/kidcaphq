@@ -65,7 +65,7 @@ const CoffeeCart: React.FC<Props> = ({ onBack }) => {
   };
 
   return (
-    <div className="bg-[#3e2723] min-h-[600px] rounded-3xl overflow-hidden shadow-2xl text-[#d7ccc8] flex flex-col relative">
+    <div className="bg-[#3e2723] rounded-3xl overflow-hidden shadow-2xl text-[#d7ccc8] flex flex-col relative h-[calc(100vh-140px)] md:h-[calc(100vh-100px)]">
         {showTutorial && (
             <GameTutorialModal 
                 onStart={() => setShowTutorial(false)}
@@ -83,41 +83,41 @@ const CoffeeCart: React.FC<Props> = ({ onBack }) => {
         )}
 
         {/* Header */}
-        <div className="p-6 flex justify-between items-center bg-[#281916]">
+        <div className="p-4 md:p-6 flex justify-between items-center bg-[#281916] shrink-0 z-10">
             <button onClick={onBack} className="text-[#a1887f] hover:text-white"><ArrowLeft /></button>
-            <div className="text-2xl font-black">Coffee Cart ☕</div>
+            <div className="text-xl md:text-2xl font-black">Coffee Cart ☕</div>
             <div className="flex items-center gap-2">
                 <button onClick={() => setShowTutorial(true)} className="bg-[#5d4037] hover:bg-[#8d6e63] px-3 py-1 rounded text-xs font-bold">Help</button>
-                <div className="bg-[#5d4037] px-4 py-1 rounded-full font-mono font-bold">${funds.toFixed(2)}</div>
+                <div className="bg-[#5d4037] px-3 py-1 md:px-4 md:py-1 rounded-full font-mono font-bold text-sm md:text-base">${funds.toFixed(2)}</div>
             </div>
         </div>
 
-        <div className="flex-1 p-8 flex flex-col items-center justify-center">
+        <div className="flex-1 p-4 md:p-8 flex flex-col items-center overflow-y-auto">
             {phase === 'PREP' && (
-                <div className="w-full max-w-2xl space-y-8">
+                <div className="w-full max-w-2xl space-y-6 md:space-y-8">
                     <div className="flex justify-between items-center bg-[#4e342e] p-4 rounded-2xl">
                         <div className="flex items-center gap-2">
                             {weather === 'Sunny' ? <Sun className="text-yellow-500" /> : weather === 'Rainy' ? <CloudRain className="text-blue-400"/> : <Cloud className="text-gray-400"/>}
-                            <span className="font-bold">{weather} Forecast</span>
+                            <span className="font-bold text-sm md:text-base">{weather} Forecast</span>
                         </div>
-                        <div className="text-sm opacity-70">Tip: Rain boosts demand!</div>
+                        <div className="text-xs md:text-sm opacity-70">Tip: Rain boosts demand!</div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <div className="bg-[#5d4037] p-4 rounded-xl text-center">
                             <div className="text-3xl mb-2">🫘</div>
-                            <div className="font-bold mb-1">Beans: {stock.beans}</div>
-                            <button onClick={() => buy('beans', 5, 10)} className="w-full bg-[#8d6e63] hover:bg-[#a1887f] py-1 rounded font-bold text-xs">Buy 10 ($5)</button>
+                            <div className="font-bold mb-1 text-sm md:text-base">Beans: {stock.beans}</div>
+                            <button onClick={() => buy('beans', 5, 10)} className="w-full bg-[#8d6e63] hover:bg-[#a1887f] py-2 rounded font-bold text-xs">Buy 10 ($5)</button>
                         </div>
                         <div className="bg-[#5d4037] p-4 rounded-xl text-center">
                             <div className="text-3xl mb-2">🥛</div>
-                            <div className="font-bold mb-1">Milk: {stock.milk}</div>
-                            <button onClick={() => buy('milk', 3, 10)} className="w-full bg-[#8d6e63] hover:bg-[#a1887f] py-1 rounded font-bold text-xs">Buy 10 ($3)</button>
+                            <div className="font-bold mb-1 text-sm md:text-base">Milk: {stock.milk}</div>
+                            <button onClick={() => buy('milk', 3, 10)} className="w-full bg-[#8d6e63] hover:bg-[#a1887f] py-2 rounded font-bold text-xs">Buy 10 ($3)</button>
                         </div>
-                        <div className="bg-[#5d4037] p-4 rounded-xl text-center">
+                        <div className="bg-[#5d4037] p-4 rounded-xl text-center col-span-2 md:col-span-1">
                             <div className="text-3xl mb-2">🥤</div>
-                            <div className="font-bold mb-1">Cups: {stock.cups}</div>
-                            <button onClick={() => buy('cups', 2, 20)} className="w-full bg-[#8d6e63] hover:bg-[#a1887f] py-1 rounded font-bold text-xs">Buy 20 ($2)</button>
+                            <div className="font-bold mb-1 text-sm md:text-base">Cups: {stock.cups}</div>
+                            <button onClick={() => buy('cups', 2, 20)} className="w-full bg-[#8d6e63] hover:bg-[#a1887f] py-2 rounded font-bold text-xs">Buy 20 ($2)</button>
                         </div>
                     </div>
 
@@ -132,12 +132,12 @@ const CoffeeCart: React.FC<Props> = ({ onBack }) => {
                         </div>
                     </div>
 
-                    <button onClick={startDay} className="w-full py-4 bg-[#8d6e63] hover:bg-[#a1887f] text-white font-black text-xl rounded-2xl shadow-lg">Start Brewing</button>
+                    <button onClick={startDay} className="w-full py-4 bg-[#8d6e63] hover:bg-[#a1887f] text-white font-black text-xl rounded-2xl shadow-lg mb-8">Start Brewing</button>
                 </div>
             )}
 
             {phase === 'BREW' && (
-                <div className="text-center">
+                <div className="text-center my-auto">
                     <div className="text-9xl mb-8 animate-bounce">☕</div>
                     <div className="w-64 h-4 bg-[#4e342e] rounded-full overflow-hidden mx-auto">
                         <div className="h-full bg-[#d7ccc8] transition-all duration-75" style={{ width: `${progress}%` }} />
@@ -147,8 +147,8 @@ const CoffeeCart: React.FC<Props> = ({ onBack }) => {
             )}
 
             {phase === 'RESULT' && (
-                <div className="text-center space-y-6">
-                    <h2 className="text-4xl font-black">Day Complete!</h2>
+                <div className="text-center space-y-6 my-auto w-full max-w-md">
+                    <h2 className="text-3xl md:text-4xl font-black">Day Complete!</h2>
                     <div className="grid grid-cols-2 gap-4 text-left bg-[#4e342e] p-6 rounded-2xl">
                         <div>Sold:</div><div className="font-black text-right">{stats.sold} Cups</div>
                         <div>Revenue:</div><div className="font-black text-right text-green-400">${stats.revenue.toFixed(2)}</div>

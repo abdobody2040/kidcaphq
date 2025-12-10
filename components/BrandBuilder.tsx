@@ -65,21 +65,21 @@ const BrandBuilder: React.FC<BrandBuilderProps> = ({ onBack }) => {
   const SelectedIcon = ICONS.find(i => i.id === logoState.icon)?.icon || Rocket;
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-200 flex flex-col md:flex-row h-[700px]">
+    <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-200 flex flex-col md:flex-row h-[calc(100vh-140px)] md:h-[calc(100vh-100px)]">
       
       {/* Controls Sidebar */}
-      <div className="w-full md:w-1/3 bg-gray-50 p-6 border-r border-gray-200 overflow-y-auto custom-scrollbar">
-        <div className="flex items-center gap-2 mb-6">
+      <div className="w-full md:w-1/3 bg-gray-50 p-4 md:p-6 border-b md:border-b-0 md:border-r border-gray-200 overflow-y-auto custom-scrollbar shrink-0">
+        <div className="flex items-center gap-2 mb-4 md:mb-6">
             <button onClick={onBack} className="text-gray-400 font-bold hover:text-gray-600">
                 &larr; Back
             </button>
-            <h2 className="text-2xl font-black text-gray-800">Brand Builder</h2>
+            <h2 className="text-xl md:text-2xl font-black text-gray-800">Brand Builder</h2>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
             {/* Name Input */}
             <div>
-                <label className="block text-sm font-bold text-gray-500 mb-2 uppercase">Company Name</label>
+                <label className="block text-xs md:text-sm font-bold text-gray-500 mb-2 uppercase">Company Name</label>
                 <input 
                     type="text" 
                     maxLength={15}
@@ -92,7 +92,7 @@ const BrandBuilder: React.FC<BrandBuilderProps> = ({ onBack }) => {
 
             {/* Shape Picker */}
             <div>
-                <label className="block text-sm font-bold text-gray-500 mb-2 uppercase">Logo Shape</label>
+                <label className="block text-xs md:text-sm font-bold text-gray-500 mb-2 uppercase">Logo Shape</label>
                 <div className="flex gap-4 bg-white p-2 rounded-xl border border-gray-200">
                     <button 
                        onClick={() => setLogoState({...logoState, shape: 'circle'})}
@@ -117,7 +117,7 @@ const BrandBuilder: React.FC<BrandBuilderProps> = ({ onBack }) => {
 
             {/* Background Color Picker */}
             <div>
-                <label className="block text-sm font-bold text-gray-500 mb-2 uppercase">Background Color</label>
+                <label className="block text-xs md:text-sm font-bold text-gray-500 mb-2 uppercase">Background Color</label>
                 <div className="flex flex-wrap gap-2">
                     {COLORS.map(color => (
                         <button
@@ -132,8 +132,8 @@ const BrandBuilder: React.FC<BrandBuilderProps> = ({ onBack }) => {
 
             {/* Icon Picker */}
             <div>
-                <label className="block text-sm font-bold text-gray-500 mb-2 uppercase">Logo Icon</label>
-                <div className="grid grid-cols-4 gap-2 bg-white p-2 rounded-xl border border-gray-200 h-48 overflow-y-auto custom-scrollbar">
+                <label className="block text-xs md:text-sm font-bold text-gray-500 mb-2 uppercase">Logo Icon</label>
+                <div className="grid grid-cols-4 gap-2 bg-white p-2 rounded-xl border border-gray-200 h-32 md:h-48 overflow-y-auto custom-scrollbar">
                     {ICONS.map(item => (
                         <button
                             key={item.id}
@@ -152,7 +152,7 @@ const BrandBuilder: React.FC<BrandBuilderProps> = ({ onBack }) => {
 
             {/* Icon Color Picker */}
             <div>
-                <label className="block text-sm font-bold text-gray-500 mb-2 uppercase">Icon Color</label>
+                <label className="block text-xs md:text-sm font-bold text-gray-500 mb-2 uppercase">Icon Color</label>
                 <div className="flex flex-wrap gap-2">
                     {COLORS.map(color => (
                         <button
@@ -168,7 +168,7 @@ const BrandBuilder: React.FC<BrandBuilderProps> = ({ onBack }) => {
             <button 
                 onClick={handleSave}
                 disabled={saved}
-                className={`w-full py-4 rounded-xl font-black text-lg flex items-center justify-center gap-2 btn-juicy transition-all mt-4
+                className={`w-full py-4 rounded-xl font-black text-lg flex items-center justify-center gap-2 btn-juicy transition-all mt-4 mb-8 md:mb-0
                     ${saved ? 'bg-green-500 text-white' : 'bg-kid-primary text-yellow-900 shadow-[0_4px_0_0_rgba(202,138,4,1)] hover:bg-yellow-400'}
                 `}
             >
@@ -183,16 +183,16 @@ const BrandBuilder: React.FC<BrandBuilderProps> = ({ onBack }) => {
           
           <div className="relative text-center">
               <div 
-                className={`w-64 h-64 flex items-center justify-center shadow-2xl mb-8 mx-auto transition-all duration-300 border-4 border-white
+                className={`w-48 h-48 md:w-64 md:h-64 flex items-center justify-center shadow-2xl mb-8 mx-auto transition-all duration-300 border-4 border-white
                     ${logoState.shape === 'circle' ? 'rounded-full' : logoState.shape === 'rounded' ? 'rounded-3xl' : 'rounded-none'}
                 `}
                 style={{ backgroundColor: logoState.backgroundColor }}
               >
-                  <SelectedIcon size={120} color={logoState.iconColor} strokeWidth={2.5} className="drop-shadow-md" />
+                  <SelectedIcon size={100} color={logoState.iconColor} strokeWidth={2.5} className="drop-shadow-md md:w-[120px] md:h-[120px]" />
               </div>
 
-              <h1 className="text-5xl font-black text-gray-800 tracking-tight drop-shadow-sm">{logoState.companyName}</h1>
-              <p className="text-gray-500 font-bold mt-3 uppercase tracking-widest text-sm flex items-center justify-center gap-2">
+              <h1 className="text-4xl md:text-5xl font-black text-gray-800 tracking-tight drop-shadow-sm">{logoState.companyName}</h1>
+              <p className="text-gray-500 font-bold mt-3 uppercase tracking-widest text-xs md:text-sm flex items-center justify-center gap-2">
                   <span className="w-8 h-[2px] bg-gray-300"></span> Est. 2024 <span className="w-8 h-[2px] bg-gray-300"></span>
               </p>
           </div>

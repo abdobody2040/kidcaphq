@@ -10,7 +10,6 @@ interface PizzaDeliveryProps {
 }
 
 const GRID_SIZE = 10;
-const CELL_SIZE = 50;
 
 class MainScene extends Phaser.Scene {
   declare add: Phaser.GameObjects.GameObjectFactory;
@@ -18,6 +17,7 @@ class MainScene extends Phaser.Scene {
   declare time: Phaser.Time.Clock;
   declare registry: Phaser.Data.DataManager;
   declare scene: Phaser.Scenes.ScenePlugin;
+  declare sys: Phaser.Scenes.Systems;
 
   private player!: Phaser.GameObjects.Rectangle;
   private house!: Phaser.GameObjects.Rectangle;
@@ -30,6 +30,7 @@ class MainScene extends Phaser.Scene {
   // Game State
   private scoreValue = 0;
   private timeValue = 30;
+  private cellSize = 50; // Default, updated in create
 
   constructor() {
     super('MainScene');
@@ -40,6 +41,10 @@ class MainScene extends Phaser.Scene {
   }
 
   create() {
+    // Determine cell size based on actual canvas width
+    const { width } = this.sys.game.canvas;
+    this.cellSize = width / GRID_SIZE;
+
     // Reset internal state
     this.scoreValue = 0;
     this.timeValue = 30;
@@ -49,20 +54,20 @@ class MainScene extends Phaser.Scene {
     graphics.lineStyle(2, 0xe5e7eb, 1);
     
     for (let i = 0; i <= GRID_SIZE; i++) {
-      graphics.moveTo(i * CELL_SIZE, 0);
-      graphics.lineTo(i * CELL_SIZE, GRID_SIZE * CELL_SIZE);
-      graphics.moveTo(0, i * CELL_SIZE);
-      graphics.lineTo(GRID_SIZE * CELL_SIZE, i * CELL_SIZE);
+      graphics.moveTo(i * this.cellSize, 0);
+      graphics.lineTo(i * this.cellSize, GRID_SIZE * this.cellSize);
+      graphics.moveTo(0, i * this.cellSize);
+      graphics.lineTo(GRID_SIZE * this.cellSize, i * this.cellSize);
     }
     graphics.strokePath();
 
     // Player (Scooter) - Blue Square
     this.playerPos = { x: 0, y: 0 };
     this.player = this.add.rectangle(
-      CELL_SIZE / 2, 
-      CELL_SIZE / 2, 
-      CELL_SIZE - 10, 
-      CELL_SIZE - 10, 
+      this.cellSize / 2, 
+      this.cellSize / 2, 
+      this.cellSize - 10, 
+      this.cellSize - 10, 
       0x2563eb
     );
 
@@ -95,10 +100,10 @@ class MainScene extends Phaser.Scene {
     
     if (this.house) this.house.destroy();
     this.house = this.add.rectangle(
-        x * CELL_SIZE + CELL_SIZE / 2,
-        y * CELL_SIZE + CELL_SIZE / 2,
-        CELL_SIZE - 10,
-        CELL_SIZE - 10,
+        x * this.cellSize + this.cellSize / 2,
+        y * this.cellSize + this.cellSize / 2,
+        this.cellSize - 10,
+        this.cellSize - 10,
         0xef4444
     );
   }
@@ -144,8 +149,8 @@ class MainScene extends Phaser.Scene {
     }
 
     if (moved) {
-        this.player.x = this.playerPos.x * CELL_SIZE + CELL_SIZE / 2;
-        this.player.y = this.playerPos.y * CELL_SIZE + CELL_SIZE / 2;
+        this.player.x = this.playerPos.x * this.cellSize + this.cellSize / 2;
+        this.player.y = this.playerPos.y * this.cellSize + this.cellSize / 2;
         this.moveTimer = 150; // Delay between moves (ms)
 
         // Check Collision
@@ -180,10 +185,13 @@ const PizzaDelivery: React.FC<PizzaDeliveryProps> = ({ onBack }) => {
     setShowTutorial(false);
     if (!gameRef.current) return;
 
+    // Responsive Size Calculation
+    const gameSize = Math.min(window.innerWidth - 48, 500); // 48px cushion for padding
+
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
-      width: 500,
-      height: 500,
+      width: gameSize,
+      height: gameSize,
       parent: gameRef.current,
       backgroundColor: '#ffffff',
       scene: MainScene,
@@ -216,7 +224,7 @@ const PizzaDelivery: React.FC<PizzaDeliveryProps> = ({ onBack }) => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[600px] bg-gray-50 rounded-3xl p-8 border border-gray-200 shadow-xl relative">
+    <div className="flex flex-col items-center justify-center bg-gray-50 rounded-3xl p-4 md:p-8 border border-gray-200 shadow-xl relative h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] overflow-hidden">
         {showTutorial && (
             <GameTutorialModal 
                 onStart={startGame}
@@ -235,23 +243,23 @@ const PizzaDelivery: React.FC<PizzaDeliveryProps> = ({ onBack }) => {
         )}
 
         {/* Header */}
-        <div className="w-full max-w-[500px] flex items-center justify-between mb-6">
+        <div className="w-full max-w-[500px] flex items-center justify-between mb-4 shrink-0">
             <button onClick={onBack} className="text-gray-400 font-bold hover:text-gray-600">
                 &larr; Exit
             </button>
-            <h2 className="text-2xl font-black text-gray-800">Pizza Rush 🍕</h2>
-            <div className={`px-4 py-1 rounded-full font-black ${timeLeft < 10 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+            <h2 className="text-xl md:text-2xl font-black text-gray-800">Pizza Rush 🍕</h2>
+            <div className={`px-3 py-1 rounded-full font-black ${timeLeft < 10 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
                 {timeLeft}s
             </div>
         </div>
 
         {/* Game Container */}
-        <div className="relative">
-            <div ref={gameRef} className="rounded-xl overflow-hidden border-4 border-gray-800 shadow-2xl bg-gray-200 min-h-[500px] min-w-[500px]" />
+        <div className="relative flex-1 flex items-center justify-center w-full">
+            <div ref={gameRef} className="rounded-xl overflow-hidden border-4 border-gray-800 shadow-2xl bg-gray-200" />
             
             {/* Game Over Overlay */}
             {gameOver && (
-                <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center text-white backdrop-blur-sm">
+                <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center text-white backdrop-blur-sm z-20 rounded-xl">
                     <h3 className="text-4xl font-black text-yellow-400 mb-2">Time's Up!</h3>
                     <p className="text-xl font-bold mb-8">Pizzas Delivered: {score / 10}</p>
                     <div className="flex gap-4">
