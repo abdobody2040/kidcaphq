@@ -1,25 +1,42 @@
+
 # KidCap HQ - Future CEO Academy 🚀
 
-**KidCap HQ** is a gamified EdTech platform designed to teach entrepreneurship, financial literacy, and business skills to kids aged 6-14. It combines interactive lessons, business simulation mini-games, and an RPG-style progression system to make learning addictive and fun.
+**KidCap HQ** is the world's #1 gamified business academy for kids. We turn screen time into real-world skills like entrepreneurship, financial literacy, and leadership through addictive mini-games and an RPG-style progression system.
 
 ![KidCap HQ Banner](https://via.placeholder.com/1200x400.png?text=KidCap+HQ+Screenshot)
+
+## 🦉 Meet Your C.E.O. (Chief Education Officer)
+
+**Ollie the Wise Owl**
+
+> *"Hoot hoot! Mistakes are just tuition for success! Let's build your empire!"*
+
+<img src="ollie.png" alt="Ollie the Wise Owl" width="200" style="border-radius: 20px; border: 4px solid #FFC800; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
+
+*   **Role:** Personal AI Tutor & Mentor
+*   **Education:** Graduate of **Owl-vard Business School** 🎓
+*   **Style:** Sharp Navy Blazer, crisp white shirt, and a backpack full of blueprints.
+*   **Personality:** Optimistic, patient, and loves a good bird pun.
+*   **Function:** Ollie lives in the app (bottom right corner!) to answer questions, explain complex math, and cheer you on.
+
+---
 
 ## 🌟 Features
 
 ### 🎓 Interactive Learning Engine
-*   **100+ Lessons**: Covers Money Basics, Marketing, Investing, Coding, and more.
-*   **Gamified Quizzes**: Earn XP and BizCoins for correct answers.
-*   **AI Tutoring**: Integrated with Google Gemini ("Owly") to explain complex topics simply.
+*   **100+ Gamified Lessons**: From "The History of Money" to "Crypto & Space Biz".
+*   **AI Chatbot (Ollie)**: A persistent, personality-driven AI companion available on every screen. Ask him anything!
+*   **Smart Quizzes**: Earn XP and BizCoins for correct answers.
 
 ### 🎮 Business Arcade
-*   **Lemonade Tycoon**: Manage inventory, weather, and pricing.
-*   **Pizza Rush**: A Phaser-based logistics game teaching efficiency.
-*   **Brand Builder**: A creative tool to design company logos.
-*   **Universal Simulation Engine**: Supports 30+ scenarios (YouTuber, Space Startup, Pet Grooming) with dynamic markets and upgrade trees.
+*   **Lemonade Tycoon**: The classic start. Manage weather, inventory, and pricing.
+*   **Pizza Rush**: A Phaser-based delivery game teaching logistics and time management.
+*   **Brand Builder**: Design your own company logo, pick colors, and save your brand identity.
+*   **Universal Simulation Engine**: Supports 30+ scenarios (YouTuber, Pet Salon, Robot Factory).
 
 ### 🏆 Gamification & Progression
 *   **My Empire**: Upgrade your HQ from a "Messy Garage" to a "Private Island".
-*   **MBA Skill Tree**: Unlock passive buffs (Charisma, Efficiency, Wisdom).
+*   **MBA Skill Tree**: Unlock passive buffs like "Silver Tongue" (Charisma) or "Fast Hands" (Efficiency).
 *   **Portfolio**: Hire managers to earn idle income while offline.
 *   **Leaderboards**: Compete weekly with other "Kidpreneurs".
 *   **Avatar Shop**: Customize your look with hats, suits, and accessories.
@@ -31,26 +48,33 @@
 
 ---
 
+## 🏗️ Architecture & Scalability
+
+KidCap HQ is built as a **Client-Side Single Page Application (SPA)**. This ensures maximum privacy (data stays on the device) and offline capability.
+
+| Component | Capacity / Limit | Notes |
+| :--- | :--- | :--- |
+| **Global Users** | **Unlimited** | Served via CDN. No central database bottleneck. |
+| **Local Profiles** | **~50 per Device** | Data stored in `localStorage` (Max 5MB). |
+| **AI Tutor** | **~15 RPM (Free Tier)** | Limited by Google Gemini API quotas. Upgrade to Paid Tier for scale. |
+| **Offline Mode** | **100% Supported** | Core gameplay works without internet (except AI features). |
+
+> **Note:** Because there is no backend database, user progress is not synced between devices. A user on an iPad cannot continue their game on a Laptop.
+
+---
+
 ## 🛠️ Tech Stack
 
 *   **Frontend**: React 19, TypeScript, Vite
 *   **Styling**: Tailwind CSS, Framer Motion
-*   **State Management**: Zustand (with LocalStorage persistence)
-*   **Game Engine**: Phaser 3 (integrated via React refs)
+*   **State Management**: Zustand (Persistence Middleware)
+*   **Game Engine**: Phaser 3
 *   **AI**: Google GenAI SDK (Gemini 2.5 Flash)
 *   **Icons**: Lucide React
 
 ---
 
-## 🚀 Getting Started (Development)
-
-Follow these steps to run the project locally.
-
-### Prerequisites
-*   Node.js (v18 or higher)
-*   npm or yarn
-
-### Installation
+## 🚀 Getting Started
 
 1.  **Clone the repository**
     ```bash
@@ -64,40 +88,18 @@ Follow these steps to run the project locally.
     ```
 
 3.  **Configure Environment**
-    Create a `.env` file in the root directory and add your Google Gemini API Key:
+    Create a `.env` file and add your Google Gemini API Key:
     ```env
     API_KEY=your_google_gemini_api_key_here
     ```
 
-4.  **Run the development server**
+4.  **Add Ollie's Picture**
+    Place your image of Ollie in the root folder and name it `ollie.png`.
+
+5.  **Run the development server**
     ```bash
     npm run dev
     ```
-    Open `http://localhost:5173` in your browser.
-
----
-
-## 📦 Building for Production
-
-To deploy the app, you need to create an optimized production build.
-
-1.  **Clean up `index.html` (Optional)**
-    *   The dev version uses a Tailwind CDN script for quick prototyping.
-    *   For production, remove the `<script src="https://cdn.tailwindcss.com"></script>` line from `index.html` as the build process handles CSS via `styles.css`.
-
-2.  **Run the build command**
-    ```bash
-    npm run build
-    ```
-    This creates a `dist/` folder containing the compiled HTML, CSS, and JavaScript.
-
-3.  **Preview the build**
-    ```bash
-    npm run preview
-    ```
-
-4.  **Deploy**
-    *   Upload the contents of the `dist/` folder to any static host (Vercel, Netlify, GitHub Pages, Firebase Hosting).
 
 ---
 
@@ -105,38 +107,25 @@ To deploy the app, you need to create an optimized production build.
 
 ```
 /
-├── components/         # React Components
+├── components/         
+│   ├── OllieChat.tsx              # The AI Chatbot Component
 │   ├── UniversalBusinessGame.tsx  # Core Simulation Engine
 │   ├── UniversalLessonEngine.tsx  # Core Learning Engine
 │   ├── KidMap.tsx                 # Adventure Path UI
-│   ├── LemonadeStand.tsx          # Custom Mini-Game
 │   └── ...
-├── data/               # Static Data & Content
+├── data/               
 │   ├── curriculum.ts   # Lesson Database (100+ units)
 │   └── games.ts        # Game Definitions (30+ scenarios)
-├── services/           # External Services
-│   ├── geminiService.ts   # AI Integration
+├── services/           
+│   ├── geminiService.ts   # AI Integration (Ollie's Brain)
 │   └── SoundService.ts    # Audio Synthesis
 ├── store.ts            # Global State (Zustand)
-├── types.ts            # TypeScript Interfaces
-├── App.tsx             # Main Router & Layout
-├── index.tsx           # Entry Point
-├── styles.css          # Global Styles
-└── ...config files
+├── App.tsx             # Main Router
+└── README.md
 ```
-
----
-
-## 🤝 Contributing
-
-1.  Fork the Project
-2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the Branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
 
 ---
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License.

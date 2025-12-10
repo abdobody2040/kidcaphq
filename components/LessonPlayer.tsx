@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Lesson, SlideType } from '../types';
 import { useAppStore } from '../store';
@@ -76,7 +77,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ onExit }) => {
   };
 
   const askOwly = async () => {
-    setOwlyTip("Owly is thinking...");
+    setOwlyTip("Ollie is thinking...");
     setShowExplanation(true);
     const tip = await getOwlyExplanation(slide.content.substring(0, 50) + "...", 8);
     setOwlyTip(tip);
@@ -182,7 +183,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ onExit }) => {
                                       className="flex items-center gap-2 text-kid-accent font-bold hover:underline"
                                     >
                                         <div className="bg-kid-accent text-white p-1 rounded-full"><HelpCircle size={16}/></div>
-                                        Ask Owly for help
+                                        Ask Ollie for help
                                     </button>
                                     {showExplanation && (
                                         <div className="mt-3 p-4 bg-blue-50 text-blue-800 rounded-xl border border-blue-100 flex gap-3">

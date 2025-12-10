@@ -26,6 +26,7 @@ import Portfolio from './components/Portfolio';
 import CurriculumPage from './components/CurriculumPage';
 import PricingPage from './components/PricingPage';
 import FeaturesPage from './components/FeaturesPage';
+import OllieChat from './components/OllieChat';
 import { Check, Rocket, Pizza, Star, Smile, Lightbulb, Coffee, Music, Camera, Globe, Anchor, Cpu, Car, Zap } from 'lucide-react';
 
 const ICON_MAP: Record<string, any> = {
@@ -51,7 +52,7 @@ const App = () => {
   const [activeGameId, setActiveGameId] = useState<string | null>(null);
   const [showJoinClass, setShowJoinClass] = useState(false);
   
-  const [viewState, setViewState] = useState<'LANDING' | 'AUTH' | 'CURRICULUM' | 'PRICING' | 'FEATURES'>('LANDING');
+  const [viewState, setViewState] = useState<'LANDING' | 'AUTH_LOGIN' | 'AUTH_REGISTER' | 'CURRICULUM' | 'PRICING' | 'FEATURES'>('LANDING');
 
   // Initialize Data on Mount
   useEffect(() => {
@@ -68,7 +69,9 @@ const App = () => {
   if (!user) {
       if (viewState === 'LANDING') {
           return <LandingPage 
-                    onGetStarted={() => setViewState('AUTH')} 
+                    onGetStarted={() => setViewState('AUTH_REGISTER')} 
+                    onLogin={() => setViewState('AUTH_LOGIN')}
+                    onRegister={() => setViewState('AUTH_REGISTER')}
                     onViewCurriculum={() => setViewState('CURRICULUM')}
                     onViewPricing={() => setViewState('PRICING')}
                     onViewFeatures={() => setViewState('FEATURES')}
@@ -80,13 +83,16 @@ const App = () => {
       if (viewState === 'PRICING') {
           return <PricingPage 
                     onBack={() => setViewState('LANDING')} 
-                    onGetStarted={() => setViewState('AUTH')}
+                    onGetStarted={() => setViewState('AUTH_REGISTER')}
                  />;
       }
       if (viewState === 'FEATURES') {
           return <FeaturesPage onBack={() => setViewState('LANDING')} />;
       }
-      return <Auth onBack={() => setViewState('LANDING')} />;
+      return <Auth 
+                onBack={() => setViewState('LANDING')} 
+                initialMode={viewState === 'AUTH_REGISTER' ? 'REGISTER' : 'LOGIN'}
+             />;
   }
 
   const handleNavigate = (tab: string) => {
@@ -231,6 +237,7 @@ const App = () => {
         </Layout>
         
         <LevelUpModal />
+        <OllieChat />
         {showJoinClass && <JoinClassModal onClose={() => setShowJoinClass(false)} />}
     </>
   );

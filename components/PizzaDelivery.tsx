@@ -1,7 +1,9 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
 import { useAppStore } from '../store';
 import { RotateCcw } from 'lucide-react';
+import GameTutorialModal from './common/GameTutorialModal';
 
 interface PizzaDeliveryProps {
   onBack: () => void;
@@ -11,7 +13,6 @@ const GRID_SIZE = 10;
 const CELL_SIZE = 50;
 
 class MainScene extends Phaser.Scene {
-  // Fix: Explicitly declare properties that TypeScript is failing to infer from Phaser.Scene
   declare add: Phaser.GameObjects.GameObjectFactory;
   declare input: Phaser.Input.InputPlugin;
   declare time: Phaser.Time.Clock;
@@ -170,11 +171,13 @@ const PizzaDelivery: React.FC<PizzaDeliveryProps> = ({ onBack }) => {
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
+  const [showTutorial, setShowTutorial] = useState(true);
   const { completeGame } = useAppStore();
   
   const gameInstanceRef = useRef<Phaser.Game | null>(null);
 
-  useEffect(() => {
+  const startGame = () => {
+    setShowTutorial(false);
     if (!gameRef.current) return;
 
     const config: Phaser.Types.Core.GameConfig = {
@@ -200,16 +203,37 @@ const PizzaDelivery: React.FC<PizzaDeliveryProps> = ({ onBack }) => {
         setGameOver(true);
         completeGame(finalScore, finalScore * 2); // XP reward
     });
+  };
 
+  // Clean up
+  useEffect(() => {
     return () => {
-        game.destroy(true);
-        gameInstanceRef.current = null;
+        if (gameInstanceRef.current) {
+            gameInstanceRef.current.destroy(true);
+            gameInstanceRef.current = null;
+        }
     };
-  }, [completeGame]);
+  }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[600px] bg-gray-50 rounded-3xl p-8 border border-gray-200 shadow-xl">
-        
+    <div className="flex flex-col items-center justify-center min-h-[600px] bg-gray-50 rounded-3xl p-8 border border-gray-200 shadow-xl relative">
+        {showTutorial && (
+            <GameTutorialModal 
+                onStart={startGame}
+                title="Pizza Rush"
+                description="Deliver hot pizzas to hungry customers before they get cold!"
+                icon="🍕"
+                color="bg-red-500"
+                instructions={[
+                    "You are the Blue Scooter.",
+                    "Use Arrow Keys to move.",
+                    "Drive to the Red House to deliver.",
+                    "Each delivery gives +5 seconds.",
+                    "Don't run out of time!"
+                ]}
+            />
+        )}
+
         {/* Header */}
         <div className="w-full max-w-[500px] flex items-center justify-between mb-6">
             <button onClick={onBack} className="text-gray-400 font-bold hover:text-gray-600">
@@ -223,7 +247,7 @@ const PizzaDelivery: React.FC<PizzaDeliveryProps> = ({ onBack }) => {
 
         {/* Game Container */}
         <div className="relative">
-            <div ref={gameRef} className="rounded-xl overflow-hidden border-4 border-gray-800 shadow-2xl" />
+            <div ref={gameRef} className="rounded-xl overflow-hidden border-4 border-gray-800 shadow-2xl bg-gray-200 min-h-[500px] min-w-[500px]" />
             
             {/* Game Over Overlay */}
             {gameOver && (
@@ -240,11 +264,13 @@ const PizzaDelivery: React.FC<PizzaDeliveryProps> = ({ onBack }) => {
                         <button 
                              onClick={() => {
                                  // Force reload to restart cleanly (simplest way for Phaser/React)
-                                 // Ideally we would restart scene but state management across boundary is tricky
                                  setGameOver(false);
                                  setScore(0);
                                  setTimeLeft(30);
-                                 gameInstanceRef.current?.scene.start('MainScene');
+                                 if (gameInstanceRef.current) {
+                                     gameInstanceRef.current.destroy(true);
+                                 }
+                                 startGame();
                              }} 
                              className="bg-kid-primary text-black px-6 py-3 rounded-xl font-black hover:bg-yellow-400 flex items-center gap-2"
                         >
@@ -253,11 +279,6 @@ const PizzaDelivery: React.FC<PizzaDeliveryProps> = ({ onBack }) => {
                     </div>
                 </div>
             )}
-        </div>
-
-        {/* Instructions */}
-        <div className="mt-6 text-center text-gray-500 font-bold text-sm max-w-md">
-            Use <span className="bg-white border px-1 rounded">Arrow Keys</span> to drive your scooter to the <span className="text-red-500">Red Houses</span> before time runs out!
         </div>
     </div>
   );

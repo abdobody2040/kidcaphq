@@ -16,12 +16,15 @@ const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
       if (!lessons || lessons.length === 0) return [];
       const uniqueTags = Array.from(new Set(lessons.map(l => l.topic_tag)));
       // Simplified mapping for visual icons based on tag keywords
-      return uniqueTags.map((tag: string) => ({
-          id: `MOD_${tag.replace(/\s+/g, '_').toUpperCase()}`,
-          title: tag,
-          icon: tag.includes('Money') ? '💰' : tag.includes('Tech') ? '💻' : tag.includes('Global') ? '✈️' : '🚀',
-          lessonIds: lessons.filter(l => l.topic_tag === tag).map(l => l.id)
-      }));
+      return uniqueTags.map((tag: string) => {
+          const safeTag = String(tag);
+          return {
+              id: `MOD_${safeTag.replace(/\s+/g, '_').toUpperCase()}`,
+              title: safeTag,
+              icon: safeTag.includes('Money') ? '💰' : safeTag.includes('Tech') ? '💻' : safeTag.includes('Global') ? '✈️' : '🚀',
+              lessonIds: lessons.filter(l => l.topic_tag === tag).map(l => l.id)
+          };
+      });
   }, [lessons]);
 
   // Calculate completion for a module

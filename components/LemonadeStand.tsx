@@ -4,6 +4,7 @@ import { useAppStore } from '../store';
 import { getLemonadeFeedback } from '../services/geminiService';
 import { motion } from 'framer-motion';
 import { ShoppingCart, Sun, CloudRain, DollarSign, TrendingUp, RefreshCcw, Zap } from 'lucide-react';
+import GameTutorialModal from './common/GameTutorialModal';
 
 type GamePhase = 'PREP' | 'SIMULATION' | 'RESULT';
 
@@ -13,6 +14,7 @@ const LemonadeStand: React.FC = () => {
   const [weather, setWeather] = useState<string>('Sunny');
   const [simProgress, setSimProgress] = useState(0);
   const [dayResult, setDayResult] = useState({ sold: 0, profit: 0, revenue: 0, cost: 0, feedback: '', skillBonus: 0 });
+  const [showTutorial, setShowTutorial] = useState(true);
 
   // Get active skills
   const modifiers = getSkillModifiers();
@@ -60,9 +62,6 @@ const LemonadeStand: React.FC = () => {
     const priceFactor = Math.max(0.1, 2.0 - lemonadeState.recipe.pricePerCup); // Higher price = lower demand
     
     // Apply Charisma Skill to Demand (optional, or just Price)
-    // Here we apply Charisma to Price Tolerance indirectly by boosting Revenue later, 
-    // or we could boost demand. Let's boost Revenue directly as a "Tip/Upsell".
-    
     const potentialCustomers = Math.floor(demandBase * (1 + priceFactor));
     
     // Max sales limited by inventory
@@ -126,15 +125,34 @@ const LemonadeStand: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-200">
+    <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-200 relative">
+      {showTutorial && (
+          <GameTutorialModal 
+            onStart={() => setShowTutorial(false)}
+            title="Lemonade Tycoon"
+            description="Run your own lemonade stand! Manage inventory, set prices, and react to the weather."
+            icon="🍋"
+            color="bg-yellow-500"
+            instructions={[
+                "Check the weather forecast.",
+                "Buy Lemons, Sugar, and Cups.",
+                "Set a price (Too high? No sales!)",
+                "Start the day and make profit!"
+            ]}
+          />
+      )}
+
       <div className="bg-kid-primary p-6 text-indigo-900 flex justify-between items-center">
         <div>
            <h2 className="text-3xl font-black">Lemonade Stand Tycoon</h2>
            <div className="text-sm font-bold opacity-80">Day {lemonadeState.day} • Forecast: {weather}</div>
         </div>
-        <div className="bg-white/30 px-4 py-2 rounded-xl backdrop-blur-sm font-black text-xl flex items-center gap-2">
-           <DollarSign size={20} />
-           {lemonadeState.funds.toFixed(2)}
+        <div className="flex items-center gap-2">
+            <button onClick={() => setShowTutorial(true)} className="bg-white/20 hover:bg-white/40 px-3 py-1 rounded-lg font-bold text-sm">Help</button>
+            <div className="bg-white/30 px-4 py-2 rounded-xl backdrop-blur-sm font-black text-xl flex items-center gap-2">
+                <DollarSign size={20} />
+                {lemonadeState.funds.toFixed(2)}
+            </div>
         </div>
       </div>
 
@@ -261,7 +279,7 @@ const LemonadeStand: React.FC = () => {
                 <div className="bg-yellow-50 p-6 rounded-xl border border-yellow-100 text-left flex gap-4">
                      <div className="text-4xl">🦉</div>
                      <div>
-                        <div className="font-bold text-yellow-800 text-sm uppercase tracking-wide mb-1">Coach Owly Says</div>
+                        <div className="font-bold text-yellow-800 text-sm uppercase tracking-wide mb-1">CEO Ollie Says</div>
                         <p className="text-gray-800 font-medium italic">"{dayResult.feedback}"</p>
                      </div>
                 </div>

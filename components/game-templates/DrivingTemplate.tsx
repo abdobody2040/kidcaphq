@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAppStore } from '../../store';
 import { BusinessSimulation, VisualConfig } from '../../types';
-import { motion } from 'framer-motion';
-import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, RotateCcw, Flag } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 
 interface Props {
   config: BusinessSimulation;
@@ -12,6 +12,7 @@ interface Props {
 const GRID_SIZE = 10;
 
 const DrivingTemplate: React.FC<Props> = ({ config, onExit }) => {
+  const { completeGame } = useAppStore();
   const [playerPos, setPlayerPos] = useState({ x: 0, y: 0 });
   const [targetPos, setTargetPos] = useState({ x: 5, y: 5 });
   const [score, setScore] = useState(0);
@@ -27,6 +28,12 @@ const DrivingTemplate: React.FC<Props> = ({ config, onExit }) => {
 
   const playerSprite = config.entities?.find(e => e.type === 'resource')?.emoji || '🛵';
   const targetSprite = config.entities?.find(e => e.type === 'target')?.emoji || '🏠';
+
+  const handleExit = () => {
+      // Award points directly
+      completeGame(score, Math.floor(score * 0.5));
+      onExit();
+  };
 
   // Timer
   useEffect(() => {
@@ -62,7 +69,6 @@ const DrivingTemplate: React.FC<Props> = ({ config, onExit }) => {
           if (nx === targetPos.x && ny === targetPos.y) {
               setScore(s => s + (config.scoring?.base_points || 10));
               setTimeLeft(t => t + 5); // Time Bonus
-              // Need to defer spawn to avoid render loop, but simple logic here works
               setTimeout(spawnTarget, 0); 
           }
           return { x: nx, y: ny };
@@ -135,9 +141,10 @@ const DrivingTemplate: React.FC<Props> = ({ config, onExit }) => {
                     <h3 className="text-3xl font-black mb-2 text-yellow-400">Time's Up!</h3>
                     <p className="text-xl font-bold mb-6">Final Score: {score}</p>
                     <div className="flex gap-4">
-                        <button onClick={onExit} className="bg-gray-700 px-4 py-2 rounded-lg font-bold">Exit</button>
+                        <button onClick={handleExit} className="bg-gray-700 px-4 py-2 rounded-lg font-bold">Collect Rewards</button>
                         <button 
                             onClick={() => {
+                                // Claim partial rewards on retry? No, just reset
                                 setScore(0);
                                 setTimeLeft(config.scoring?.time_limit || 30);
                                 setGameOver(false);

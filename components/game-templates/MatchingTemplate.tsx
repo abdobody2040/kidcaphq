@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
+import { useAppStore } from '../../store';
 import { BusinessSimulation, VisualConfig } from '../../types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, Clock } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 
 interface Props {
   config: BusinessSimulation;
@@ -10,7 +11,7 @@ interface Props {
 }
 
 const MatchingTemplate: React.FC<Props> = ({ config, onExit }) => {
-  // Config Parsing
+  const { completeGame } = useAppStore();
   const visual: VisualConfig = config.visual_config || { colors: { primary: '#EC4899', background: '#FDF2F8' } as any } as any;
   const ingredients = config.entities?.filter(e => e.type === 'resource') || [];
   
@@ -22,6 +23,11 @@ const MatchingTemplate: React.FC<Props> = ({ config, onExit }) => {
   useEffect(() => {
       generateOrder();
   }, []);
+
+  const handleExit = () => {
+      completeGame(score, Math.floor(score * 0.5));
+      onExit();
+  };
 
   const generateOrder = () => {
       // Pick 3 random ingredients
@@ -64,7 +70,7 @@ const MatchingTemplate: React.FC<Props> = ({ config, onExit }) => {
         
         <div className="w-full max-w-md flex justify-between items-center mb-8">
             <div className="font-black text-2xl" style={{ color: visual.colors.primary }}>Orders: {Math.floor(score/10)}</div>
-            <button onClick={onExit} className="text-gray-400 font-bold hover:text-gray-600">Exit</button>
+            <button onClick={handleExit} className="text-gray-400 font-bold hover:text-gray-600">Save & Exit</button>
         </div>
 
         {/* Customer Order (Target) */}

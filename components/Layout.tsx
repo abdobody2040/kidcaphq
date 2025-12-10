@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { useAppStore, LEVEL_THRESHOLDS } from '../store';
 import { UserRole } from '../types';
-import { Trophy, Flame, Coins, Map, Gamepad2, LayoutDashboard, LogOut, ShoppingBag, Medal, School, Settings, Building2, Brain, Briefcase, Snowflake, Shield } from 'lucide-react';
+import { Trophy, Flame, Coins, Map as MapIcon, Gamepad2, LayoutDashboard, LogOut, ShoppingBag, Medal, School, Settings, Building2, Brain, Briefcase, Snowflake, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { SoundService } from '../services/SoundService';
 
@@ -33,9 +33,15 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onNavigate }) => {
   const isTeacher = user.role === UserRole.TEACHER;
   const isAdmin = user.role === UserRole.ADMIN;
   
-  const currentLevelBase = LEVEL_THRESHOLDS[user.level - 1] || 0;
-  const nextLevelThreshold = LEVEL_THRESHOLDS[user.level] || user.xp * 1.5;
-  const progressPercent = Math.min(100, Math.max(0, ((user.xp - currentLevelBase) / (nextLevelThreshold - currentLevelBase)) * 100));
+  // Defensive checks for potential object contamination in local storage
+  const safeLevel = typeof user.level === 'number' ? user.level : 1;
+  const safeXP = typeof user.xp === 'number' ? user.xp : 0;
+  const safeStreak = typeof user.streak === 'number' ? user.streak : 0;
+  const safeCoins = typeof user.bizCoins === 'number' ? user.bizCoins : 0;
+
+  const currentLevelBase = LEVEL_THRESHOLDS[safeLevel - 1] || 0;
+  const nextLevelThreshold = LEVEL_THRESHOLDS[safeLevel] || safeXP * 1.5;
+  const progressPercent = Math.min(100, Math.max(0, ((safeXP - currentLevelBase) / (nextLevelThreshold - currentLevelBase)) * 100));
 
   const hasFreeze = user.inventory.includes('item_freeze');
 
@@ -54,7 +60,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onNavigate }) => {
             <>
               <div className="text-xs font-bold text-gray-400 uppercase px-4 mt-4 mb-2">Learn & Play</div>
               <NavItem 
-                icon={<Map size={24} />} 
+                icon={<MapIcon size={24} />} 
                 label="Adventure Map" 
                 active={activeTab === 'map'} 
                 onClick={() => onNavigate('map')} 
@@ -149,7 +155,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onNavigate }) => {
              {/* Streak */}
             <div className="flex items-center justify-between text-orange-500 font-bold p-2 bg-orange-50 rounded-xl relative overflow-hidden">
               <div className="flex items-center gap-2 relative z-10"><Flame size={20} className="fill-current" /> Streak</div>
-              <span className="relative z-10">{user.streak} days</span>
+              <span className="relative z-10">{safeStreak} days</span>
               
               {/* Freeze Indicator */}
               {hasFreeze && (
@@ -163,19 +169,19 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onNavigate }) => {
             <div className="flex items-center justify-between text-yellow-600 font-bold p-2 bg-yellow-50 rounded-xl">
               <div className="flex items-center gap-2"><Coins size={20} className="fill-yellow-400 text-yellow-600" /> BizCoins</div>
               <motion.span 
-                 key={user.bizCoins}
+                 key={safeCoins}
                  initial={{ scale: 1.5, color: '#16a34a' }}
                  animate={{ scale: 1, color: '#ca8a04' }}
               >
-                  {user.bizCoins}
+                  {safeCoins}
               </motion.span>
             </div>
 
             {/* XP / Level */}
             <div className="space-y-1 p-2 bg-blue-50 rounded-xl">
                 <div className="flex items-center justify-between text-blue-500 font-bold text-sm">
-                    <div className="flex items-center gap-2">Lvl {user.level}</div>
-                    <span>{user.xp} XP</span>
+                    <div className="flex items-center gap-2">Lvl {safeLevel}</div>
+                    <span>{safeXP} XP</span>
                 </div>
                 <div className="h-3 w-full bg-blue-200 rounded-full overflow-hidden">
                     <motion.div 

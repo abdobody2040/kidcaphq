@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../store';
 import { motion } from 'framer-motion';
 import { Coffee, ArrowLeft, RotateCcw, DollarSign, Cloud, Sun, CloudRain } from 'lucide-react';
+import GameTutorialModal from './common/GameTutorialModal';
 
 interface Props {
   onBack: () => void;
@@ -15,6 +16,7 @@ const CoffeeCart: React.FC<Props> = ({ onBack }) => {
   const [stock, setStock] = useState({ beans: 0, milk: 0, cups: 0 });
   const [recipe, setRecipe] = useState({ roast: 5, foam: 5, price: 3.5 });
   const [weather, setWeather] = useState('Sunny');
+  const [showTutorial, setShowTutorial] = useState(true);
   
   // Brew Phase
   const [progress, setProgress] = useState(0);
@@ -64,11 +66,30 @@ const CoffeeCart: React.FC<Props> = ({ onBack }) => {
 
   return (
     <div className="bg-[#3e2723] min-h-[600px] rounded-3xl overflow-hidden shadow-2xl text-[#d7ccc8] flex flex-col relative">
+        {showTutorial && (
+            <GameTutorialModal 
+                onStart={() => setShowTutorial(false)}
+                title="Coffee Cart"
+                description="Become a barista! Brew the perfect cup and manage your stock."
+                icon="☕"
+                color="bg-[#5d4037]"
+                instructions={[
+                    "Buy Beans, Milk, and Cups.",
+                    "Adjust your recipe: Roast & Foam.",
+                    "Set your price.",
+                    "Rainy days = More customers!"
+                ]}
+            />
+        )}
+
         {/* Header */}
         <div className="p-6 flex justify-between items-center bg-[#281916]">
             <button onClick={onBack} className="text-[#a1887f] hover:text-white"><ArrowLeft /></button>
             <div className="text-2xl font-black">Coffee Cart ☕</div>
-            <div className="bg-[#5d4037] px-4 py-1 rounded-full font-mono font-bold">${funds.toFixed(2)}</div>
+            <div className="flex items-center gap-2">
+                <button onClick={() => setShowTutorial(true)} className="bg-[#5d4037] hover:bg-[#8d6e63] px-3 py-1 rounded text-xs font-bold">Help</button>
+                <div className="bg-[#5d4037] px-4 py-1 rounded-full font-mono font-bold">${funds.toFixed(2)}</div>
+            </div>
         </div>
 
         <div className="flex-1 p-8 flex flex-col items-center justify-center">

@@ -1,9 +1,9 @@
 
-
 import React, { useState, useEffect, useRef } from 'react';
+import { useAppStore } from '../../store';
 import { BusinessSimulation, VisualConfig } from '../../types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Zap } from 'lucide-react';
+import { Target } from 'lucide-react';
 
 interface Props {
   config: BusinessSimulation;
@@ -11,6 +11,7 @@ interface Props {
 }
 
 const RhythmTemplate: React.FC<Props> = ({ config, onExit }) => {
+  const { completeGame } = useAppStore();
   const visual: VisualConfig = config.visual_config || { colors: { primary: '#3B82F6', background: '#EFF6FF' } as any } as any;
   
   const [score, setScore] = useState(0);
@@ -26,6 +27,11 @@ const RhythmTemplate: React.FC<Props> = ({ config, onExit }) => {
   const SPEED = 2; // px per frame
   const HIT_ZONE_Y = 400;
   const HIT_WINDOW = 50;
+
+  const handleExit = () => {
+      completeGame(Math.floor(score), Math.floor(score * 0.2));
+      onExit();
+  };
 
   useEffect(() => {
       const loop = (time: number) => {
@@ -98,7 +104,7 @@ const RhythmTemplate: React.FC<Props> = ({ config, onExit }) => {
             <div className="font-black text-4xl text-gray-800">{Math.floor(score)}</div>
             <div className="text-sm font-bold text-gray-400">Combo x{combo}</div>
         </div>
-        <button onClick={onExit} className="absolute top-4 right-4 z-20 bg-white/50 px-4 py-2 rounded-lg font-bold">Exit</button>
+        <button onClick={handleExit} className="absolute top-4 right-4 z-20 bg-white/50 px-4 py-2 rounded-lg font-bold hover:bg-white/80">Save & Exit</button>
 
         {/* Game Area */}
         <div className="relative w-full max-w-md h-full bg-white/50 border-x-4 border-gray-200 grid grid-cols-3">

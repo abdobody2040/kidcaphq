@@ -1,5 +1,4 @@
 
-
 // User & Auth
 export enum UserRole {
   KID = 'KID',
@@ -52,6 +51,8 @@ export interface PortfolioItem {
 export interface User {
   id: string;
   name: string;
+  username?: string; // New field
+  password?: string; // New field
   role: UserRole;
   xp: number;
   level: number;
@@ -167,6 +168,7 @@ export interface UniversalLessonUnit {
     headline: string;
     body_text: string;
     key_term?: string; // Optional now
+    image_url?: string; // New field for visuals
   };
   challenge_payload: {
     question_text: string;

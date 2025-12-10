@@ -15,6 +15,9 @@ const BizStore: React.FC = () => {
       return item.type === 'CONSUMABLE' || item.type === 'POWERUP';
   });
 
+  // Safety check: ensure bizCoins is treated as a number
+  const safeCoins = typeof user.bizCoins === 'number' ? user.bizCoins : 0;
+
   return (
     <div className="pb-20">
       <div className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-3xl p-8 text-white mb-8 relative overflow-hidden shadow-lg">
@@ -25,7 +28,7 @@ const BizStore: React.FC = () => {
            </div>
            <div className="bg-white/20 backdrop-blur-md px-6 py-3 rounded-2xl flex items-center gap-3 border border-white/30">
               <Coins size={32} className="text-yellow-300" />
-              <span className="text-3xl font-black">{user.bizCoins}</span>
+              <span className="text-3xl font-black">{safeCoins}</span>
            </div>
         </div>
         <div className="absolute right-0 bottom-0 text-9xl opacity-10 rotate-12 -mr-10 -mb-10">🛍️</div>
@@ -53,7 +56,7 @@ const BizStore: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredItems.map((item) => {
           const isOwned = user.inventory.includes(item.id) && item.type !== 'CONSUMABLE' && item.type !== 'POWERUP';
-          const canAfford = user.bizCoins >= item.cost;
+          const canAfford = safeCoins >= item.cost;
           
           return (
             <motion.div 

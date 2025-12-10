@@ -73,7 +73,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onBack, onGetStarted }) => {
                   <div className="space-y-4">
                       <Feature text="Unlimited Access to All Modules" active />
                       <Feature text="Unlock All 30+ Mini-Games" active />
-                      <Feature text="AI Tutoring (Owly)" active />
+                      <Feature text="AI Tutoring (Ollie)" active />
                       <Feature text="Parent Analytics Dashboard" active />
                       <Feature text="Certificate Downloads" active />
                       <Feature text="Priority Support" active />

@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { User, UserRole, LemonadeState, ShopItem, LeaderboardEntry, Classroom, UserSettings, BusinessLogo, Skill, HQLevel, PortfolioItem, UniversalLessonUnit, BusinessSimulation } from './types';
@@ -7,6 +8,7 @@ import { SoundService } from './services/SoundService';
 
 // Constants
 export const LEVEL_THRESHOLDS = [0, 100, 250, 500, 1000, 2000, 5000];
+export const MAX_LOCAL_USERS = 50; // Safety limit for LocalStorage
 
 export const SHOP_ITEMS: ShopItem[] = [
   // Apparel
@@ -93,6 +95,8 @@ const DEFAULT_SETTINGS: UserSettings = {
 const MOCK_USER: User = {
   id: 'kid_1',
   name: 'Leo',
+  username: 'leo',
+  password: '123',
   role: UserRole.KID,
   xp: 120,
   level: 2,
@@ -121,6 +125,8 @@ const MOCK_USER: User = {
 const MOCK_PARENT: User = {
   ...MOCK_USER,
   id: 'parent_1',
+  username: 'mom',
+  password: '123',
   role: UserRole.PARENT,
   name: 'Mom',
   linkedChildId: 'kid_1',
@@ -130,6 +136,8 @@ const MOCK_PARENT: User = {
 const MOCK_TEACHER: User = {
   ...MOCK_USER,
   id: 'teacher_1',
+  username: 'teacher',
+  password: '123',
   role: UserRole.TEACHER,
   name: 'Mr. Stark',
   classId: 'class_1',
@@ -139,6 +147,8 @@ const MOCK_TEACHER: User = {
 const MOCK_ADMIN: User = {
   ...MOCK_USER,
   id: 'admin_1',
+  username: 'admin',
+  password: '123',
   role: UserRole.ADMIN,
   name: 'Super Admin',
   subscriptionStatus: 'PREMIUM'
@@ -174,7 +184,9 @@ interface AppState {
   users: User[];
   
   // Actions
-  login: (role: UserRole) => void;
+  login: (role: UserRole) => void; // Deprecated but kept for backward compatibility if needed
+  loginWithCredentials: (username: string, password: string) => boolean;
+  registerUser: (name: string, username: string, password: string, role: UserRole) => void;
   logout: () => void;
   checkStreak: () => void;
   completeLesson: (lessonId: string, xpReward?: number, coinReward?: number) => void;
@@ -204,7 +216,7 @@ interface AppState {
   addGame: (game: BusinessSimulation) => void;
   updateGame: (id: string, updates: Partial<BusinessSimulation>) => void;
   deleteGame: (id: string) => void;
-  syncGames: () => void; // Crucial for updating game list
+  syncGames: () => void;
   
   // User CRUD
   addUser: (user: User) => void;
@@ -224,6 +236,7 @@ export const useAppStore = create<AppState>()(
       games: GAMES_DB,
       users: [MOCK_USER, MOCK_PARENT, MOCK_TEACHER, MOCK_ADMIN],
 
+      // Deprecated simple login
       login: (role: UserRole) => {
         const currentUser = get().user;
         if (currentUser && currentUser.role === role) return;
@@ -236,7 +249,6 @@ export const useAppStore = create<AppState>()(
             user = { ...targetUser };
             if (role === UserRole.TEACHER) classroom = { ...MOCK_CLASSROOM };
         } else {
-            // Fallback if users array is empty/corrupt
             if (role === UserRole.KID) user = { ...MOCK_USER };
             if (role === UserRole.PARENT) user = { ...MOCK_PARENT };
             if (role === UserRole.TEACHER) user = { ...MOCK_TEACHER };
@@ -245,6 +257,69 @@ export const useAppStore = create<AppState>()(
 
         set({ user, classroom });
         if (role === UserRole.KID) get().checkStreak();
+      },
+
+      loginWithCredentials: (username, password) => {
+          const users = get().users;
+          const matchedUser = users.find(u => u.username === username && u.password === password);
+          
+          if (matchedUser) {
+              let classroom = null;
+              if (matchedUser.role === UserRole.TEACHER) classroom = { ...MOCK_CLASSROOM };
+              set({ user: matchedUser, classroom });
+              if (matchedUser.role === UserRole.KID) get().checkStreak();
+              return true;
+          }
+          return false;
+      },
+
+      registerUser: (name, username, password, role) => {
+          const currentUsers = get().users;
+          
+          // SCALABILITY CHECK: Prevent LocalStorage overflow
+          if (currentUsers.length >= MAX_LOCAL_USERS) {
+              alert(`Device limit reached! This device can only hold ${MAX_LOCAL_USERS} accounts to ensure smooth performance.`);
+              return;
+          }
+
+          const newUser: User = {
+              id: `user_${Date.now()}`,
+              name,
+              username,
+              password,
+              role,
+              xp: 0,
+              level: 1,
+              streak: 1,
+              lastActivityDate: getToday(),
+              bizCoins: 100, // Sign up bonus
+              currentModuleId: 'mod_1',
+              completedLessonIds: [],
+              badges: ['Newbie'],
+              inventory: [],
+              settings: DEFAULT_SETTINGS,
+              hqLevel: 'hq_garage',
+              unlockedSkills: [],
+              portfolio: [],
+              equippedItems: [],
+              subscriptionStatus: 'FREE'
+          };
+
+          // If it's a kid, give them a starter business logo
+          if (role === UserRole.KID) {
+              newUser.businessLogo = {
+                  companyName: `${name}'s Biz`,
+                  backgroundColor: '#3B82F6',
+                  icon: 'rocket',
+                  iconColor: '#FFFFFF',
+                  shape: 'circle'
+              };
+          }
+
+          set((state) => ({ 
+              users: [...state.users, newUser],
+              user: newUser 
+          }));
       },
       
       logout: () => set({ user: null, classroom: null }),
@@ -571,11 +646,22 @@ export const useAppStore = create<AppState>()(
       updateGame: (id, updates) => set((state) => ({ games: state.games.map(g => g.business_id === id ? { ...g, ...updates } : g) })),
       deleteGame: (id) => set((state) => ({ games: [...state.games.filter(g => g.business_id !== id)] })),
       
-      // SYNC ACTION
-      syncGames: () => set({ games: GAMES_DB }),
+      // SYNC ACTION - FIXED TO MERGE CUSTOM GAMES
+      syncGames: () => set((state) => {
+          const currentGames = state.games || [];
+          const staticIds = new Set(GAMES_DB.map(g => g.business_id));
+          const customGames = currentGames.filter(g => !staticIds.has(g.business_id));
+          return { games: [...GAMES_DB, ...customGames] };
+      }),
 
       // USER ACTIONS
-      addUser: (newUser) => set((state) => ({ users: [...state.users, newUser] })),
+      addUser: (newUser) => set((state) => {
+          if (state.users.length >= MAX_LOCAL_USERS) {
+              alert(`Cannot add user: Device limit of ${MAX_LOCAL_USERS} reached.`);
+              return {};
+          }
+          return { users: [...state.users, newUser] };
+      }),
       updateUser: (id, updates) => set((state) => {
           const updatedUsers = state.users.map(u => u.id === id ? { ...u, ...updates } : u);
           const updatedCurrentUser = state.user && state.user.id === id ? { ...state.user, ...updates } : state.user;
@@ -584,7 +670,7 @@ export const useAppStore = create<AppState>()(
       deleteUser: (id) => set((state) => ({ users: [...state.users.filter(u => u.id !== id)] }))
     }),
     {
-      name: 'kidcap-storage',
+      name: 'kidcap-storage-v5',
       partialize: (state) => ({ 
         user: state.user,
         lemonadeState: state.lemonadeState,

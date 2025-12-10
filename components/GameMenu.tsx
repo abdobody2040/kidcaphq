@@ -18,15 +18,14 @@ const CATEGORY_ICONS: Record<string, any> = {
 };
 
 const GameMenu: React.FC<GameMenuProps> = ({ onSelectGame }) => {
-  const { games } = useAppStore(); // Use games from store instead of static import
+  const { games } = useAppStore();
   const [filter, setFilter] = useState<string>('All');
   
-  // Fix: Explicitly cast Array.from result to string[] to resolve type inference issue
   const categories: string[] = ['All', ...Array.from(new Set(games.map(g => g.category))) as string[]];
 
-  const filteredGames = filter === 'All' 
-    ? games 
-    : games.filter(g => g.category === filter);
+  // Filter out the generic Lemonade Stand since we use the custom one
+  const filteredGames = (filter === 'All' ? games : games.filter(g => g.category === filter))
+    .filter(g => g.business_id !== 'BIZ_01_LEMONADE');
 
   return (
     <div className="pb-20">
@@ -53,53 +52,47 @@ const GameMenu: React.FC<GameMenuProps> = ({ onSelectGame }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-         {/* Special Custom Games at the top if 'All' or matching category */}
-         {filter === 'All' || filter === 'Retail & Food' ? (
-             <>
-                 <GameCard 
-                    title="Lemonade Tycoon"
-                    description="The classic starter business. Manage inventory and weather."
-                    icon={<Briefcase size={40} className="text-yellow-600" />}
-                    color="bg-yellow-50"
-                    borderColor="border-yellow-200"
-                    onClick={() => onSelectGame('lemonade')}
-                    isSpecial
-                 />
-                 <GameCard 
-                    title="Pizza Rush"
-                    description="Deliver pizzas on time in this fast-paced action game."
-                    icon={<Truck size={40} className="text-red-600" />}
-                    color="bg-red-50"
-                    borderColor="border-red-200"
-                    onClick={() => onSelectGame('pizza')}
-                    isSpecial
-                 />
-             </>
-         ) : null}
+         {/* Special Custom Game: Lemonade Tycoon */}
+         {(filter === 'All' || filter === 'Retail & Food') && (
+             <GameCard 
+                title="Lemonade Tycoon"
+                description="The classic starter business. Manage inventory and weather."
+                icon={<Briefcase size={40} className="text-yellow-600" />}
+                backgroundColor="#FEFCE8"
+                borderColor="#FEF08A"
+                onClick={() => onSelectGame('lemonade')}
+                isSpecial
+                badge="CLASSIC"
+             />
+         )}
 
-         {filter === 'All' || filter === 'Creative & Events' ? (
+         {/* Special Custom Game: Brand Builder */}
+         {(filter === 'All' || filter === 'Creative & Events') && (
              <GameCard 
                 title="Brand Builder"
                 description="Design logos and company identities."
                 icon={<Palette size={40} className="text-pink-600" />}
-                color="bg-pink-50"
-                borderColor="border-pink-200"
+                backgroundColor="#FDF2F8"
+                borderColor="#FBCFE8"
                 onClick={() => onSelectGame('brand')}
                 isSpecial
+                badge="CREATIVE"
              />
-         ) : null}
+         )}
 
          {/* Generated Games */}
          {filteredGames.map(game => {
              const Icon = CATEGORY_ICONS[game.category] || Briefcase;
+             const visual = game.visual_config || { colors: { background: '#FFFFFF', primary: '#E5E7EB' } };
+             
              return (
                 <GameCard 
                     key={game.business_id}
                     title={game.name}
                     description={game.description}
-                    icon={<Icon size={40} className="text-blue-600" />}
-                    color="bg-white"
-                    borderColor="border-gray-100"
+                    icon={<span className="text-4xl">{visual.icon || <Icon size={40} />}</span>}
+                    backgroundColor={visual.colors?.background || '#FFFFFF'}
+                    borderColor={`${visual.colors?.primary || '#E5E7EB'}40`} // Adding transparency to border hex
                     onClick={() => onSelectGame(game.business_id)}
                 />
              );
@@ -109,31 +102,36 @@ const GameMenu: React.FC<GameMenuProps> = ({ onSelectGame }) => {
   );
 };
 
-const GameCard = ({ title, description, icon, color, borderColor, onClick, isSpecial }: any) => (
+const GameCard = ({ title, description, icon, backgroundColor, borderColor, onClick, isSpecial, badge }: any) => (
     <motion.button 
         whileHover={{ y: -5 }}
         whileTap={{ scale: 0.95 }}
         onClick={onClick}
-        className={`w-full p-6 rounded-3xl border-4 text-left shadow-sm transition-all flex flex-col h-full relative overflow-hidden group
-            ${color} ${borderColor}
-            ${isSpecial ? 'shadow-md' : 'hover:border-blue-200'}
-        `}
+        className="w-full p-6 rounded-3xl border-4 text-left shadow-sm transition-all flex flex-col h-full relative overflow-hidden group"
+        style={{ 
+            backgroundColor: backgroundColor || '#FFFFFF', 
+            borderColor: borderColor || '#F3F4F6' 
+        }}
     >
         {isSpecial && (
-            <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-black px-3 py-1 rounded-bl-xl">
-                PRO
+            <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-black px-3 py-1 rounded-bl-xl z-10">
+                {badge || 'PRO'}
             </div>
         )}
-        <div className="mb-4 p-4 rounded-2xl bg-white/60 w-fit backdrop-blur-sm border border-black/5">
+        <div className="mb-4 p-4 rounded-2xl bg-white/60 w-fit backdrop-blur-sm border border-black/5 shadow-sm">
             {icon}
         </div>
-        <h3 className="text-xl font-black text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">{title}</h3>
-        <p className="text-gray-500 font-bold text-sm leading-relaxed mb-6">{description}</p>
+        <h3 className="text-xl font-black text-gray-800 mb-2 group-hover:opacity-80 transition-opacity">
+            {typeof title === 'string' ? title : 'Unknown Game'}
+        </h3>
+        <p className="text-gray-600 font-bold text-sm leading-relaxed mb-6 opacity-80">
+            {typeof description === 'string' ? description : 'Description unavailable'}
+        </p>
         
-        <div className="mt-auto pt-4 border-t border-black/5 w-full flex justify-between items-center text-gray-400 font-black text-xs uppercase tracking-widest">
+        <div className="mt-auto pt-4 border-t border-black/5 w-full flex justify-between items-center text-gray-500 font-black text-xs uppercase tracking-widest">
             <span>Play Now</span>
-            <div className="bg-gray-100 p-2 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                <Briefcase size={16} />
+            <div className="bg-white/50 p-2 rounded-full group-hover:bg-white group-hover:scale-110 transition-all shadow-sm">
+                <Gamepad2 size={16} />
             </div>
         </div>
     </motion.button>
