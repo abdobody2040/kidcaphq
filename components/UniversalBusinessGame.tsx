@@ -372,9 +372,9 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
   const safeFunds = typeof funds === 'number' ? funds : 0;
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl overflow-hidden min-h-[600px] flex flex-col relative">
+    <div className="bg-white rounded-3xl shadow-xl overflow-hidden h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] flex flex-col relative border border-gray-200">
       {/* Header */}
-      <div className="bg-gray-900 text-white p-6 flex justify-between items-center relative z-20">
+      <div className="bg-gray-900 text-white p-4 md:p-6 flex justify-between items-center relative z-20 shrink-0">
         <div className="flex items-center gap-4">
           <button 
             onClick={onExit} 
@@ -384,8 +384,8 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
             <ArrowLeft />
           </button>
           <div>
-            <h2 className="text-xl font-black">{gameData.name}</h2>
-            <div className="text-sm text-gray-400 font-bold uppercase tracking-wider flex items-center gap-2">
+            <h2 className="text-lg md:text-xl font-black truncate max-w-[150px] md:max-w-none">{gameData.name}</h2>
+            <div className="text-xs md:text-sm text-gray-400 font-bold uppercase tracking-wider flex items-center gap-2">
               Day {day}
               <AnimatePresence>
                 {isSaving && (
@@ -414,7 +414,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
           >
             <HelpCircle size={20} />
           </button>
-          <div className="bg-green-600 px-4 py-2 rounded-xl font-mono font-bold text-xl flex items-center gap-2 shadow-inner">
+          <div className="bg-green-600 px-3 py-1 md:px-4 md:py-2 rounded-xl font-mono font-bold text-lg md:text-xl flex items-center gap-2 shadow-inner">
             $ {safeFunds.toLocaleString()}
           </div>
           <button 
@@ -431,12 +431,12 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
       {/* TUTORIAL OVERLAY */}
       <AnimatePresence>
         {showTutorial && (
-          <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-8">
+          <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 md:p-8">
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative overflow-hidden"
+              className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative overflow-hidden"
             >
               <button 
                 onClick={() => setShowTutorial(false)} 
@@ -452,7 +452,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                 {tutorialStep === 2 && <div className="p-4 bg-green-100 rounded-full text-4xl">🛒</div>}
               </div>
 
-              <div className="text-center min-h-[180px]">
+              <div className="text-center min-h-[150px]">
                 <AnimatePresence mode='wait'>
                   {tutorialStep === 0 && (
                     <motion.div 
@@ -532,17 +532,17 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
         )}
       </AnimatePresence>
 
-      <div className="flex-1 p-8 bg-gray-50 overflow-y-auto">
+      <div className="flex-1 p-4 md:p-8 bg-gray-50 overflow-y-auto">
         {phase === 'STRATEGY' && (
-          <div className="space-y-8 max-w-4xl mx-auto">
-            <div className="bg-blue-100 p-6 rounded-2xl border-l-8 border-blue-500 shadow-sm">
+          <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto">
+            <div className="bg-blue-100 p-4 md:p-6 rounded-2xl border-l-8 border-blue-500 shadow-sm">
               <h3 className="text-blue-800 font-bold uppercase text-sm mb-2">Objective</h3>
               <p className="text-blue-900 font-medium text-lg">{gameData.description}</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               {/* Inputs */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+              <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-200">
                 <h3 className="font-black text-gray-800 mb-6 flex items-center gap-2">
                   <TrendingUp size={20} /> Daily Strategy
                 </h3>
@@ -571,11 +571,11 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
               </div>
 
               {/* Upgrades */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+              <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-200">
                 <h3 className="font-black text-gray-800 mb-6 flex items-center gap-2">
                   <ShoppingCart size={20} /> Shop
                 </h3>
-                <div className="space-y-4 max-h-96 overflow-y-auto">
+                <div className="space-y-4 max-h-64 md:max-h-96 overflow-y-auto">
                   {gameData.upgrade_tree.map(u => {
                     const isOwned = upgrades.includes(u.id);
                     const canAfford = safeFunds >= u.cost;
@@ -588,19 +588,19 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                             : 'border-gray-100'
                         }`}
                       >
-                        <div>
-                          <div className="font-bold text-gray-800">{safeRender(u.name)}</div>
+                        <div className="flex-1 pr-2">
+                          <div className="font-bold text-gray-800 text-sm md:text-base">{safeRender(u.name)}</div>
                           <div className="text-xs text-gray-500">{safeRender(u.effect)}</div>
                         </div>
                         {isOwned ? (
-                          <div className="text-green-600 font-bold flex items-center gap-1">
-                            <CheckCircle size={16}/> Owned
+                          <div className="text-green-600 font-bold flex items-center gap-1 text-sm">
+                            <CheckCircle size={16}/> <span className="hidden sm:inline">Owned</span>
                           </div>
                         ) : (
                           <button 
                             onClick={() => buyUpgrade(u.id, u.cost)}
                             disabled={!canAfford}
-                            className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                            className={`px-3 py-2 md:px-4 md:py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap ${
                               canAfford 
                                 ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md' 
                                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
@@ -641,7 +641,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                 <motion.div 
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="bg-yellow-100 text-yellow-800 px-6 py-3 rounded-full font-bold flex items-center gap-2 border-2 border-yellow-400 shadow-sm"
+                  className="bg-yellow-100 text-yellow-800 px-6 py-3 rounded-full font-bold flex items-center gap-2 border-2 border-yellow-400 shadow-sm text-sm md:text-base"
                 >
                   <AlertTriangle size={20} /> {eventLog}!
                 </motion.div>
@@ -663,7 +663,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
               </h2>
               <p className="text-gray-500 font-bold">Net Profit</p>
               {activeModifiers && (
-                <div className="flex justify-center gap-3 mt-4">
+                <div className="flex justify-center gap-3 mt-4 flex-wrap">
                   {activeModifiers.priceMultiplier > 1 && (
                     <span className="bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                       <Zap size={12}/> Charisma Boost

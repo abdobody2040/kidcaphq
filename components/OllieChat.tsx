@@ -75,7 +75,7 @@ const OllieChat: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-end pointer-events-none">
       
       <AnimatePresence>
         {isOpen && (
@@ -83,7 +83,7 @@ const OllieChat: React.FC = () => {
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="bg-white rounded-3xl shadow-2xl border-4 border-yellow-400 w-80 sm:w-96 mb-4 overflow-hidden flex flex-col h-[500px] max-h-[80vh]"
+            className="bg-white rounded-3xl shadow-2xl border-4 border-yellow-400 w-80 sm:w-96 mb-4 overflow-hidden flex flex-col h-[500px] max-h-[60vh] pointer-events-auto"
           >
             {/* Header */}
             <div className="bg-yellow-400 p-4 flex justify-between items-center text-yellow-900">
@@ -198,7 +198,7 @@ const OllieChat: React.FC = () => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-16 h-16 rounded-full shadow-[0_4px_0_0_rgba(0,0,0,0.2)] flex items-center justify-center border-4 border-white transition-colors relative overflow-hidden
+        className={`w-16 h-16 rounded-full shadow-[0_4px_0_0_rgba(0,0,0,0.2)] flex items-center justify-center border-4 border-white transition-colors relative overflow-hidden pointer-events-auto
           ${isOpen ? 'bg-gray-200 text-gray-500' : 'bg-yellow-400 text-yellow-900'}
         `}
       >
