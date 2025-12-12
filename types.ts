@@ -337,3 +337,55 @@ export interface BusinessSimulation {
     negative: BusinessEvent;
   };
 }
+
+// --- CMS TYPES ---
+
+export interface ContentBlock {
+  id: string;
+  type: 'HERO' | 'TEXT_IMAGE' | 'CTA';
+  title?: string;
+  subtitle?: string;
+  content?: string; // Rich text / markdown
+  image?: string;
+  buttonText?: string;
+  layout?: 'image_left' | 'image_right' | 'center';
+  backgroundColor?: string;
+}
+
+export interface CustomPage {
+  id: string;
+  slug: string; // URL slug e.g. "about-us"
+  title: string;
+  blocks: ContentBlock[];
+}
+
+export interface CMSContent {
+  landing: {
+    heroTitle: string;
+    heroSubtitle: string;
+    heroCta: string;
+    heroImage: string;
+    featuresTitle: string; // "How KidCap Works"
+    featuresSubtitle: string;
+    arcadeTitle: string; // "Real Business Simulations"
+    arcadeDesc: string;
+    ctaTitle: string; // Bottom CTA
+    ctaSubtitle: string;
+    extraSections?: ContentBlock[]; // New dynamic sections on home
+  };
+  features: {
+    learningTitle: string;
+    learningDesc: string;
+    learningImage: string;
+    arcadeTitle: string;
+    arcadeDesc: string;
+    arcadeImage: string;
+    progressionTitle: string;
+    progressionDesc: string;
+    progressionImage: string;
+    safetyTitle: string;
+    safetyDesc: string;
+    safetyImage: string;
+  };
+  customPages: CustomPage[]; // Array of new pages
+}

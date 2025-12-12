@@ -26,8 +26,9 @@ import Portfolio from './components/Portfolio';
 import CurriculumPage from './components/CurriculumPage';
 import PricingPage from './components/PricingPage';
 import FeaturesPage from './components/FeaturesPage';
+import DynamicPage from './components/DynamicPage';
 import OllieChat from './components/OllieChat';
-import StudentAssignmentDashboard from './components/StudentAssignmentDashboard'; // Import
+import StudentAssignmentDashboard from './components/StudentAssignmentDashboard'; 
 import { Check, Rocket, Pizza, Star, Smile, Lightbulb, Coffee, Music, Camera, Globe, Anchor, Cpu, Car, Zap } from 'lucide-react';
 
 const ICON_MAP: Record<string, any> = {
@@ -47,13 +48,14 @@ const ICON_MAP: Record<string, any> = {
 };
 
 const App = () => {
-  const { user, toggleEquipItem, lessons, syncGames } = useAppStore();
+  const { user, toggleEquipItem, lessons, syncGames, cmsContent } = useAppStore();
   const [activeTab, setActiveTab] = useState('map');
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [activeGameId, setActiveGameId] = useState<string | null>(null);
   const [showJoinClass, setShowJoinClass] = useState(false);
   
-  const [viewState, setViewState] = useState<'LANDING' | 'AUTH_LOGIN' | 'AUTH_REGISTER' | 'CURRICULUM' | 'PRICING' | 'FEATURES'>('LANDING');
+  const [viewState, setViewState] = useState<'LANDING' | 'AUTH_LOGIN' | 'AUTH_REGISTER' | 'CURRICULUM' | 'PRICING' | 'FEATURES' | 'CUSTOM_PAGE'>('LANDING');
+  const [activePageSlug, setActivePageSlug] = useState<string | null>(null);
 
   // Initialize Data on Mount
   useEffect(() => {
@@ -76,6 +78,10 @@ const App = () => {
                     onViewCurriculum={() => setViewState('CURRICULUM')}
                     onViewPricing={() => setViewState('PRICING')}
                     onViewFeatures={() => setViewState('FEATURES')}
+                    onNavigateToPage={(slug) => {
+                        setActivePageSlug(slug);
+                        setViewState('CUSTOM_PAGE');
+                    }}
                  />;
       }
       if (viewState === 'CURRICULUM') {
@@ -89,6 +95,14 @@ const App = () => {
       }
       if (viewState === 'FEATURES') {
           return <FeaturesPage onBack={() => setViewState('LANDING')} />;
+      }
+      if (viewState === 'CUSTOM_PAGE' && activePageSlug) {
+          const page = cmsContent.customPages.find(p => p.slug === activePageSlug);
+          if (page) {
+              return <DynamicPage page={page} onBack={() => setViewState('LANDING')} />;
+          }
+          // Fallback if page not found
+          return <div className="p-10 text-center">Page not found. <button onClick={() => setViewState('LANDING')} className="text-blue-500 underline">Go Home</button></div>;
       }
       return <Auth 
                 onBack={() => setViewState('LANDING')} 

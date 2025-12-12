@@ -1,7 +1,9 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Rocket, Brain, Shield, Star, Check, ArrowRight, Play, Users, Globe, Trophy, Zap } from 'lucide-react';
+import { Rocket, Brain, Shield, Star, Check, ArrowRight, Play, Users, Globe, Trophy, Zap, ArrowUpRight } from 'lucide-react';
+import { useAppStore } from '../store';
+import { ContentBlock } from '../types';
 
 interface LandingPageProps {
   onGetStarted: () => void;
@@ -10,9 +12,59 @@ interface LandingPageProps {
   onViewCurriculum: () => void;
   onViewPricing: () => void;
   onViewFeatures: () => void;
+  onNavigateToPage?: (slug: string) => void;
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onRegister, onViewCurriculum, onViewPricing, onViewFeatures }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ 
+    onGetStarted, onLogin, onRegister, onViewCurriculum, onViewPricing, onViewFeatures, onNavigateToPage 
+}) => {
+  const { cmsContent } = useAppStore();
+  const landing = cmsContent.landing;
+
+  const renderExtraSection = (block: ContentBlock) => {
+      if (block.type === 'HERO' || block.type === 'CTA') {
+          return (
+              <section key={block.id} className="py-24 px-6 text-center" style={{ backgroundColor: block.backgroundColor || '#f9fafb' }}>
+                  <div className="max-w-4xl mx-auto">
+                      <h2 className="text-4xl font-black text-gray-900 mb-6">{block.title}</h2>
+                      <p className="text-xl text-gray-600 font-medium mb-10 leading-relaxed">{block.content}</p>
+                      {block.buttonText && (
+                          <button onClick={onRegister} className="bg-kid-primary text-yellow-900 px-8 py-4 rounded-xl font-black text-lg shadow-lg hover:bg-yellow-400 transition-colors">
+                              {block.buttonText}
+                          </button>
+                      )}
+                  </div>
+              </section>
+          );
+      }
+      if (block.type === 'TEXT_IMAGE') {
+          return (
+              <section key={block.id} className="py-24 bg-white">
+                  <div className="max-w-7xl mx-auto px-6">
+                      <div className={`flex flex-col md:flex-row gap-12 items-center ${block.layout === 'image_right' ? 'md:flex-row-reverse' : ''}`}>
+                          {block.image && (
+                              <div className="flex-1">
+                                  <img src={block.image} alt={block.title} className="w-full rounded-3xl shadow-xl" />
+                              </div>
+                          )}
+                          <div className={`flex-1 space-y-6 ${block.layout === 'center' ? 'text-center' : ''}`}>
+                              <h2 className="text-4xl font-black text-gray-900">{block.title}</h2>
+                              {block.subtitle && <h3 className="text-xl font-bold text-blue-600">{block.subtitle}</h3>}
+                              <p className="text-lg text-gray-600 font-medium leading-relaxed">{block.content}</p>
+                              {block.buttonText && (
+                                  <button onClick={onRegister} className="inline-flex items-center gap-2 font-black text-blue-600 hover:gap-4 transition-all">
+                                      {block.buttonText} <ArrowRight strokeWidth={3} />
+                                  </button>
+                              )}
+                          </div>
+                      </div>
+                  </div>
+              </section>
+          );
+      }
+      return null;
+  };
+
   return (
     <div className="min-h-screen bg-white font-sans text-gray-900 overflow-x-hidden selection:bg-yellow-200">
       
@@ -59,12 +111,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onRegi
                       <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-100 text-yellow-800 font-black text-xs uppercase tracking-widest mb-6 border-2 border-yellow-200">
                           <Star fill="currentColor" size={14} /> The #1 Entrepreneur Academy for Kids
                       </div>
-                      <h1 className="text-5xl md:text-7xl font-black text-gray-900 leading-[1.1] mb-6">
-                          Don't just play games. <br/>
-                          <span className="text-transparent bg-clip-text bg-gradient-to-r from-kid-secondary to-teal-400">Build an Empire.</span>
+                      <h1 className="text-5xl md:text-7xl font-black text-gray-900 leading-[1.1] mb-6 whitespace-pre-line">
+                          {landing.heroTitle}
                       </h1>
                       <p className="text-xl text-gray-600 font-medium mb-8 max-w-lg mx-auto md:mx-0 leading-relaxed">
-                          KidCap HQ turns screen time into real-world business skills. Learn finance, leadership, and marketing through addictive mini-games.
+                          {landing.heroSubtitle}
                       </p>
                       
                       <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
@@ -72,7 +123,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onRegi
                             onClick={onGetStarted}
                             className="px-8 py-4 bg-kid-secondary text-white font-black text-xl rounded-2xl shadow-[0_6px_0_0_rgba(21,128,61,1)] hover:bg-green-500 btn-juicy flex items-center justify-center gap-3 transition-all"
                           >
-                              Play Now - It's Free! <ArrowRight strokeWidth={4} />
+                              {landing.heroCta} <ArrowRight strokeWidth={4} />
                           </button>
                       </div>
                       
@@ -127,9 +178,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onRegi
                     className="relative z-10"
                   >
                       <img 
-                        src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
+                        src={landing.heroImage} 
                         alt="App Screenshot" 
-                        className="rounded-3xl shadow-2xl border-8 border-white w-full max-w-md mx-auto transform rotate-2 hover:rotate-0 transition-transform duration-500"
+                        className="rounded-3xl shadow-2xl border-8 border-white w-full max-w-md mx-auto transform rotate-2 hover:rotate-0 transition-transform duration-500 object-cover"
                       />
                   </motion.div>
               </div>
@@ -164,8 +215,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onRegi
       <section className="py-24 bg-gray-50">
           <div className="max-w-7xl mx-auto px-6">
               <div className="text-center mb-16">
-                  <h2 className="text-4xl font-black text-gray-800 mb-4">How KidCap Works</h2>
-                  <p className="text-gray-500 font-medium max-w-2xl mx-auto text-lg">We use a simple loop to make learning sticky and addictive.</p>
+                  <h2 className="text-4xl font-black text-gray-800 mb-4">
+                      {landing.featuresTitle}
+                  </h2>
+                  <p className="text-gray-500 font-medium max-w-2xl mx-auto text-lg">
+                      {landing.featuresSubtitle}
+                  </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
@@ -227,9 +282,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onRegi
                   </div>
                   <div className="flex-1 order-1 md:order-2">
                       <span className="text-kid-secondary font-black uppercase tracking-widest text-sm mb-2 block">The Arcade</span>
-                      <h2 className="text-4xl font-black text-gray-800 mb-6">Real Business Simulations</h2>
+                      <h2 className="text-4xl font-black text-gray-800 mb-6">{landing.arcadeTitle}</h2>
                       <p className="text-lg text-gray-500 font-medium mb-8 leading-relaxed">
-                          Kids don't just read about business; they <strong>run</strong> them. Our simulation engine adapts to their skill level, teaching supply & demand, profit margins, and customer service in real-time.
+                          {landing.arcadeDesc}
                       </p>
                       <ul className="space-y-4">
                           <FeatureItem text="Dynamic Weather & Market Conditions" />
@@ -244,14 +299,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onRegi
           </div>
       </section>
 
+      {/* --- DYNAMIC SECTIONS --- */}
+      {landing.extraSections && landing.extraSections.map(block => renderExtraSection(block))}
+
       {/* --- CTA SECTION --- */}
       <section className="py-24 bg-gray-900 text-white relative overflow-hidden">
           {/* Background Patterns */}
           <div className="absolute top-0 left-0 w-full h-full opacity-10" style={{ backgroundImage: 'radial-gradient(#ffffff 2px, transparent 2px)', backgroundSize: '30px 30px' }}></div>
           
           <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-              <h2 className="text-5xl font-black mb-6">Ready to launch your startup?</h2>
-              <p className="text-xl text-gray-400 font-medium mb-10">Join for free today. No credit card required.</p>
+              <h2 className="text-5xl font-black mb-6">{landing.ctaTitle}</h2>
+              <p className="text-xl text-gray-400 font-medium mb-10">{landing.ctaSubtitle}</p>
               
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                   <button 
@@ -274,12 +332,19 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onRegi
                   <div className="w-8 h-8 bg-kid-secondary rounded-lg flex items-center justify-center text-white font-black">K</div>
                   <span className="font-bold text-gray-600">KidCap HQ</span>
               </div>
+              <div className="flex flex-wrap gap-6 text-sm font-bold text-gray-500 justify-center">
+                  {cmsContent.customPages?.map(page => (
+                      <button 
+                          key={page.id} 
+                          onClick={() => onNavigateToPage?.(page.slug)}
+                          className="hover:text-blue-600 flex items-center gap-1"
+                      >
+                          {page.title} <ArrowUpRight size={12} />
+                      </button>
+                  ))}
+              </div>
               <div className="text-sm text-gray-400 font-medium">
                   © 2024 KidCap HQ Inc. All rights reserved. Made with ❤️ for future leaders.
-              </div>
-              <div className="flex gap-6 text-gray-400">
-                  <Users size={20} className="hover:text-kid-secondary cursor-pointer transition-colors"/>
-                  <Globe size={20} className="hover:text-kid-secondary cursor-pointer transition-colors"/>
               </div>
           </div>
       </footer>

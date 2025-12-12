@@ -21,7 +21,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
   // Local State
   const [difficultyFilter, setDifficultyFilter] = useState<number | 'ALL'>('ALL');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
-  const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   
   // AI Tutor State (Tooltip)
   const [aiExplanation, setAiExplanation] = useState<string>('');
@@ -61,15 +61,11 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
 
   // Initialize index on mount (only once)
   useEffect(() => {
-      // Find first unfinished lesson in the *full* set initially, 
-      // but if we filter later, we reset to 0. 
-      // This logic is a bit complex with filtering, so we'll keep it simple:
-      // If no filter, jump to first unfinished.
       if (difficultyFilter === 'ALL' && user) {
           const firstUnfinished = units.findIndex(u => !user.completedLessonIds.includes(u.id));
           if (firstUnfinished !== -1) setCurrentIndex(firstUnfinished);
       }
-  }, []); // Empty dependency array ensures this runs once on mount
+  }, []);
 
   // Session Stats (Visual only now, since rewards are saved incrementally)
   const [sessionFunds, setSessionFunds] = useState(0);
@@ -94,15 +90,12 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
     if (phase === 'LEARN') {
       setPhase('CHALLENGE');
     } else if (phase === 'FEEDBACK') {
-      // Only advance if correct. If incorrect, we shouldn't be calling this (Retry button used instead)
       if (!isCorrect) return;
 
-      // Save progress for the unit we just finished
       if (unit && !user?.completedLessonIds.includes(unit.id)) {
           completeLesson(unit.id, unit.game_rewards.base_xp, unit.game_rewards.currency_value);
       }
 
-      // Check if there are more units
       if (currentIndex < activeUnits.length - 1) {
         setCurrentIndex(prev => prev + 1);
         setPhase('LEARN');
@@ -130,11 +123,9 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
     setIsCorrect(correct);
 
     if (correct) {
-      // Add Rewards to Session Tracker (Visual)
       setSessionFunds(prev => prev + unit.game_rewards.currency_value);
       setSessionXP(prev => prev + unit.game_rewards.base_xp);
     } else {
-        // Trigger AI Feedback for wrong answer
         setIsLoadingHint(true);
         try {
             const query = `I answered "${answer}" to the question "${unit.challenge_payload.question_text}". The correct answer was "${unit.challenge_payload.correct_answer}". Explain why I was wrong or help me understand the correct answer in 1-2 simple sentences for a kid.`;
@@ -148,20 +139,19 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
         }
     }
     
-    // Delay feedback transition so user sees the result color
     setTimeout(() => {
         setPhase('FEEDBACK');
     }, 1000);
   };
   
   // Handler: Key Term Click (AI Tutor)
-  const handleTermClick = async (index: number, term: string) => {
-      if (activeTooltip === index) {
+  const handleTermClick = async (term: string) => {
+      if (activeTooltip === term) {
           setActiveTooltip(null);
           return;
       }
       
-      setActiveTooltip(index);
+      setActiveTooltip(term);
       setAiExplanation('');
       setIsLoadingExplanation(true);
       
@@ -197,6 +187,56 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
 
   // Safe Render Helpers
   const safeStr = (val: any) => typeof val === 'string' ? val : '';
+
+  // Render Body Text with Interactive Terms
+  const renderBodyText = (text: string) => {
+      const parts = text.split(/(\*\*.*?\*\*)/g);
+      return parts.map((part, index) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+              const term = part.slice(2, -2);
+              return (
+                  <span key={index} className="relative inline-block whitespace-nowrap mx-1">
+                      <motion.button
+                          whileHover={{ scale: 1.05, color: "#b45309" }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleTermClick(term)}
+                          className={`font-bold border-b-2 border-dashed border-yellow-400 cursor-pointer transition-colors px-1 rounded
+                              ${activeTooltip === term ? 'bg-yellow-200 text-yellow-900' : 'text-gray-800 hover:bg-yellow-50'}`}
+                      >
+                          {term}
+                      </motion.button>
+                      
+                      <AnimatePresence>
+                          {activeTooltip === term && (
+                              <motion.div
+                                  initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                                  exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 bg-gray-900 text-white text-sm p-4 rounded-2xl shadow-2xl z-50 text-center"
+                              >
+                                  <div className="flex items-center justify-center gap-2 mb-3 text-yellow-400 font-bold uppercase tracking-widest text-xs border-b border-gray-700 pb-2">
+                                      <Info size={14} /> Ollie's Definition
+                                  </div>
+                                  <div className="font-medium leading-relaxed text-gray-200">
+                                      {isLoadingExplanation ? (
+                                          <div className="flex flex-col items-center justify-center py-4 gap-3">
+                                              <Loader2 className="animate-spin text-yellow-400" size={24} />
+                                              <span className="text-gray-400 text-xs font-bold">Asking the owl...</span>
+                                          </div>
+                                      ) : (
+                                          aiExplanation || "Click to ask Ollie!"
+                                      )}
+                                  </div>
+                                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900"></div>
+                              </motion.div>
+                          )}
+                      </AnimatePresence>
+                  </span>
+              );
+          }
+          return <span key={index}>{part}</span>;
+      });
+  };
 
   // Render Empty State (if filter yields no results)
   if (activeUnits.length === 0 && phase !== 'COMPLETE') {
@@ -306,10 +346,17 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
                         
                         {unit.lesson_payload.image_url && (
                             <motion.img 
-                                initial={{ scale: 0.95, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
+                                initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                                animate={{ 
+                                    scale: 1, 
+                                    opacity: 1, 
+                                    y: [0, -5, 0],
+                                    transition: {
+                                        y: { repeat: Infinity, duration: 4, ease: "easeInOut" },
+                                        opacity: { duration: 0.5 }
+                                    }
+                                }}
                                 whileHover={{ scale: 1.02 }}
-                                transition={{ duration: 0.4 }}
                                 src={unit.lesson_payload.image_url} 
                                 alt="Lesson Visual" 
                                 className={`w-full rounded-2xl shadow-sm border-2 border-gray-100 cursor-pointer bg-gray-50 ${
@@ -323,56 +370,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
                         <h2 className="text-3xl font-black text-gray-800">{safeStr(unit.lesson_payload.headline)}</h2>
                         
                         <div className="text-lg text-gray-600 leading-relaxed space-y-4">
-                            <p>
-                                {unit.lesson_payload.key_term && typeof unit.lesson_payload.body_text === 'string' ? (
-                                    unit.lesson_payload.body_text.split(unit.lesson_payload.key_term).map((part, i, arr) => (
-                                        <React.Fragment key={i}>
-                                            {part}
-                                            {i < arr.length - 1 && (
-                                                <span className="relative inline-block">
-                                                    <motion.span 
-                                                        whileHover={{ scale: 1.05, backgroundColor: "#fef08a" }}
-                                                        whileTap={{ scale: 0.95 }}
-                                                        onClick={() => handleTermClick(i, unit.lesson_payload.key_term!)}
-                                                        className="bg-yellow-200 px-1 rounded font-bold text-gray-900 border-b-2 border-yellow-400 cursor-pointer transition-colors"
-                                                    >
-                                                        {unit.lesson_payload.key_term}
-                                                    </motion.span>
-                                                    
-                                                    {/* Tooltip */}
-                                                    <AnimatePresence>
-                                                        {activeTooltip === i && (
-                                                            <motion.div 
-                                                                initial={{ opacity: 0, y: 10, scale: 0.8 }}
-                                                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                                exit={{ opacity: 0, y: 10, scale: 0.8 }}
-                                                                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-gray-800 text-white text-xs p-3 rounded-xl shadow-xl z-50 text-center"
-                                                            >
-                                                                <div className="flex items-center justify-center gap-1 mb-2 text-yellow-400 font-bold uppercase tracking-wide">
-                                                                    <Info size={12} /> Key Concept
-                                                                </div>
-                                                                <div className="font-medium text-sm leading-snug">
-                                                                    {isLoadingExplanation ? (
-                                                                        <div className="flex flex-col items-center justify-center py-2 gap-2">
-                                                                            <Loader2 className="animate-spin text-yellow-400" size={20} />
-                                                                            <span className="text-gray-300">Ollie is thinking...</span>
-                                                                        </div>
-                                                                    ) : (
-                                                                        aiExplanation || "Click to ask Ollie!"
-                                                                    )}
-                                                                </div>
-                                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-800"></div>
-                                                            </motion.div>
-                                                        )}
-                                                    </AnimatePresence>
-                                                </span>
-                                            )}
-                                        </React.Fragment>
-                                    ))
-                                ) : (
-                                    safeStr(unit.lesson_payload.body_text)
-                                )}
-                            </p>
+                            <p>{renderBodyText(safeStr(unit.lesson_payload.body_text))}</p>
                         </div>
                     </motion.div>
                 )}

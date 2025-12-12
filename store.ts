@@ -4,7 +4,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { 
   User, UserRole, LemonadeState, ShopItem, LeaderboardEntry, Classroom, UserSettings, 
   BusinessLogo, Skill, HQLevel, PortfolioItem, UniversalLessonUnit, BusinessSimulation,
-  StudentGroup, Rubric, Assignment, Submission 
+  StudentGroup, Rubric, Assignment, Submission, CMSContent
 } from './types';
 import { ALL_LESSONS } from './data/curriculum';
 import { GAMES_DB } from './data/games';
@@ -93,6 +93,37 @@ const DEFAULT_SETTINGS: UserSettings = {
   soundEnabled: true,
   musicEnabled: true,
   themeColor: 'green'
+};
+
+const DEFAULT_CMS_CONTENT: CMSContent = {
+  landing: {
+    heroTitle: "Don't just play games.\nBuild an Empire.",
+    heroSubtitle: "KidCap HQ turns screen time into real-world business skills. Learn finance, leadership, and marketing through addictive mini-games.",
+    heroCta: "Play Now - It's Free!",
+    heroImage: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+    featuresTitle: "How KidCap Works",
+    featuresSubtitle: "We use a simple loop to make learning sticky and addictive.",
+    arcadeTitle: "Real Business Simulations",
+    arcadeDesc: "Kids don't just read about business; they run them. Our simulation engine adapts to their skill level, teaching supply & demand, profit margins, and customer service in real-time.",
+    ctaTitle: "Ready to launch your startup?",
+    ctaSubtitle: "Join for free today. No credit card required.",
+    extraSections: [] // Initialize empty
+  },
+  features: {
+    learningTitle: "Interactive Learning Engine",
+    learningDesc: "Forget boring textbooks. Our curriculum is broken down into bite-sized, gamified lessons that cover everything from Bartering to Blockchain.",
+    learningImage: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80",
+    arcadeTitle: "Business Arcade",
+    arcadeDesc: "Theory is good, practice is better. Kids run virtual companies, manage budgets, and react to market changes in real-time.",
+    arcadeImage: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80",
+    progressionTitle: "RPG Progression",
+    progressionDesc: "We use game mechanics to keep kids engaged. As they learn, they level up, earn badges, and upgrade their virtual headquarters.",
+    progressionImage: "https://images.unsplash.com/photo-1511882150382-421056c8d32e?auto=format&fit=crop&w=800&q=80",
+    safetyTitle: "Safe & Secure",
+    safetyDesc: "A worry-free environment for parents. We prioritize privacy, safety, and positive reinforcement.",
+    safetyImage: "https://images.unsplash.com/photo-1506459225024-1428097a7e18?auto=format&fit=crop&w=800&q=80"
+  },
+  customPages: [] // Initialize empty
 };
 
 // Mock Data
@@ -239,6 +270,7 @@ interface AppState {
   lessons: UniversalLessonUnit[];
   games: BusinessSimulation[];
   users: User[];
+  cmsContent: CMSContent; // CMS Data
   
   // Teacher Feature State (New)
   studentGroups: StudentGroup[];
@@ -247,8 +279,9 @@ interface AppState {
   submissions: Submission[];
   
   // Actions
-  login: (role: UserRole) => void; // Deprecated but kept for backward compatibility if needed
+  login: (role: UserRole) => void; 
   loginWithCredentials: (username: string, password: string) => boolean;
+  impersonateUser: (userId: string) => void; // New Admin Action
   registerUser: (name: string, username: string, password: string, role: UserRole) => string | undefined;
   logout: () => void;
   checkStreak: () => void;
@@ -301,6 +334,12 @@ interface AppState {
   
   addSubmission: (submission: Submission) => void;
   updateSubmission: (id: string, updates: Partial<Submission>) => void;
+  deleteSubmission: (id: string) => void; // New Action
+
+  addClassroom: (classroom: Classroom) => void; // Admin Action
+  updateClassroom: (id: string, updates: Partial<Classroom>) => void; // Admin Action
+  deleteClassroom: (id: string) => void; // Admin Action
+  updateCMSContent: (updates: Partial<CMSContent>) => void; // Admin Action
 }
 
 export const useAppStore = create<AppState>()(
@@ -315,6 +354,7 @@ export const useAppStore = create<AppState>()(
       lessons: ALL_LESSONS,
       games: GAMES_DB,
       users: [MOCK_USER, MOCK_PARENT, MOCK_TEACHER, MOCK_ADMIN],
+      cmsContent: DEFAULT_CMS_CONTENT,
       
       // Initialize Teacher Feature Data
       studentGroups: MOCK_STUDENT_GROUPS,
@@ -369,16 +409,30 @@ export const useAppStore = create<AppState>()(
           return false;
       },
 
+      // Admin Impersonation Action
+      impersonateUser: (userId: string) => {
+          const { users, classrooms } = get();
+          const matchedUser = users.find(u => u.id === userId);
+          if (matchedUser) {
+              let activeClassroom = null;
+              if (matchedUser.role === UserRole.TEACHER) {
+                  activeClassroom = classrooms.find(c => c.teacherId === matchedUser.id) || null;
+              }
+              if (matchedUser.role === UserRole.KID && matchedUser.classId) {
+                  activeClassroom = classrooms.find(c => c.id === matchedUser.classId) || null;
+              }
+              set({ user: matchedUser, classroom: activeClassroom });
+          }
+      },
+
       registerUser: (name, username, password, role) => {
           const state = get();
           const currentUsers = state.users;
           
-          // SCALABILITY CHECK: Prevent LocalStorage overflow
           if (currentUsers.length >= MAX_LOCAL_USERS) {
               return `Device limit reached! This device can only hold ${MAX_LOCAL_USERS} accounts.`;
           }
 
-          // Duplicate Check
           if (currentUsers.some(u => u.username === username)) {
               return "Username already taken. Please choose another.";
           }
@@ -409,7 +463,6 @@ export const useAppStore = create<AppState>()(
           let newClassroom: Classroom | null = null;
           let updatedClassrooms = state.classrooms;
 
-          // If it's a kid, give them a starter business logo
           if (role === UserRole.KID) {
               newUser.businessLogo = {
                   companyName: `${name}'s Biz`,
@@ -420,7 +473,6 @@ export const useAppStore = create<AppState>()(
               };
           }
 
-          // If Teacher, create a new Classroom
           if (role === UserRole.TEACHER) {
               newClassroom = {
                   id: `class_${newUser.id}`,
@@ -433,7 +485,6 @@ export const useAppStore = create<AppState>()(
               updatedClassrooms = [...state.classrooms, newClassroom];
           }
 
-          // If Parent, try to link to the first available kid (Demo convenience)
           if (role === UserRole.PARENT) {
               const demoKid = currentUsers.find(u => u.role === UserRole.KID);
               if (demoKid) {
@@ -444,7 +495,7 @@ export const useAppStore = create<AppState>()(
           set((state) => ({ 
               users: [...state.users, newUser],
               user: newUser,
-              classroom: newClassroom, // Set active if created
+              classroom: newClassroom, 
               classrooms: updatedClassrooms
           }));
           return undefined; // Success
@@ -783,7 +834,6 @@ export const useAppStore = create<AppState>()(
       updateGame: (id, updates) => set((state) => ({ games: state.games.map(g => g.business_id === id ? { ...g, ...updates } : g) })),
       deleteGame: (id) => set((state) => ({ games: [...state.games.filter(g => g.business_id !== id)] })),
       
-      // SYNC ACTION - FIXED TO MERGE CUSTOM GAMES
       syncGames: () => set((state) => {
           const currentGames = state.games || [];
           const staticIds = new Set(GAMES_DB.map(g => g.business_id));
@@ -821,6 +871,14 @@ export const useAppStore = create<AppState>()(
       
       addSubmission: (submission) => set((state) => ({ submissions: [...state.submissions, submission] })),
       updateSubmission: (id, updates) => set((state) => ({ submissions: state.submissions.map(s => s.id === id ? { ...s, ...updates } : s) })),
+      deleteSubmission: (id) => set((state) => ({ submissions: state.submissions.filter(s => s.id !== id) })),
+
+      // --- ADMIN ONLY ACTIONS (Added) ---
+      addClassroom: (classroom) => set((state) => ({ classrooms: [...state.classrooms, classroom] })),
+      updateClassroom: (id, updates) => set((state) => ({ classrooms: state.classrooms.map(c => c.id === id ? { ...c, ...updates } : c) })),
+      deleteClassroom: (id) => set((state) => ({ classrooms: state.classrooms.filter(c => c.id !== id) })),
+      
+      updateCMSContent: (updates) => set((state) => ({ cmsContent: { ...state.cmsContent, ...updates } })),
     }),
     {
       name: 'kidcap-storage-v5',
@@ -830,12 +888,12 @@ export const useAppStore = create<AppState>()(
         lessons: state.lessons, 
         games: state.games,
         users: state.users,
-        classrooms: state.classrooms, // Persist Classrooms
-        // Persist Teacher Data
+        classrooms: state.classrooms, 
         studentGroups: state.studentGroups,
         rubrics: state.rubrics,
         assignments: state.assignments,
-        submissions: state.submissions
+        submissions: state.submissions,
+        cmsContent: state.cmsContent
       }),
     }
   )
