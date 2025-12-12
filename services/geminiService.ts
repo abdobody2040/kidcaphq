@@ -1,11 +1,22 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-// Initialize Gemini Client
-// In a real app, ensure process.env.API_KEY is defined. 
-// We handle the case where it might be missing gracefully in the UI.
-const apiKey = process.env.API_KEY || '';
-const ai = new GoogleGenAI({ apiKey });
+// Initialize Gemini Client Lazily
+let aiClient: GoogleGenAI | null = null;
+
+const getAiClient = () => {
+  if (!aiClient) {
+    const apiKey = process.env.API_KEY || '';
+    // Prevent crashing if no key is provided, though calls will fail gracefully later
+    try {
+        aiClient = new GoogleGenAI({ apiKey });
+    } catch (e) {
+        console.error("Failed to initialize Gemini Client:", e);
+        return null;
+    }
+  }
+  return aiClient;
+};
 
 const OLLIE_SYSTEM_PROMPT = `
 Role: You are "Ollie the Wise Owl," the Chief Education Officer for a kids' business app.
@@ -28,7 +39,8 @@ Context:
 `;
 
 export const getOwlyExplanation = async (topic: string, kidAge: number = 8): Promise<string> => {
-  if (!apiKey) return "Hoot! I can't connect to my brain right now! (Missing API Key)";
+  const ai = getAiClient();
+  if (!ai || !process.env.API_KEY) return "Hoot! I can't connect to my brain right now! (Missing API Key)";
 
   try {
     const model = ai.models;
@@ -51,7 +63,8 @@ export const getLemonadeFeedback = async (
   sugar: number,
   sales: number
 ): Promise<string> => {
-  if (!apiKey) return "Great day of sales! 🦉";
+  const ai = getAiClient();
+  if (!ai || !process.env.API_KEY) return "Great day of sales! 🦉";
 
   try {
     const model = ai.models;
@@ -77,7 +90,8 @@ export interface ChatMessage {
 }
 
 export const chatWithOllie = async (history: ChatMessage[], newMessage: string): Promise<string> => {
-  if (!apiKey) return "Hoot! Check your internet connection (or API Key). 🌐";
+  const ai = getAiClient();
+  if (!ai || !process.env.API_KEY) return "Hoot! Check your internet connection (or API Key). 🌐";
 
   try {
     const chat = ai.chats.create({

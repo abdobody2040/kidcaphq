@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { UniversalLessonUnit } from '../types';
 import { useAppStore } from '../store';
-import { getOwlyExplanation } from '../services/geminiService';
+import { getOwlyExplanation, chatWithOllie } from '../services/geminiService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, ArrowRight, Coins, Zap, RotateCcw, Filter, Star, Info, AlertCircle, Loader2 } from 'lucide-react';
 import ModuleRecap from './ModuleRecap';
@@ -23,9 +23,13 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
   
-  // AI Tutor State
+  // AI Tutor State (Tooltip)
   const [aiExplanation, setAiExplanation] = useState<string>('');
   const [isLoadingExplanation, setIsLoadingExplanation] = useState<boolean>(false);
+
+  // AI Feedback State (Wrong Answers)
+  const [feedbackHint, setFeedbackHint] = useState<string>('');
+  const [isLoadingHint, setIsLoadingHint] = useState<boolean>(false);
 
   // Filter Logic
   const activeUnits = useMemo(() => {
@@ -47,6 +51,12 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
   useEffect(() => {
       setActiveTooltip(null);
       setAiExplanation('');
+      // Only clear feedback hint when starting a new learning phase (retry or next)
+      // This preserves the hint during the transition from CHALLENGE to FEEDBACK
+      if (phase === 'LEARN') {
+          setFeedbackHint('');
+          setIsLoadingHint(false);
+      }
   }, [currentIndex, phase]);
 
   // Initialize index on mount (only once)
@@ -111,7 +121,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
   };
 
   // Handler: Answer Selection
-  const handleAnswerSubmit = (answer: string) => {
+  const handleAnswerSubmit = async (answer: string) => {
     if (phase !== 'CHALLENGE') return;
     if (selectedAnswer) return; // Prevent multi-click
     
@@ -123,6 +133,19 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
       // Add Rewards to Session Tracker (Visual)
       setSessionFunds(prev => prev + unit.game_rewards.currency_value);
       setSessionXP(prev => prev + unit.game_rewards.base_xp);
+    } else {
+        // Trigger AI Feedback for wrong answer
+        setIsLoadingHint(true);
+        try {
+            const query = `I answered "${answer}" to the question "${unit.challenge_payload.question_text}". The correct answer was "${unit.challenge_payload.correct_answer}". Explain why I was wrong or help me understand the correct answer in 1-2 simple sentences for a kid.`;
+            const hint = await chatWithOllie([], query);
+            setFeedbackHint(hint);
+        } catch (e) {
+            console.error("AI Feedback Error:", e);
+            setFeedbackHint("Oops! I couldn't load the hint, but try reading the briefing again.");
+        } finally {
+            setIsLoadingHint(false);
+        }
     }
     
     // Delay feedback transition so user sees the result color
@@ -178,7 +201,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
   // Render Empty State (if filter yields no results)
   if (activeUnits.length === 0 && phase !== 'COMPLETE') {
       return (
-        <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
             <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center">
                 <h3 className="text-2xl font-black text-gray-800 mb-2">No Lessons Found</h3>
                 <p className="text-gray-500 mb-6">There are no lessons with this difficulty level in this module.</p>
@@ -199,7 +222,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
   if (!unit && phase !== 'COMPLETE') return <div>Loading Data...</div>;
 
   return (
-    <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
       <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
         
         {/* Header: HUD */}
@@ -250,7 +273,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
             <motion.div 
                 className="h-full bg-kid-secondary"
                 initial={{ width: 0 }}
-                animate={{ width: `${((currentIndex) / activeUnits.length) * 100}%` }}
+                animate={{ width: `${((currentIndex + 1) / activeUnits.length) * 100}%` }}
             />
         </div>
 
@@ -289,7 +312,11 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
                                 transition={{ duration: 0.4 }}
                                 src={unit.lesson_payload.image_url} 
                                 alt="Lesson Visual" 
-                                className="w-full h-48 object-cover rounded-2xl shadow-sm border-2 border-gray-100 cursor-pointer"
+                                className={`w-full rounded-2xl shadow-sm border-2 border-gray-100 cursor-pointer bg-gray-50 ${
+                                    unit.lesson_payload.image_url.toLowerCase().endsWith('.gif') 
+                                        ? 'h-auto max-h-64 object-contain' 
+                                        : 'h-48 object-cover'
+                                }`}
                             />
                         )}
 
@@ -458,7 +485,28 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
                                     </div>
                                 </div>
 
-                                <p className="text-sm text-gray-400 font-bold">Review the lesson briefing and try again!</p>
+                                {/* AI Hint Bubble */}
+                                <div className="bg-yellow-50 border-2 border-yellow-200 p-4 rounded-xl mx-6 text-left flex items-start gap-3 mt-4 relative overflow-hidden">
+                                    <div className="text-3xl relative z-10">🦉</div>
+                                    <div className="flex-1 relative z-10">
+                                        <div className="text-xs font-bold text-yellow-600 uppercase mb-1">Ollie's Tip</div>
+                                        <div className="text-sm font-medium text-gray-700 leading-snug">
+                                            {isLoadingHint ? (
+                                                <span className="flex items-center gap-2 text-gray-500">
+                                                    <Loader2 className="animate-spin text-yellow-500" size={16} /> Ollie is analyzing your answer...
+                                                </span>
+                                            ) : (
+                                                feedbackHint || "Review the briefing and give it another shot! You got this!"
+                                            )}
+                                        </div>
+                                    </div>
+                                    {/* Decor */}
+                                    <div className="absolute -bottom-4 -right-4 text-yellow-100 opacity-50 rotate-12">
+                                        <Info size={100} />
+                                    </div>
+                                </div>
+
+                                <p className="text-sm text-gray-400 font-bold mt-4">Review the lesson briefing and try again!</p>
                             </>
                         )}
                     </motion.div>

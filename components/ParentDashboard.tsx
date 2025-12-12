@@ -1,19 +1,38 @@
 
 import React, { useState } from 'react';
 import { useAppStore } from '../store';
-import { createCheckoutSession, manageSubscription } from '../services/stripeService';
-import { Clock, BookOpen, Flame, Bell, Music, CreditCard, RefreshCw, Check, Loader2 } from 'lucide-react';
+import { manageSubscription } from '../services/stripeService';
+import { Clock, BookOpen, Flame, Bell, Music, CreditCard, RefreshCw, Check, Loader2, UserPlus, Zap } from 'lucide-react';
+import StripePaymentPage from './StripePaymentPage';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ParentDashboard: React.FC = () => {
   const { user, users, updateUserSettings, upgradeSubscription } = useAppStore();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
-  if (!user || !user.linkedChildId) return null;
+  if (!user) return null;
 
   // FETCH REAL CHILD DATA
-  const child = users.find(u => u.id === user.linkedChildId);
+  const child = user.linkedChildId ? users.find(u => u.id === user.linkedChildId) : null;
 
-  if (!child) return <div className="p-8 text-center font-bold text-gray-500">Child account not found.</div>;
+  if (!child) {
+      return (
+          <div className="flex flex-col items-center justify-center h-[60vh] text-center p-8 bg-white rounded-3xl shadow-sm border border-gray-100">
+              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6 text-gray-400">
+                  <UserPlus size={48} />
+              </div>
+              <h2 className="text-2xl font-black text-gray-800 mb-2">No Child Account Linked</h2>
+              <p className="text-gray-500 font-medium max-w-md mb-8">
+                  It looks like you haven't linked a student account yet. Please contact support or have your child join a class to sync data.
+              </p>
+              <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-sm text-blue-700 font-bold">
+                  Demo Mode: Sign up a new Kid account named "Leo" to see this dashboard populate automatically.
+              </div>
+          </div>
+      );
+  }
 
   const isPremium = user.subscriptionStatus === 'PREMIUM';
 
@@ -22,8 +41,7 @@ const ParentDashboard: React.FC = () => {
     ? new Set(child.completedLessonIds.map(id => id.split('_')[0])).size // Approximate module count by prefix logic or just raw count
     : 0;
 
-  // Mock graph data based on XP (since we don't have historical daily XP in User model yet)
-  // We will simulate a graph based on current XP
+  // Mock graph data based on XP
   const xpGraphData = [
        { day: 'Mon', xp: Math.max(0, child.xp - 300) },
        { day: 'Tue', xp: Math.max(0, child.xp - 250) },
@@ -34,38 +52,23 @@ const ParentDashboard: React.FC = () => {
        { day: 'Sun', xp: 0 },
   ];
   
-  // Normalize for display (show daily gain, not cumulative, loosely approximated)
   const displayGraph = xpGraphData.map((d, i, arr) => {
       const prev = i > 0 ? arr[i-1].xp : 0;
       return { day: d.day, xp: Math.max(0, d.xp - prev) };
   });
-  // Fix the last day (Sat) to just show a value
   displayGraph[5].xp = 50; 
 
   const maxXP = Math.max(...displayGraph.map(d => d.xp), 100);
 
-  const handleUpgrade = async () => {
-      setIsProcessing(true);
-      try {
-          const response = await createCheckoutSession('monthly_plan');
-          if (response.success && response.redirectUrl) {
-              // Simulate redirection
-              alert(`Redirecting to Stripe... \n(Simulated: ${response.redirectUrl})`);
-              
-              // In this demo, we auto-upgrade after "payment"
-              setTimeout(() => {
-                  upgradeSubscription('PREMIUM');
-                  setIsProcessing(false);
-                  alert("Welcome to Premium! (Simulation Complete)");
-              }, 1500);
-          } else {
-              alert("Checkout failed: " + response.error);
-              setIsProcessing(false);
-          }
-      } catch (e) {
-          console.error(e);
-          setIsProcessing(false);
-      }
+  const handleUpgradeClick = () => {
+      setShowPayment(true);
+  };
+
+  const handlePaymentSuccess = () => {
+      upgradeSubscription('PREMIUM');
+      setShowPayment(false);
+      setShowSuccessToast(true);
+      setTimeout(() => setShowSuccessToast(false), 4000);
   };
 
   const handleManage = async () => {
@@ -76,6 +79,37 @@ const ParentDashboard: React.FC = () => {
   };
 
   return (
+    <>
+    {/* PAYMENT OVERLAY */}
+    <AnimatePresence>
+        {showPayment && (
+            <StripePaymentPage 
+                onSuccess={handlePaymentSuccess}
+                onCancel={() => setShowPayment(false)}
+                planName="KidCap Pro (Monthly)"
+                price={9.99}
+            />
+        )}
+    </AnimatePresence>
+
+    {/* SUCCESS TOAST */}
+    <AnimatePresence>
+        {showSuccessToast && (
+            <motion.div 
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -50 }}
+                className="fixed top-8 left-1/2 -translate-x-1/2 z-[150] bg-green-600 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-4 border-4 border-green-400"
+            >
+                <div className="bg-white text-green-600 rounded-full p-1"><Check size={24} strokeWidth={4} /></div>
+                <div>
+                    <h4 className="font-black text-lg">Welcome to Premium!</h4>
+                    <p className="font-medium text-sm text-green-100">Your account has been upgraded.</p>
+                </div>
+            </motion.div>
+        )}
+    </AnimatePresence>
+
     <div className="space-y-8 pb-20">
       <div className="flex items-center justify-between">
           <div>
@@ -117,7 +151,7 @@ const ParentDashboard: React.FC = () => {
       </div>
 
       {/* SUBSCRIPTION & BILLING */}
-      <div className={`rounded-3xl p-8 shadow-sm border-2 relative overflow-hidden ${isPremium ? 'bg-gradient-to-r from-gray-900 to-gray-800 text-white border-transparent' : 'bg-white border-gray-200'}`}>
+      <div className={`rounded-3xl p-8 shadow-sm border-2 relative overflow-hidden transition-all ${isPremium ? 'bg-gradient-to-r from-gray-900 to-gray-800 text-white border-transparent' : 'bg-white border-gray-200'}`}>
           {isPremium ? (
               <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                   <div>
@@ -151,11 +185,10 @@ const ParentDashboard: React.FC = () => {
                   <div className="text-center">
                       <div className="text-3xl font-black text-gray-800 mb-2">$9.99<span className="text-base text-gray-400 font-bold">/mo</span></div>
                       <button 
-                        onClick={handleUpgrade}
-                        disabled={isProcessing}
+                        onClick={handleUpgradeClick}
                         className="bg-kid-primary text-yellow-900 px-8 py-3 rounded-xl font-black shadow-[0_4px_0_0_rgba(202,138,4,1)] btn-juicy hover:bg-yellow-400 flex items-center gap-2"
                       >
-                          {isProcessing ? <Loader2 className="animate-spin" /> : "Upgrade Now"}
+                          <Zap size={20} /> Upgrade Now
                       </button>
                   </div>
               </div>
@@ -218,6 +251,7 @@ const ParentDashboard: React.FC = () => {
           </div>
       </div>
     </div>
+    </>
   );
 };
 

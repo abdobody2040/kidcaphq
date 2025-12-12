@@ -36,7 +36,11 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'LOGIN' }) => {
           setError('All fields are required');
           return;
       }
-      registerUser(name, username, password, selectedRole);
+      
+      const validationError = registerUser(name, username, password, selectedRole);
+      if (validationError) {
+          setError(validationError);
+      }
   };
 
   const handleRoleSelect = (role: UserRole) => {
@@ -83,7 +87,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'LOGIN' }) => {
                     <input 
                         type="text" 
                         value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        onChange={(e) => { setUsername(e.target.value); setError(''); }}
                         className="w-full p-3 rounded-xl border-2 border-gray-200 font-bold focus:border-kid-accent outline-none"
                         placeholder="Enter username"
                     />
@@ -93,7 +97,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'LOGIN' }) => {
                     <input 
                         type="password" 
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => { setPassword(e.target.value); setError(''); }}
                         className="w-full p-3 rounded-xl border-2 border-gray-200 font-bold focus:border-kid-accent outline-none"
                         placeholder="Enter password"
                     />
@@ -186,7 +190,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'LOGIN' }) => {
                     <input 
                         type="text" 
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={(e) => { setName(e.target.value); setError(''); }}
                         className="w-full p-3 rounded-xl border-2 border-gray-200 font-bold focus:border-kid-accent outline-none"
                         placeholder="Your Name"
                     />
@@ -196,7 +200,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'LOGIN' }) => {
                     <input 
                         type="text" 
                         value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        onChange={(e) => { setUsername(e.target.value); setError(''); }}
                         className="w-full p-3 rounded-xl border-2 border-gray-200 font-bold focus:border-kid-accent outline-none"
                         placeholder="Username"
                     />
@@ -206,7 +210,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'LOGIN' }) => {
                     <input 
                         type="password" 
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => { setPassword(e.target.value); setError(''); }}
                         className="w-full p-3 rounded-xl border-2 border-gray-200 font-bold focus:border-kid-accent outline-none"
                         placeholder="Password"
                     />

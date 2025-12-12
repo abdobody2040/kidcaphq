@@ -27,6 +27,7 @@ import CurriculumPage from './components/CurriculumPage';
 import PricingPage from './components/PricingPage';
 import FeaturesPage from './components/FeaturesPage';
 import OllieChat from './components/OllieChat';
+import StudentAssignmentDashboard from './components/StudentAssignmentDashboard'; // Import
 import { Check, Rocket, Pizza, Star, Smile, Lightbulb, Coffee, Music, Camera, Globe, Anchor, Cpu, Car, Zap } from 'lucide-react';
 
 const ICON_MAP: Record<string, any> = {
@@ -139,6 +140,7 @@ const App = () => {
             {user.role === UserRole.KID && (
                 <>
                     {activeTab === 'map' && <KidMap onStartLesson={(id) => setActiveLessonId(id)} />}
+                    {activeTab === 'assignments' && <StudentAssignmentDashboard />}
                     {activeTab === 'games' && renderGame()}
                     {activeTab === 'store' && <BizStore />}
                     {activeTab === 'leaderboard' && <Leaderboard />}

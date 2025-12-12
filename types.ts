@@ -92,6 +92,78 @@ export interface Classroom {
   lockedModules: string[]; // Modules teacher has restricted
 }
 
+// --- NEW TEACHER ENTITIES (PHASE 1) ---
+
+export interface StudentGroup {
+  id: string;
+  classId: string;
+  name: string; // e.g., "Advanced Math Group", "Reading Support"
+  studentIds: string[];
+  color?: string; // UI Decoration
+}
+
+export interface RubricCriteria {
+  id: string;
+  title: string;
+  description: string;
+  maxScore: number;
+}
+
+export interface Rubric {
+  id: string;
+  teacherId: string;
+  title: string;
+  criteria: RubricCriteria[];
+}
+
+export interface Assignment {
+  id: string;
+  classId: string;
+  lessonId: string; // References UniversalLessonUnit.id
+  title: string; // Override lesson title or custom task name
+  description?: string; // New: Rich text description
+  
+  // Differentiated Instruction
+  studentGroupId?: string; // Optional: If null, assigned to whole class. If set, only for that group.
+  specificStudentIds?: string[]; // Optional: Specific list of student IDs (Overrides group if present)
+
+  // Scheduling
+  scheduledAt?: string; // ISO Date. If in future, students can't see it yet.
+  dueDate?: string; // ISO Date.
+  
+  // Grading
+  rubricId?: string; // Optional linking to a Rubric
+  maxPoints: number; 
+  
+  // Resources
+  resourceUrl?: string; // Link to PDF/Video
+
+  createdAt: string;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'SCHEDULED';
+}
+
+export interface Submission {
+  id: string;
+  assignmentId: string;
+  studentId: string;
+  
+  submittedAt: string; // ISO Date
+  status: 'PENDING' | 'GRADED' | 'LATE';
+  
+  // Content
+  content?: string; // Text answer or link
+
+  // Grading Data
+  grade?: number; // Final score
+  feedback?: string; // Written feedback
+  audioFeedbackUrl?: string; // URL to audio blob for voice feedback
+  
+  // Detailed Scoring if Rubric is used
+  rubricScores?: Record<string, number>; // Key: criteriaId, Value: score awarded
+}
+
+// ----------------------------------------
+
 export interface ShopItem {
   id: string;
   name: string;

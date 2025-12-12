@@ -36,15 +36,18 @@ const OllieChat: React.FC = () => {
     setInput('');
     setIsLoading(true);
 
-    // Add user message immediately
-    const newHistory = [
+    // Create optimistic UI update
+    const uiHistory = [
       ...messages,
       { role: 'user' as const, parts: [{ text: userText }] }
     ];
-    setMessages(newHistory);
+    setMessages(uiHistory);
 
-    // Get AI response
-    const reply = await chatWithOllie(newHistory, userText);
+    // Call AI Service
+    // IMPORTANT: We pass 'messages' (previous history) not 'uiHistory'.
+    // The chatWithOllie service uses sendMessage, which appends the new message to the history automatically.
+    // If we passed uiHistory, the API would see the user message twice (once in history, once as the new message).
+    const reply = await chatWithOllie(messages, userText);
 
     setMessages(prev => [
       ...prev,
@@ -75,7 +78,7 @@ const OllieChat: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-end pointer-events-none">
+    <div className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-[150] flex flex-col items-end pointer-events-none">
       
       <AnimatePresence>
         {isOpen && (
@@ -126,7 +129,7 @@ const OllieChat: React.FC = () => {
                       <div 
                         className={`max-w-[80%] p-3 rounded-2xl text-sm font-bold shadow-sm
                           ${isUser 
-                            ? 'bg-blue-500 text-white rounded-tr-none' 
+                            ? 'bg-blue-50 text-white rounded-tr-none' 
                             : 'bg-white text-gray-800 border-2 border-gray-100 rounded-tl-none'}
                         `}
                       >

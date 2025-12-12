@@ -1,7 +1,11 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { User, UserRole, LemonadeState, ShopItem, LeaderboardEntry, Classroom, UserSettings, BusinessLogo, Skill, HQLevel, PortfolioItem, UniversalLessonUnit, BusinessSimulation } from './types';
+import { 
+  User, UserRole, LemonadeState, ShopItem, LeaderboardEntry, Classroom, UserSettings, 
+  BusinessLogo, Skill, HQLevel, PortfolioItem, UniversalLessonUnit, BusinessSimulation,
+  StudentGroup, Rubric, Assignment, Submission 
+} from './types';
 import { ALL_LESSONS } from './data/curriculum';
 import { GAMES_DB } from './data/games';
 import { SoundService } from './services/SoundService';
@@ -119,7 +123,8 @@ const MOCK_USER: User = {
   unlockedSkills: [],
   portfolio: [],
   equippedItems: [],
-  subscriptionStatus: 'FREE'
+  subscriptionStatus: 'FREE',
+  classId: 'class_1' // Part of the mock classroom
 };
 
 const MOCK_PARENT: User = {
@@ -163,6 +168,55 @@ const MOCK_CLASSROOM: Classroom = {
   lockedModules: []
 };
 
+// --- MOCK TEACHER DATA (New) ---
+const MOCK_STUDENT_GROUPS: StudentGroup[] = [
+  { id: 'grp_1', classId: 'class_1', name: 'Advanced Math', studentIds: ['kid_1'], color: '#dbeafe' },
+  { id: 'grp_2', classId: 'class_1', name: 'Need Support', studentIds: ['kid_2', 'kid_3'], color: '#fef3c7' }
+];
+
+const MOCK_RUBRICS: Rubric[] = [
+  {
+    id: 'rubric_1',
+    teacherId: 'teacher_1',
+    title: 'Standard Business Pitch',
+    criteria: [
+      { id: 'crit_1', title: 'Clarity', description: 'Was the business idea easy to understand?', maxScore: 5 },
+      { id: 'crit_2', title: 'Creativity', description: 'Was the logo and name unique?', maxScore: 5 },
+      { id: 'crit_3', title: 'Feasibility', description: 'Could this business actually work?', maxScore: 5 }
+    ]
+  }
+];
+
+const MOCK_ASSIGNMENTS: Assignment[] = [
+  {
+    id: 'assign_1',
+    classId: 'class_1',
+    lessonId: 'MB_01', // Linking to the Barter System lesson
+    title: 'Barter System Challenge',
+    description: 'Read the lesson on the Barter System. Then, find 3 items in your house you would trade for a new video game. List them in your submission.',
+    dueDate: new Date(Date.now() + 86400000 * 3).toISOString(), // 3 days from now
+    status: 'PUBLISHED',
+    maxPoints: 100,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'assign_2',
+    classId: 'class_1',
+    lessonId: 'ENT_14', // Linking to Logo lesson
+    title: 'Design Your Logo (Advanced)',
+    description: 'Use the Brand Builder tool to create a logo. Submit a screenshot or describe your color choices here.',
+    studentGroupId: 'grp_1', // Only for Advanced group
+    rubricId: 'rubric_1', // Uses rubric
+    status: 'PUBLISHED',
+    scheduledAt: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
+    dueDate: new Date(Date.now() + 86400000 * 7).toISOString(),
+    maxPoints: 15, // Rubric max
+    createdAt: new Date().toISOString()
+  }
+];
+
+const MOCK_SUBMISSIONS: Submission[] = [];
+
 const INITIAL_LEMONADE_STATE: LemonadeState = {
   day: 1,
   funds: 20.00,
@@ -176,17 +230,26 @@ interface AppState {
   lemonadeState: LemonadeState;
   showLevelUpModal: boolean;
   levelUpData: { level: number, xp: number } | null;
-  classroom: Classroom | null;
+  
+  // Classrooms
+  classroom: Classroom | null; // Active classroom
+  classrooms: Classroom[]; // All classrooms (for persistence)
   
   // Content State
   lessons: UniversalLessonUnit[];
   games: BusinessSimulation[];
   users: User[];
   
+  // Teacher Feature State (New)
+  studentGroups: StudentGroup[];
+  rubrics: Rubric[];
+  assignments: Assignment[];
+  submissions: Submission[];
+  
   // Actions
   login: (role: UserRole) => void; // Deprecated but kept for backward compatibility if needed
   loginWithCredentials: (username: string, password: string) => boolean;
-  registerUser: (name: string, username: string, password: string, role: UserRole) => void;
+  registerUser: (name: string, username: string, password: string, role: UserRole) => string | undefined;
   logout: () => void;
   checkStreak: () => void;
   completeLesson: (lessonId: string, xpReward?: number, coinReward?: number) => void;
@@ -222,6 +285,22 @@ interface AppState {
   addUser: (user: User) => void;
   updateUser: (id: string, updates: Partial<User>) => void;
   deleteUser: (id: string) => void;
+
+  // Teacher Feature Actions (New)
+  addStudentGroup: (group: StudentGroup) => void;
+  updateStudentGroup: (id: string, updates: Partial<StudentGroup>) => void;
+  deleteStudentGroup: (id: string) => void;
+  
+  addRubric: (rubric: Rubric) => void;
+  updateRubric: (id: string, updates: Partial<Rubric>) => void;
+  deleteRubric: (id: string) => void;
+  
+  addAssignment: (assignment: Assignment) => void;
+  updateAssignment: (id: string, updates: Partial<Assignment>) => void;
+  deleteAssignment: (id: string) => void;
+  
+  addSubmission: (submission: Submission) => void;
+  updateSubmission: (id: string, updates: Partial<Submission>) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -232,9 +311,16 @@ export const useAppStore = create<AppState>()(
       showLevelUpModal: false,
       levelUpData: null,
       classroom: null,
+      classrooms: [MOCK_CLASSROOM],
       lessons: ALL_LESSONS,
       games: GAMES_DB,
       users: [MOCK_USER, MOCK_PARENT, MOCK_TEACHER, MOCK_ADMIN],
+      
+      // Initialize Teacher Feature Data
+      studentGroups: MOCK_STUDENT_GROUPS,
+      rubrics: MOCK_RUBRICS,
+      assignments: MOCK_ASSIGNMENTS,
+      submissions: MOCK_SUBMISSIONS,
 
       // Deprecated simple login
       login: (role: UserRole) => {
@@ -260,13 +346,23 @@ export const useAppStore = create<AppState>()(
       },
 
       loginWithCredentials: (username, password) => {
-          const users = get().users;
+          const { users, classrooms } = get();
           const matchedUser = users.find(u => u.username === username && u.password === password);
           
           if (matchedUser) {
-              let classroom = null;
-              if (matchedUser.role === UserRole.TEACHER) classroom = { ...MOCK_CLASSROOM };
-              set({ user: matchedUser, classroom });
+              let activeClassroom = null;
+              
+              // Correctly load the teacher's classroom
+              if (matchedUser.role === UserRole.TEACHER) {
+                  activeClassroom = classrooms.find(c => c.teacherId === matchedUser.id) || null;
+              }
+              
+              // Load student's classroom if linked
+              if (matchedUser.role === UserRole.KID && matchedUser.classId) {
+                  activeClassroom = classrooms.find(c => c.id === matchedUser.classId) || null;
+              }
+              
+              set({ user: matchedUser, classroom: activeClassroom });
               if (matchedUser.role === UserRole.KID) get().checkStreak();
               return true;
           }
@@ -274,12 +370,17 @@ export const useAppStore = create<AppState>()(
       },
 
       registerUser: (name, username, password, role) => {
-          const currentUsers = get().users;
+          const state = get();
+          const currentUsers = state.users;
           
           // SCALABILITY CHECK: Prevent LocalStorage overflow
           if (currentUsers.length >= MAX_LOCAL_USERS) {
-              alert(`Device limit reached! This device can only hold ${MAX_LOCAL_USERS} accounts to ensure smooth performance.`);
-              return;
+              return `Device limit reached! This device can only hold ${MAX_LOCAL_USERS} accounts.`;
+          }
+
+          // Duplicate Check
+          if (currentUsers.some(u => u.username === username)) {
+              return "Username already taken. Please choose another.";
           }
 
           const newUser: User = {
@@ -305,6 +406,9 @@ export const useAppStore = create<AppState>()(
               subscriptionStatus: 'FREE'
           };
 
+          let newClassroom: Classroom | null = null;
+          let updatedClassrooms = state.classrooms;
+
           // If it's a kid, give them a starter business logo
           if (role === UserRole.KID) {
               newUser.businessLogo = {
@@ -316,10 +420,34 @@ export const useAppStore = create<AppState>()(
               };
           }
 
+          // If Teacher, create a new Classroom
+          if (role === UserRole.TEACHER) {
+              newClassroom = {
+                  id: `class_${newUser.id}`,
+                  name: `${name}'s Class`,
+                  code: Math.random().toString(36).substring(2, 8).toUpperCase(),
+                  teacherId: newUser.id,
+                  studentIds: [],
+                  lockedModules: []
+              };
+              updatedClassrooms = [...state.classrooms, newClassroom];
+          }
+
+          // If Parent, try to link to the first available kid (Demo convenience)
+          if (role === UserRole.PARENT) {
+              const demoKid = currentUsers.find(u => u.role === UserRole.KID);
+              if (demoKid) {
+                  newUser.linkedChildId = demoKid.id;
+              }
+          }
+
           set((state) => ({ 
               users: [...state.users, newUser],
-              user: newUser 
+              user: newUser,
+              classroom: newClassroom, // Set active if created
+              classrooms: updatedClassrooms
           }));
+          return undefined; // Success
       },
       
       logout: () => set({ user: null, classroom: null }),
@@ -449,13 +577,17 @@ export const useAppStore = create<AppState>()(
       })),
 
       joinClass: (code) => {
-        if (code === MOCK_CLASSROOM.code) {
+        const { classrooms } = get();
+        const targetClass = classrooms.find(c => c.code === code);
+        
+        if (targetClass) {
           set((state) => {
              if(!state.user) return {};
-             const updatedUser = { ...state.user, classId: MOCK_CLASSROOM.id };
+             const updatedUser = { ...state.user, classId: targetClass.id };
              return {
                  user: updatedUser,
-                 users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u)
+                 users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u),
+                 classroom: targetClass
              };
           });
           return true;
@@ -469,7 +601,12 @@ export const useAppStore = create<AppState>()(
           const newLocked = isLocked 
             ? state.classroom.lockedModules.filter(id => id !== moduleId)
             : [...state.classroom.lockedModules, moduleId];
-          return { classroom: { ...state.classroom, lockedModules: newLocked } };
+            
+          const updatedClassroom = { ...state.classroom, lockedModules: newLocked };
+          return { 
+              classroom: updatedClassroom,
+              classrooms: state.classrooms.map(c => c.id === updatedClassroom.id ? updatedClassroom : c)
+          };
       }),
 
       updateUserSettings: (newSettings) => set((state) => {
@@ -667,7 +804,23 @@ export const useAppStore = create<AppState>()(
           const updatedCurrentUser = state.user && state.user.id === id ? { ...state.user, ...updates } : state.user;
           return { users: updatedUsers, user: updatedCurrentUser };
       }),
-      deleteUser: (id) => set((state) => ({ users: [...state.users.filter(u => u.id !== id)] }))
+      deleteUser: (id) => set((state) => ({ users: [...state.users.filter(u => u.id !== id)] })),
+
+      // TEACHER FEATURE ACTIONS
+      addStudentGroup: (group) => set((state) => ({ studentGroups: [...state.studentGroups, group] })),
+      updateStudentGroup: (id, updates) => set((state) => ({ studentGroups: state.studentGroups.map(g => g.id === id ? { ...g, ...updates } : g) })),
+      deleteStudentGroup: (id) => set((state) => ({ studentGroups: state.studentGroups.filter(g => g.id !== id) })),
+      
+      addRubric: (rubric) => set((state) => ({ rubrics: [...state.rubrics, rubric] })),
+      updateRubric: (id, updates) => set((state) => ({ rubrics: state.rubrics.map(r => r.id === id ? { ...r, ...updates } : r) })),
+      deleteRubric: (id) => set((state) => ({ rubrics: state.rubrics.filter(r => r.id !== id) })),
+      
+      addAssignment: (assignment) => set((state) => ({ assignments: [...state.assignments, assignment] })),
+      updateAssignment: (id, updates) => set((state) => ({ assignments: state.assignments.map(a => a.id === id ? { ...a, ...updates } : a) })),
+      deleteAssignment: (id) => set((state) => ({ assignments: state.assignments.filter(a => a.id !== id) })),
+      
+      addSubmission: (submission) => set((state) => ({ submissions: [...state.submissions, submission] })),
+      updateSubmission: (id, updates) => set((state) => ({ submissions: state.submissions.map(s => s.id === id ? { ...s, ...updates } : s) })),
     }),
     {
       name: 'kidcap-storage-v5',
@@ -676,7 +829,13 @@ export const useAppStore = create<AppState>()(
         lemonadeState: state.lemonadeState,
         lessons: state.lessons, 
         games: state.games,
-        users: state.users
+        users: state.users,
+        classrooms: state.classrooms, // Persist Classrooms
+        // Persist Teacher Data
+        studentGroups: state.studentGroups,
+        rubrics: state.rubrics,
+        assignments: state.assignments,
+        submissions: state.submissions
       }),
     }
   )

@@ -29,7 +29,7 @@ const GameEngine: React.FC<GameEngineProps> = ({ gameId, onExit, previewConfig }
 
   if (!gameConfig) {
       return (
-          <div className="flex flex-col items-center justify-center h-screen bg-gray-100 text-gray-500">
+          <div className="flex flex-col items-center justify-center h-screen bg-gray-100 text-gray-500 relative z-[100]">
               <h2 className="text-2xl font-bold mb-4">Game Not Found</h2>
               <button onClick={onExit} className="bg-gray-800 text-white px-6 py-2 rounded-xl font-bold">Exit</button>
           </div>
@@ -80,7 +80,7 @@ const GameEngine: React.FC<GameEngineProps> = ({ gameId, onExit, previewConfig }
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900 z-50 flex flex-col">
+    <div className="fixed inset-0 bg-gray-900 z-[100] flex flex-col">
        {/* Tutorial Overlay */}
        {showTutorial && (
            <GameTutorialModal 
@@ -88,7 +88,7 @@ const GameEngine: React.FC<GameEngineProps> = ({ gameId, onExit, previewConfig }
                title={gameConfig.name}
                description={gameConfig.description}
                icon={gameConfig.visual_config?.icon}
-               color={`bg-[${gameConfig.visual_config?.colors.primary}]`} // Note: inline style might be safer for dynamic colors
+               color={`bg-[${gameConfig.visual_config?.colors.primary}]`}
                instructions={getInstructions(gameConfig.game_type)}
            />
        )}

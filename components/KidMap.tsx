@@ -1,7 +1,7 @@
 
 import React, { useMemo } from 'react';
 import { useAppStore } from '../store';
-import { Check, Star, Lock, MapPin } from 'lucide-react';
+import { Check, Star, Lock, MapPin, ClipboardList } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface KidMapProps {
@@ -9,7 +9,7 @@ interface KidMapProps {
 }
 
 const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
-  const { user, lessons } = useAppStore();
+  const { user, lessons, assignments } = useAppStore();
   
   // Dynamically build course map from store data
   const courseMap = useMemo(() => {
@@ -36,6 +36,20 @@ const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
       return 'LOCKED'; 
   };
 
+  // Check for active assignments in this module
+  const getAssignmentCount = (lessonIds: string[]) => {
+      if (!user || !user.classId) return 0;
+      // Find assignments for this class that link to any lesson in this module
+      // And are PUBLISHED
+      const relevantAssignments = assignments.filter(a => 
+          a.classId === user.classId && 
+          a.status === 'PUBLISHED' &&
+          lessonIds.includes(a.lessonId) &&
+          !user.completedLessonIds.includes(a.lessonId) // Only count incomplete ones
+      );
+      return relevantAssignments.length;
+  };
+
   if (courseMap.length === 0) {
       return <div className="text-center py-20 text-gray-400 font-bold">No curriculum loaded. Please contact Admin.</div>;
   }
@@ -45,6 +59,11 @@ const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
        <div className="text-center mb-12">
           <h2 className="text-4xl font-black text-gray-800 mb-2">My Entrepreneur Path</h2>
           <p className="text-gray-500 font-bold">Complete all modules to become a CEO!</p>
+          {user?.classId && (
+              <div className="mt-4 inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider">
+                  <ClipboardList size={14} /> Class Mode Active
+              </div>
+          )}
        </div>
 
        <div className="max-w-md mx-auto relative space-y-16">
@@ -62,6 +81,7 @@ const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
               const status = getModuleStatus(mod.lessonIds);
               const progress = mod.lessonIds.filter(id => user?.completedLessonIds.includes(id)).length;
               const total = mod.lessonIds.length;
+              const dueCount = getAssignmentCount(mod.lessonIds);
 
               // Alternating Sides
               const isLeft = index % 2 === 0;
@@ -94,6 +114,12 @@ const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
                              <div className="absolute -top-2 -right-2 bg-white text-green-600 rounded-full p-1 border-2 border-green-600">
                                  <Check size={16} strokeWidth={4} />
                              </div>
+                        )}
+                        {/* Assignment Badge */}
+                        {!isLocked && dueCount > 0 && (
+                            <div className="absolute -top-2 -left-2 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-full border-2 border-white shadow-md animate-bounce">
+                                {dueCount} DUE
+                            </div>
                         )}
                     </motion.button>
 

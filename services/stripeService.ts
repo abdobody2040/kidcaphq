@@ -23,23 +23,14 @@ export const createCheckoutSession = async (priceId: string): Promise<CheckoutRe
     // SIMULATION: Simulate API network delay
     await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // SIMULATION: 90% Success Rate
-    const isSuccess = Math.random() > 0.1;
-
-    if (isSuccess) {
-        console.log(`[StripeService] Checkout Session Created! Redirecting...`);
-        return {
-            success: true,
-            // In a real app, this URL comes from Stripe (session.url)
-            redirectUrl: 'https://checkout.stripe.com/pay/mock-session-id' 
-        };
-    } else {
-        console.error(`[StripeService] Payment initialization failed.`);
-        return {
-            success: false,
-            error: "Network error connecting to payment gateway."
-        };
-    }
+    // SIMULATION: Always succeed for demo purposes
+    // Removed random failure logic to prevent "Payment initialization failed" errors during testing
+    console.log(`[StripeService] Checkout Session Created! Redirecting...`);
+    return {
+        success: true,
+        // In a real app, this URL comes from Stripe (session.url)
+        redirectUrl: 'https://checkout.stripe.com/pay/mock-session-id' 
+    };
 };
 
 export const manageSubscription = async (): Promise<string> => {

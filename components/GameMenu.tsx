@@ -21,10 +21,13 @@ const GameMenu: React.FC<GameMenuProps> = ({ onSelectGame }) => {
   const { games } = useAppStore();
   const [filter, setFilter] = useState<string>('All');
   
-  const categories: string[] = ['All', ...Array.from(new Set(games.map(g => g.category))) as string[]];
+  // Safety check: ensure games is an array
+  const safeGames = Array.isArray(games) ? games : [];
+  
+  const categories: string[] = ['All', ...Array.from(new Set(safeGames.map(g => g.category || 'Other'))) as string[]];
 
   // Filter out the generic Lemonade Stand since we use the custom one
-  const filteredGames = (filter === 'All' ? games : games.filter(g => g.category === filter))
+  const filteredGames = (filter === 'All' ? safeGames : safeGames.filter(g => g.category === filter))
     .filter(g => g.business_id !== 'BIZ_01_LEMONADE');
 
   return (

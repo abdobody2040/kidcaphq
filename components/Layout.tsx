@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAppStore, LEVEL_THRESHOLDS } from '../store';
 import { UserRole } from '../types';
-import { Trophy, Flame, Coins, Map as MapIcon, Gamepad2, LayoutDashboard, LogOut, ShoppingBag, Medal, School, Settings, Building2, Brain, Briefcase, Snowflake, Shield, Menu, X } from 'lucide-react';
+import { Trophy, Flame, Coins, Map as MapIcon, Gamepad2, LayoutDashboard, LogOut, ShoppingBag, Medal, School, Settings, Building2, Brain, Briefcase, Snowflake, Shield, Menu, X, ClipboardList } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SoundService } from '../services/SoundService';
 
@@ -66,6 +66,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onNavigate }) => {
             <>
               <div className="text-xs font-bold text-gray-400 uppercase px-4 mt-4 mb-2">Learn & Play</div>
               <NavItem icon={<MapIcon size={24} />} label="Adventure Map" active={activeTab === 'map'} onClick={() => handleNav('map')} />
+              <NavItem icon={<ClipboardList size={24} />} label="Assignments" active={activeTab === 'assignments'} onClick={() => handleNav('assignments')} />
               <NavItem icon={<Gamepad2 size={24} />} label="Games" active={activeTab === 'games'} onClick={() => handleNav('games')} />
               
               <div className="text-xs font-bold text-gray-400 uppercase px-4 mt-6 mb-2">My Empire</div>
@@ -169,7 +170,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onNavigate }) => {
         {mobileMenuOpen && (
             <motion.div 
                 initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'tween' }}
-                className="fixed inset-0 z-50 bg-white flex flex-col p-4 md:hidden"
+                className="fixed inset-0 z-[200] bg-white flex flex-col p-4 md:hidden"
             >
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-black text-gray-800">Menu</h2>
@@ -190,8 +191,8 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onNavigate }) => {
       {/* MOBILE BOTTOM NAV */}
       <div className="md:hidden h-20 bg-white border-t border-gray-200 px-2 flex justify-around items-center shrink-0 z-30 fixed bottom-0 left-0 right-0 pb-safe">
            <MobileNavItem icon={<MapIcon size={24} />} label="Map" active={activeTab === 'map'} onClick={() => handleNav('map')} />
+           <MobileNavItem icon={<ClipboardList size={24} />} label="Tasks" active={activeTab === 'assignments'} onClick={() => handleNav('assignments')} />
            <MobileNavItem icon={<Gamepad2 size={24} />} label="Games" active={activeTab === 'games'} onClick={() => handleNav('games')} />
-           <MobileNavItem icon={<ShoppingBag size={24} />} label="Shop" active={activeTab === 'store'} onClick={() => handleNav('store')} />
            <MobileNavItem icon={<Trophy size={24} />} label="Profile" active={activeTab === 'profile'} onClick={() => handleNav('profile')} />
       </div>
     </div>
