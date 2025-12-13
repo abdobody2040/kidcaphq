@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAppStore, LEVEL_THRESHOLDS } from '../store';
 import { UserRole } from '../types';
-import { Trophy, Flame, Coins, Map as MapIcon, Gamepad2, LayoutDashboard, LogOut, ShoppingBag, Medal, School, Settings, Building2, Brain, Briefcase, Snowflake, Shield, Menu, X, ClipboardList } from 'lucide-react';
+import { Trophy, Flame, Coins, Map as MapIcon, Gamepad2, LayoutDashboard, LogOut, ShoppingBag, Medal, School, Settings, Building2, Brain, Briefcase, Snowflake, Shield, Menu, X, ClipboardList, Book } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SoundService } from '../services/SoundService';
 
@@ -68,6 +68,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onNavigate }) => {
               <NavItem icon={<MapIcon size={24} />} label="Adventure Map" active={activeTab === 'map'} onClick={() => handleNav('map')} />
               <NavItem icon={<ClipboardList size={24} />} label="Assignments" active={activeTab === 'assignments'} onClick={() => handleNav('assignments')} />
               <NavItem icon={<Gamepad2 size={24} />} label="Games" active={activeTab === 'games'} onClick={() => handleNav('games')} />
+              <NavItem icon={<Book size={24} />} label="Library" active={activeTab === 'library'} onClick={() => handleNav('library')} />
               
               <div className="text-xs font-bold text-gray-400 uppercase px-4 mt-6 mb-2">My Empire</div>
               <NavItem icon={<Building2 size={24} />} label="Headquarters" active={activeTab === 'hq'} onClick={() => handleNav('hq')} />
@@ -191,8 +192,8 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onNavigate }) => {
       {/* MOBILE BOTTOM NAV */}
       <div className="md:hidden h-20 bg-white border-t border-gray-200 px-2 flex justify-around items-center shrink-0 z-30 fixed bottom-0 left-0 right-0 pb-safe">
            <MobileNavItem icon={<MapIcon size={24} />} label="Map" active={activeTab === 'map'} onClick={() => handleNav('map')} />
-           <MobileNavItem icon={<ClipboardList size={24} />} label="Tasks" active={activeTab === 'assignments'} onClick={() => handleNav('assignments')} />
            <MobileNavItem icon={<Gamepad2 size={24} />} label="Games" active={activeTab === 'games'} onClick={() => handleNav('games')} />
+           <MobileNavItem icon={<Book size={24} />} label="Books" active={activeTab === 'library'} onClick={() => handleNav('library')} />
            <MobileNavItem icon={<Trophy size={24} />} label="Profile" active={activeTab === 'profile'} onClick={() => handleNav('profile')} />
       </div>
     </div>

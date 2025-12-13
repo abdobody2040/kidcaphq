@@ -29,6 +29,8 @@ import FeaturesPage from './components/FeaturesPage';
 import DynamicPage from './components/DynamicPage';
 import OllieChat from './components/OllieChat';
 import StudentAssignmentDashboard from './components/StudentAssignmentDashboard'; 
+import BookLibrary from './components/BookLibrary';
+import AdminBookManager from './components/AdminBookManager';
 import { Check, Rocket, Pizza, Star, Smile, Lightbulb, Coffee, Music, Camera, Globe, Anchor, Cpu, Car, Zap } from 'lucide-react';
 
 const ICON_MAP: Record<string, any> = {
@@ -156,6 +158,7 @@ const App = () => {
                     {activeTab === 'map' && <KidMap onStartLesson={(id) => setActiveLessonId(id)} />}
                     {activeTab === 'assignments' && <StudentAssignmentDashboard />}
                     {activeTab === 'games' && renderGame()}
+                    {activeTab === 'library' && <BookLibrary />}
                     {activeTab === 'store' && <BizStore />}
                     {activeTab === 'leaderboard' && <Leaderboard />}
                     {activeTab === 'hq' && <Headquarters />}
@@ -248,6 +251,9 @@ const App = () => {
             {user.role === UserRole.PARENT && activeTab === 'parent_dashboard' && <ParentDashboard />}
             {user.role === UserRole.TEACHER && activeTab === 'teacher_dashboard' && <TeacherDashboard />}
             {user.role === UserRole.ADMIN && activeTab === 'admin_dashboard' && <AdminDashboard />}
+            
+            {/* Admin Book Manager Overlay (Handles own visibility) */}
+            <AdminBookManager />
             </>
         )}
         </Layout>

@@ -162,6 +162,18 @@ export interface Submission {
   rubricScores?: Record<string, number>; // Key: criteriaId, Value: score awarded
 }
 
+// --- LIBRARY TYPES ---
+export interface Book {
+  id: string;
+  title: string;
+  author: string;
+  coverUrl: string;
+  summary: string;
+  category: 'Mindset' | 'Finance' | 'Strategy' | 'Biography' | 'Fiction';
+  keyLessons: string[]; // Array of 3 bullet points
+  ageRating: string;
+}
+
 // ----------------------------------------
 
 export interface ShopItem {

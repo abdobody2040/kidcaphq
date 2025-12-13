@@ -1,14 +1,15 @@
 
 import React, { useState } from 'react';
 import { useAppStore } from '../store';
-import { UserRole, User, BusinessSimulation, Classroom, Assignment, Submission, CMSContent, CustomPage, ContentBlock } from '../types';
+import { UserRole, User, BusinessSimulation, Classroom, Assignment, Submission, CMSContent, CustomPage, ContentBlock, Book } from '../types';
 import { 
   Trash2, Edit, Plus, Save, X, BookOpen, Gamepad2, Users, 
   AlertTriangle, Play, Coins, Star, Trophy, RefreshCcw, 
   School, ClipboardList, FileText, LogIn, LayoutDashboard, Globe, Image as ImageIcon,
-  LayoutTemplate, ArrowUp, ArrowDown, Eye, ArrowLeft
+  LayoutTemplate, ArrowUp, ArrowDown, Eye, ArrowLeft, Loader2, Sparkles, Book as BookIcon
 } from 'lucide-react';
 import GameEngine from './GameEngine';
+import { generateBookDetails } from '../services/geminiService';
 
 const AdminDashboard: React.FC = () => {
   const { 
@@ -19,10 +20,11 @@ const AdminDashboard: React.FC = () => {
       addUser, updateUser, deleteUser,
       deleteAssignment, deleteSubmission,
       cmsContent, updateCMSContent,
-      deleteClassroom, impersonateUser, addClassroom, updateClassroom
+      deleteClassroom, impersonateUser, addClassroom, updateClassroom,
+      library, addBook, updateBook, removeBook
   } = useAppStore();
 
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'USERS' | 'CLASSES' | 'CONTENT' | 'WORK' | 'CMS'>('OVERVIEW');
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'USERS' | 'CLASSES' | 'CONTENT' | 'LIBRARY' | 'WORK' | 'CMS'>('OVERVIEW');
   const [contentTab, setContentTab] = useState<'LESSONS' | 'GAMES'>('LESSONS');
   const [workTab, setWorkTab] = useState<'ASSIGNMENTS' | 'SUBMISSIONS'>('ASSIGNMENTS');
   
@@ -40,6 +42,11 @@ const AdminDashboard: React.FC = () => {
   const [showClassModal, setShowClassModal] = useState(false);
   const [editingClass, setEditingClass] = useState<Partial<Classroom> | null>(null);
 
+  // Book Management Modal State
+  const [showBookModal, setShowBookModal] = useState(false);
+  const [editingBook, setEditingBook] = useState<Partial<Book> | null>(null);
+  const [isGeneratingBook, setIsGeneratingBook] = useState(false);
+
   // CMS State
   const [cmsForm, setCmsForm] = useState<CMSContent>(cmsContent);
   const [cmsSubTab, setCmsSubTab] = useState<'LANDING' | 'FEATURES' | 'PAGES'>('LANDING');
@@ -56,7 +63,8 @@ const AdminDashboard: React.FC = () => {
       assignments: assignments.length,
       submissions: submissions.length,
       lessons: lessons.length,
-      games: games.length
+      games: games.length,
+      books: library.length
   };
 
   // --- ACTIONS ---
@@ -242,6 +250,64 @@ const AdminDashboard: React.FC = () => {
       setEditingClass(null);
   };
 
+  // --- BOOK MODAL ---
+  const openBookModal = (targetBook?: Book) => {
+      if (targetBook) {
+          setEditingBook({ ...targetBook });
+      } else {
+          setEditingBook({
+              id: `book_${Date.now()}`,
+              title: '',
+              author: '',
+              coverUrl: '',
+              summary: '',
+              category: 'Finance',
+              keyLessons: [],
+              ageRating: '8+'
+          });
+      }
+      setShowBookModal(true);
+  };
+
+  const handleAutoFillBook = async () => {
+      if (!editingBook?.title || !editingBook?.author) {
+          alert("Please enter a Title and Author first.");
+          return;
+      }
+      
+      setIsGeneratingBook(true);
+      const data = await generateBookDetails(editingBook.title, editingBook.author);
+      setIsGeneratingBook(false);
+
+      if (data) {
+          setEditingBook(prev => ({
+              ...prev,
+              summary: data.summary,
+              keyLessons: data.keyLessons
+          }));
+      } else {
+          alert("Could not generate details. Please try again or fill manually.");
+      }
+  };
+
+  const saveBook = () => {
+      if (!editingBook || !editingBook.title || !editingBook.author) return alert("Title and Author are required!");
+      
+      const finalBook = { ...editingBook } as Book;
+      // Ensure keyLessons is array
+      if (!Array.isArray(finalBook.keyLessons)) finalBook.keyLessons = [];
+      
+      const existing = library.find(b => b.id === finalBook.id);
+      
+      if (existing) {
+          updateBook(existing.id, finalBook);
+      } else {
+          addBook(finalBook);
+      }
+      setShowBookModal(false);
+      setEditingBook(null);
+  };
+
   // --- CMS HANDLERS ---
   const handleSaveCMS = () => {
       updateCMSContent(cmsForm);
@@ -381,6 +447,7 @@ const AdminDashboard: React.FC = () => {
               <TabButton active={activeTab === 'CLASSES'} onClick={() => setActiveTab('CLASSES')} icon={<School size={18}/>} label="Classes" />
               <TabButton active={activeTab === 'WORK'} onClick={() => setActiveTab('WORK')} icon={<ClipboardList size={18}/>} label="Work" />
               <TabButton active={activeTab === 'CONTENT'} onClick={() => setActiveTab('CONTENT')} icon={<BookOpen size={18}/>} label="Content" />
+              <TabButton active={activeTab === 'LIBRARY'} onClick={() => setActiveTab('LIBRARY')} icon={<BookIcon size={18}/>} label="Library" />
               <TabButton active={activeTab === 'CMS'} onClick={() => setActiveTab('CMS')} icon={<Globe size={18}/>} label="CMS" />
           </div>
       </div>
@@ -393,6 +460,7 @@ const AdminDashboard: React.FC = () => {
                   <StatCard label="Students" value={stats.students} icon={<Star />} color="bg-yellow-100 text-yellow-700" />
                   <StatCard label="Classrooms" value={stats.classes} icon={<School />} color="bg-purple-100 text-purple-700" />
                   <StatCard label="Assignments" value={stats.assignments} icon={<ClipboardList />} color="bg-green-100 text-green-700" />
+                  <StatCard label="Books" value={stats.books} icon={<BookIcon />} color="bg-pink-100 text-pink-700" />
               </div>
 
               <div className="bg-red-50 border-2 border-red-200 p-6 rounded-2xl flex justify-between items-center">
@@ -495,6 +563,53 @@ const AdminDashboard: React.FC = () => {
                               </tr>
                           ))}
                           {classrooms.length === 0 && <tr><td colSpan={5} className="p-8 text-center text-gray-400">No classes found.</td></tr>}
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+      )}
+
+      {/* --- LIBRARY TAB --- */}
+      {activeTab === 'LIBRARY' && (
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
+                  <span className="font-bold text-gray-500">{library.length} Books in Library</span>
+                  <button onClick={() => openBookModal()} className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-blue-700">
+                      <Plus size={16} /> Add Book
+                  </button>
+              </div>
+              <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                      <thead className="bg-gray-50 text-left font-bold text-gray-400 uppercase">
+                          <tr>
+                              <th className="p-4 w-16">Cover</th>
+                              <th className="p-4">Title / Author</th>
+                              <th className="p-4">Category</th>
+                              <th className="p-4">Age</th>
+                              <th className="p-4 text-right">Actions</th>
+                          </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                          {library.map(book => (
+                              <tr key={book.id} className="hover:bg-gray-50">
+                                  <td className="p-4">
+                                      <img src={book.coverUrl} alt="Cover" className="w-10 h-14 object-cover rounded shadow-sm bg-gray-200" />
+                                  </td>
+                                  <td className="p-4">
+                                      <div className="font-bold text-gray-800 text-base">{book.title}</div>
+                                      <div className="text-gray-500 font-bold text-xs">{book.author}</div>
+                                  </td>
+                                  <td className="p-4">
+                                      <span className="bg-blue-50 text-blue-600 px-2 py-1 rounded text-xs font-bold uppercase tracking-wider">{book.category}</span>
+                                  </td>
+                                  <td className="p-4 text-gray-500 font-bold">{book.ageRating}</td>
+                                  <td className="p-4 text-right flex justify-end gap-2">
+                                      <button onClick={() => openBookModal(book)} className="bg-blue-50 text-blue-600 p-2 rounded hover:bg-blue-100"><Edit size={16}/></button>
+                                      <button onClick={() => { if(confirm('Delete book?')) removeBook(book.id); }} className="bg-red-50 text-red-600 p-2 rounded hover:bg-red-100"><Trash2 size={16}/></button>
+                                  </td>
+                              </tr>
+                          ))}
+                          {library.length === 0 && <tr><td colSpan={5} className="p-8 text-center text-gray-400 font-bold">The library is empty.</td></tr>}
                       </tbody>
                   </table>
               </div>
@@ -912,6 +1027,99 @@ const AdminDashboard: React.FC = () => {
                           </select>
                       </div>
                       <button onClick={saveClass} className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-md mt-4">Save Class</button>
+                  </div>
+              </div>
+          </div>
+      )}
+
+      {/* Book Editor */}
+      {showBookModal && editingBook && (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+              <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-xl my-auto">
+                  <div className="flex justify-between items-center mb-6">
+                      <h3 className="text-2xl font-black text-gray-800">{library.find(b => b.id === editingBook.id) ? 'Edit Book' : 'Add New Book'}</h3>
+                      <button onClick={() => setShowBookModal(false)} className="text-gray-400 hover:text-gray-600"><X /></button>
+                  </div>
+                  <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                          <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Title</label>
+                              <input type="text" value={editingBook.title} onChange={e => setEditingBook({...editingBook, title: e.target.value})} className="w-full p-2 border-2 border-gray-200 rounded-xl font-bold"/>
+                          </div>
+                          <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Author</label>
+                              <input type="text" value={editingBook.author} onChange={e => setEditingBook({...editingBook, author: e.target.value})} className="w-full p-2 border-2 border-gray-200 rounded-xl font-bold"/>
+                          </div>
+                      </div>
+
+                      <button 
+                          onClick={handleAutoFillBook}
+                          disabled={isGeneratingBook}
+                          className="w-full py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2 hover:brightness-110 disabled:opacity-70"
+                      >
+                          {isGeneratingBook ? <Loader2 className="animate-spin" size={16}/> : <Sparkles size={16}/>}
+                          {isGeneratingBook ? 'Generating...' : 'Auto-Fill with AI'}
+                      </button>
+
+                      <div>
+                          <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Cover Image URL</label>
+                          <div className="flex gap-2">
+                              <input type="text" value={editingBook.coverUrl} onChange={e => setEditingBook({...editingBook, coverUrl: e.target.value})} className="flex-1 p-2 border-2 border-gray-200 rounded-xl font-bold text-sm"/>
+                              {editingBook.coverUrl && <img src={editingBook.coverUrl} alt="Preview" className="w-10 h-10 rounded object-cover border bg-gray-100" />}
+                          </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                          <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Category</label>
+                              <select 
+                                  value={editingBook.category} 
+                                  onChange={e => setEditingBook({...editingBook, category: e.target.value as any})} 
+                                  className="w-full p-2 border-2 border-gray-200 rounded-xl font-bold bg-white"
+                              >
+                                  <option value="Finance">Finance</option>
+                                  <option value="Mindset">Mindset</option>
+                                  <option value="Strategy">Strategy</option>
+                                  <option value="Biography">Biography</option>
+                                  <option value="Fiction">Fiction</option>
+                              </select>
+                          </div>
+                          <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Age Rating</label>
+                              <input type="text" value={editingBook.ageRating} onChange={e => setEditingBook({...editingBook, ageRating: e.target.value})} className="w-full p-2 border-2 border-gray-200 rounded-xl font-bold"/>
+                          </div>
+                      </div>
+
+                      <div>
+                          <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Summary</label>
+                          <textarea 
+                              value={editingBook.summary} 
+                              onChange={e => setEditingBook({...editingBook, summary: e.target.value})} 
+                              className="w-full p-2 border-2 border-gray-200 rounded-xl font-medium h-24 text-sm"
+                          />
+                      </div>
+
+                      <div>
+                          <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Key Lessons (3 Bullet Points)</label>
+                          <div className="space-y-2">
+                              {[0, 1, 2].map(idx => (
+                                  <input 
+                                      key={idx}
+                                      type="text" 
+                                      placeholder={`Lesson ${idx+1}`}
+                                      value={editingBook.keyLessons?.[idx] || ''} 
+                                      onChange={e => {
+                                          const newLessons = [...(editingBook.keyLessons || [])];
+                                          newLessons[idx] = e.target.value;
+                                          setEditingBook({...editingBook, keyLessons: newLessons});
+                                      }} 
+                                      className="w-full p-2 border-2 border-gray-200 rounded-xl font-medium text-sm"
+                                  />
+                              ))}
+                          </div>
+                      </div>
+
+                      <button onClick={saveBook} className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-md mt-2 hover:bg-blue-700">Save Book</button>
                   </div>
               </div>
           </div>

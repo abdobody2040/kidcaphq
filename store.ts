@@ -4,7 +4,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { 
   User, UserRole, LemonadeState, ShopItem, LeaderboardEntry, Classroom, UserSettings, 
   BusinessLogo, Skill, HQLevel, PortfolioItem, UniversalLessonUnit, BusinessSimulation,
-  StudentGroup, Rubric, Assignment, Submission, CMSContent
+  StudentGroup, Rubric, Assignment, Submission, CMSContent, Book
 } from './types';
 import { ALL_LESSONS } from './data/curriculum';
 import { GAMES_DB } from './data/games';
@@ -69,6 +69,51 @@ export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   { id: 'u3', name: 'MoneyMaker', xp: 3500, avatar: '🦁' },
   { id: 'u4', name: 'DiamondHands', xp: 2100, avatar: '💎' },
   { id: 'kid_1', name: 'Leo', xp: 120, avatar: '🐼', isCurrentUser: true },
+];
+
+export const MOCK_LIBRARY: Book[] = [
+  {
+    id: 'book_1',
+    title: 'Rich Dad Poor Dad for Teens',
+    author: 'Robert Kiyosaki',
+    coverUrl: 'https://m.media-amazon.com/images/I/51X+uF+7uFL._SL500_.jpg',
+    summary: 'This book teaches you the difference between working for money and making money work for you. It explains why some people get rich and others struggle, using simple stories.',
+    category: 'Finance',
+    keyLessons: [
+      'Assets put money in your pocket; liabilities take it out.',
+      'You don’t need a high income to be rich.',
+      'Financial intelligence helps you solve money problems.'
+    ],
+    ageRating: '12+'
+  },
+  {
+    id: 'book_2',
+    title: 'The Lemonade War',
+    author: 'Jacqueline Davies',
+    coverUrl: 'https://m.media-amazon.com/images/I/91M-sM3z-CL._AC_UF1000,1000_QL80_.jpg',
+    summary: 'A brother and sister compete to see who can sell the most lemonade. It’s a fun story that secretly teaches you about marketing, location, and competition.',
+    category: 'Fiction',
+    keyLessons: [
+      'Location is key for any business.',
+      'Understanding your competition helps you win.',
+      'Teamwork is often better than fighting.'
+    ],
+    ageRating: '8+'
+  },
+  {
+    id: 'book_3',
+    title: 'Shoe Dog (Young Readers)',
+    author: 'Phil Knight',
+    coverUrl: 'https://m.media-amazon.com/images/I/71waiK-G2RL._AC_UF1000,1000_QL80_.jpg',
+    summary: 'The true story of how Nike started. It shows that even billion-dollar companies start with a crazy idea and a lot of hard work.',
+    category: 'Biography',
+    keyLessons: [
+      'Don’t be afraid to fail; keep going.',
+      'Believe in your "crazy idea" even if others don’t.',
+      'Business is an adventure, not just a job.'
+    ],
+    ageRating: '10+'
+  }
 ];
 
 // Helper: Calculate Level
@@ -271,6 +316,8 @@ interface AppState {
   games: BusinessSimulation[];
   users: User[];
   cmsContent: CMSContent; // CMS Data
+  library: Book[];
+  isAdminMode: boolean;
   
   // Teacher Feature State (New)
   studentGroups: StudentGroup[];
@@ -314,6 +361,12 @@ interface AppState {
   deleteGame: (id: string) => void;
   syncGames: () => void;
   
+  // Library CRUD
+  addBook: (book: Book) => void;
+  updateBook: (id: string, updates: Partial<Book>) => void; // Added this
+  removeBook: (id: string) => void;
+  toggleAdminMode: () => void;
+
   // User CRUD
   addUser: (user: User) => void;
   updateUser: (id: string, updates: Partial<User>) => void;
@@ -355,6 +408,8 @@ export const useAppStore = create<AppState>()(
       games: GAMES_DB,
       users: [MOCK_USER, MOCK_PARENT, MOCK_TEACHER, MOCK_ADMIN],
       cmsContent: DEFAULT_CMS_CONTENT,
+      library: MOCK_LIBRARY,
+      isAdminMode: false,
       
       // Initialize Teacher Feature Data
       studentGroups: MOCK_STUDENT_GROUPS,
@@ -841,6 +896,12 @@ export const useAppStore = create<AppState>()(
           return { games: [...GAMES_DB, ...customGames] };
       }),
 
+      // LIBRARY ACTIONS
+      addBook: (book) => set((state) => ({ library: [...state.library, book] })),
+      updateBook: (id, updates) => set((state) => ({ library: state.library.map(b => b.id === id ? { ...b, ...updates } : b) })),
+      removeBook: (id) => set((state) => ({ library: state.library.filter(b => b.id !== id) })),
+      toggleAdminMode: () => set((state) => ({ isAdminMode: !state.isAdminMode })),
+
       // USER ACTIONS
       addUser: (newUser) => set((state) => {
           if (state.users.length >= MAX_LOCAL_USERS) {
@@ -893,7 +954,9 @@ export const useAppStore = create<AppState>()(
         rubrics: state.rubrics,
         assignments: state.assignments,
         submissions: state.submissions,
-        cmsContent: state.cmsContent
+        cmsContent: state.cmsContent,
+        library: state.library, // Persist library
+        isAdminMode: state.isAdminMode // Persist admin mode toggle
       }),
     }
   )

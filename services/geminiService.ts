@@ -1,5 +1,5 @@
 
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 
 // Initialize Gemini Client Lazily
 let aiClient: GoogleGenAI | null = null;
@@ -107,5 +107,46 @@ export const chatWithOllie = async (history: ChatMessage[], newMessage: string):
   } catch (error) {
     console.error("Gemini Chat Error:", error);
     return "My feathers are ruffled! I couldn't reply right now.";
+  }
+};
+
+// --- LIBRARY GENERATOR ---
+export interface GeneratedBookDetails {
+  summary: string;
+  keyLessons: string[];
+}
+
+export const generateBookDetails = async (title: string, author: string): Promise<GeneratedBookDetails | null> => {
+  const ai = getAiClient();
+  if (!ai || !process.env.API_KEY) return null;
+
+  try {
+    const model = ai.models;
+    const response = await model.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `Provide a summary and 3 key lessons for the book "${title}" by ${author}, specifically written for a child audience (approx 8-12 years old).`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            summary: { type: Type.STRING, description: "A paragraph summarizing the book for a child." },
+            keyLessons: { 
+              type: Type.ARRAY, 
+              items: { type: Type.STRING },
+              description: "An array of exactly 3 simple bullet points teaching the core concepts." 
+            }
+          }
+        }
+      }
+    });
+    
+    if (response.text) {
+      return JSON.parse(response.text) as GeneratedBookDetails;
+    }
+    return null;
+  } catch (error) {
+    console.error("Gemini Book Gen Error:", error);
+    return null;
   }
 };
