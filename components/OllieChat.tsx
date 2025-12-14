@@ -49,15 +49,12 @@ const OllieChat: React.FC = () => {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
     
-    // Gating Check: Ensure 'Intern' (and others without access) are locked out
+    // Gating Check
     if (!hasAccess && freeMessageUsed) {
         return;
     }
 
-    // Input Injection Sanitization
-    const sanitizeInput = (text: string) => text.replace(/<[^>]*>?/gm, '');
-    const userText = sanitizeInput(input.trim());
-
+    const userText = input.trim();
     setInput('');
     setIsLoading(true);
 
@@ -90,8 +87,7 @@ const OllieChat: React.FC = () => {
   };
 
   const handlePaymentSuccess = () => {
-      // Pass the verification token to the secure upgrade function
-      upgradeSubscription('tycoon', "PAYMENT_VERIFIED_SECRET_123");
+      upgradeSubscription('tycoon');
       setShowUpgradeModal(false);
       // Reset limit so they can chat immediately
       setFreeMessageUsed(false);

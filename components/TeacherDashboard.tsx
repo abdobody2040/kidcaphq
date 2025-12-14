@@ -9,6 +9,7 @@ import {
   Calendar, Check, UserPlus, GraduationCap, ChevronRight, MessageSquare, Link as LinkIcon,
   PlusCircle, ArrowLeft, LayoutTemplate
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const TeacherDashboard: React.FC = () => {
   const { 
@@ -18,6 +19,7 @@ const TeacherDashboard: React.FC = () => {
     studentGroups, addStudentGroup, deleteStudentGroup, updateStudentGroup,
     rubrics, addRubric, deleteRubric, updateRubric, submissions, updateSubmission, addSubmission
   } = useAppStore();
+  const { t } = useTranslation();
 
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'ASSIGNMENTS' | 'GROUPS' | 'RUBRICS' | 'GRADING'>('OVERVIEW');
   const [editingStudent, setEditingStudent] = useState<User | null>(null);
@@ -254,17 +256,17 @@ const TeacherDashboard: React.FC = () => {
            <div>
                <h2 className="text-3xl font-black text-gray-800">{classroom.name}</h2>
                <div className="flex gap-4 mt-2 overflow-x-auto no-scrollbar">
-                   <button onClick={() => setActiveTab('OVERVIEW')} className={`font-bold pb-1 border-b-4 transition-colors whitespace-nowrap ${activeTab === 'OVERVIEW' ? 'text-kid-accent border-kid-accent' : 'text-gray-400 border-transparent'}`}>Overview</button>
-                   <button onClick={() => setActiveTab('ASSIGNMENTS')} className={`font-bold pb-1 border-b-4 transition-colors whitespace-nowrap ${activeTab === 'ASSIGNMENTS' ? 'text-kid-accent border-kid-accent' : 'text-gray-400 border-transparent'}`}>Assignments</button>
-                   <button onClick={() => setActiveTab('GRADING')} className={`font-bold pb-1 border-b-4 transition-colors whitespace-nowrap ${activeTab === 'GRADING' ? 'text-kid-accent border-kid-accent' : 'text-gray-400 border-transparent'}`}>Grading {dashboardStats.actionItems > 0 && <span className="ml-1 bg-red-500 text-white text-[10px] px-1.5 rounded-full align-top">{dashboardStats.actionItems}</span>}</button>
-                   <button onClick={() => setActiveTab('GROUPS')} className={`font-bold pb-1 border-b-4 transition-colors whitespace-nowrap ${activeTab === 'GROUPS' ? 'text-kid-accent border-kid-accent' : 'text-gray-400 border-transparent'}`}>Groups</button>
-                   <button onClick={() => setActiveTab('RUBRICS')} className={`font-bold pb-1 border-b-4 transition-colors whitespace-nowrap ${activeTab === 'RUBRICS' ? 'text-kid-accent border-kid-accent' : 'text-gray-400 border-transparent'}`}>Rubrics</button>
+                   <button onClick={() => setActiveTab('OVERVIEW')} className={`font-bold pb-1 border-b-4 transition-colors whitespace-nowrap ${activeTab === 'OVERVIEW' ? 'text-kid-accent border-kid-accent' : 'text-gray-400 border-transparent'}`}>{t('teacher.tabs.overview')}</button>
+                   <button onClick={() => setActiveTab('ASSIGNMENTS')} className={`font-bold pb-1 border-b-4 transition-colors whitespace-nowrap ${activeTab === 'ASSIGNMENTS' ? 'text-kid-accent border-kid-accent' : 'text-gray-400 border-transparent'}`}>{t('teacher.tabs.assignments')}</button>
+                   <button onClick={() => setActiveTab('GRADING')} className={`font-bold pb-1 border-b-4 transition-colors whitespace-nowrap ${activeTab === 'GRADING' ? 'text-kid-accent border-kid-accent' : 'text-gray-400 border-transparent'}`}>{t('teacher.tabs.grading')} {dashboardStats.actionItems > 0 && <span className="ml-1 bg-red-500 text-white text-[10px] px-1.5 rounded-full align-top">{dashboardStats.actionItems}</span>}</button>
+                   <button onClick={() => setActiveTab('GROUPS')} className={`font-bold pb-1 border-b-4 transition-colors whitespace-nowrap ${activeTab === 'GROUPS' ? 'text-kid-accent border-kid-accent' : 'text-gray-400 border-transparent'}`}>{t('teacher.tabs.groups')}</button>
+                   <button onClick={() => setActiveTab('RUBRICS')} className={`font-bold pb-1 border-b-4 transition-colors whitespace-nowrap ${activeTab === 'RUBRICS' ? 'text-kid-accent border-kid-accent' : 'text-gray-400 border-transparent'}`}>{t('teacher.tabs.rubrics')}</button>
                </div>
            </div>
            
            <div className="bg-blue-50 border-2 border-blue-100 p-4 rounded-2xl flex items-center gap-4 shrink-0">
                <div>
-                   <div className="text-xs font-bold text-blue-400 uppercase">Class Code</div>
+                   <div className="text-xs font-bold text-blue-400 uppercase">{t('teacher.code')}</div>
                    <div className="text-3xl font-black text-blue-700 tracking-widest">{classroom.code}</div>
                </div>
                <button 
@@ -287,17 +289,17 @@ const TeacherDashboard: React.FC = () => {
                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col">
                        <div className="flex items-center gap-3 mb-4">
                            <div className="bg-blue-100 p-2 rounded-xl text-blue-600"><ClipboardList size={24}/></div>
-                           <h3 className="font-bold text-gray-700">Action Items</h3>
+                           <h3 className="font-bold text-gray-700">{t('teacher.widget_action.title')}</h3>
                        </div>
                        <div className="flex-1 flex flex-col justify-center items-center text-center">
                            <div className="text-5xl font-black text-gray-800 mb-2">{dashboardStats.actionItems}</div>
-                           <p className="text-gray-500 font-medium text-sm">Ungraded Submissions</p>
+                           <p className="text-gray-500 font-medium text-sm">{t('teacher.widget_action.desc')}</p>
                            {dashboardStats.actionItems > 0 && (
                                <button 
                                   onClick={() => setActiveTab('GRADING')}
                                   className="mt-4 text-blue-600 font-bold text-sm hover:underline"
                                >
-                                   Review Now
+                                   {t('teacher.widget_action.btn')}
                                </button>
                            )}
                        </div>
@@ -307,14 +309,14 @@ const TeacherDashboard: React.FC = () => {
                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col">
                        <div className="flex items-center gap-3 mb-4">
                            <div className="bg-red-100 p-2 rounded-xl text-red-600"><Users size={24}/></div>
-                           <h3 className="font-bold text-gray-700">At-Risk Radar</h3>
+                           <h3 className="font-bold text-gray-700">{t('teacher.widget_risk.title')}</h3>
                        </div>
                        <div className="flex-1">
                            {dashboardStats.atRisk.length === 0 ? (
                                <div className="h-full flex items-center justify-center text-center text-green-600 font-bold">
                                    <div>
                                        <Check size={32} className="mx-auto mb-2"/>
-                                       All students on track!
+                                       {t('teacher.widget_risk.safe')}
                                    </div>
                                </div>
                            ) : (
@@ -334,11 +336,11 @@ const TeacherDashboard: React.FC = () => {
                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col">
                        <div className="flex items-center gap-3 mb-4">
                            <div className="bg-yellow-100 p-2 rounded-xl text-yellow-600"><Calendar size={24}/></div>
-                           <h3 className="font-bold text-gray-700">Upcoming</h3>
+                           <h3 className="font-bold text-gray-700">{t('teacher.widget_schedule.title')}</h3>
                        </div>
                        <div className="flex-1 space-y-3">
                            {dashboardStats.schedule.length === 0 ? (
-                               <div className="text-gray-400 text-sm font-bold text-center mt-8">No active assignments</div>
+                               <div className="text-gray-400 text-sm font-bold text-center mt-8">{t('teacher.widget_schedule.empty')}</div>
                            ) : (
                                dashboardStats.schedule.map(a => (
                                    <div key={a.id} className="border-l-4 border-yellow-400 pl-3 py-1">
@@ -357,8 +359,8 @@ const TeacherDashboard: React.FC = () => {
                    {/* Student Roster */}
                    <div className="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                           <h3 className="font-bold text-xl text-gray-800">Student Roster</h3>
-                           <button onClick={() => setActiveTab('GROUPS')} className="text-kid-accent font-bold text-sm hover:underline">Manage Groups</button>
+                           <h3 className="font-bold text-xl text-gray-800">{t('teacher.roster_title')}</h3>
+                           <button onClick={() => setActiveTab('GROUPS')} className="text-kid-accent font-bold text-sm hover:underline">{t('teacher.manage_groups')}</button>
                        </div>
                        <div className="overflow-x-auto">
                            <table className="w-full">
@@ -385,7 +387,7 @@ const TeacherDashboard: React.FC = () => {
                                                    <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full font-bold">Lvl {s.level}</span>
                                                </td>
                                                <td className="p-4">
-                                                   <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                   <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden" dir="ltr">
                                                        <div className="h-full bg-kid-secondary" style={{ width: `${getStudentProgress(s)}%` }} />
                                                    </div>
                                                </td>
@@ -407,8 +409,8 @@ const TeacherDashboard: React.FC = () => {
 
                    {/* Curriculum Controls (Dynamic) */}
                    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 h-fit max-h-[600px] overflow-y-auto">
-                       <h3 className="font-bold text-xl text-gray-800 mb-4">Curriculum Controls</h3>
-                       <p className="text-gray-500 text-sm mb-6">Lock content to keep the class in sync.</p>
+                       <h3 className="font-bold text-xl text-gray-800 mb-4">{t('teacher.controls_title')}</h3>
+                       <p className="text-gray-500 text-sm mb-6">{t('teacher.controls_desc')}</p>
 
                        <div className="space-y-4">
                            {COURSE_MAP.map((module) => (
@@ -436,12 +438,12 @@ const TeacherDashboard: React.FC = () => {
        {activeTab === 'ASSIGNMENTS' && (
            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
                <div className="flex justify-between items-center mb-8">
-                   <h3 className="font-bold text-xl text-gray-800">Class Assignments</h3>
+                   <h3 className="font-bold text-xl text-gray-800">{t('teacher.assign_title')}</h3>
                    <button 
                       onClick={() => setShowAssignModal(true)}
                       className="bg-kid-accent text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-600"
                    >
-                       <Plus size={18} /> New Assignment
+                       <Plus size={18} /> {t('teacher.new_assign')}
                    </button>
                </div>
 
@@ -449,7 +451,7 @@ const TeacherDashboard: React.FC = () => {
                    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
                        <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden my-auto">
                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                               <h4 className="font-black text-gray-800 text-lg">Create New Assignment</h4>
+                               <h4 className="font-black text-gray-800 text-lg">{t('teacher.new_assign')}</h4>
                                <button onClick={() => setShowAssignModal(false)} className="p-2 hover:bg-gray-200 rounded-full"><X size={20}/></button>
                            </div>
                            
@@ -671,9 +673,9 @@ const TeacherDashboard: React.FC = () => {
                ) : (
                    <div className="p-8">
                        <div className="flex justify-between items-center mb-6">
-                           <h3 className="font-bold text-xl text-gray-800">Student Submissions</h3>
+                           <h3 className="font-bold text-xl text-gray-800">{t('teacher.subs_title')}</h3>
                            <button onClick={handleSimulateSubmission} className="text-xs font-bold text-blue-500 bg-blue-50 px-3 py-1 rounded-lg hover:bg-blue-100">
-                               + Demo Submission
+                               {t('teacher.demo_sub')}
                            </button>
                        </div>
                        
@@ -738,7 +740,7 @@ const TeacherDashboard: React.FC = () => {
            <div className="space-y-8">
                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
                    <div className="flex justify-between items-center mb-6">
-                       <h3 className="font-bold text-xl text-gray-800">Differentiated Groups</h3>
+                       <h3 className="font-bold text-xl text-gray-800">{t('teacher.groups_title')}</h3>
                        <div className="flex gap-2">
                            <input 
                               type="text" 
@@ -747,7 +749,7 @@ const TeacherDashboard: React.FC = () => {
                               onChange={(e) => setNewGroupName(e.target.value)}
                               className="p-2 border border-gray-300 rounded-lg"
                            />
-                           <button onClick={handleCreateGroup} className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold">Add Group</button>
+                           <button onClick={handleCreateGroup} className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold">{t('teacher.add_group')}</button>
                        </div>
                    </div>
 
@@ -795,13 +797,13 @@ const TeacherDashboard: React.FC = () => {
                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
                    <div className="flex justify-between items-center mb-8">
                        <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                           <LayoutTemplate size={24} /> Grading Rubrics
+                           <LayoutTemplate size={24} /> {t('teacher.rubrics_title')}
                        </h3>
                        <button 
                           onClick={handleCreateRubric}
                           className="bg-kid-accent text-white px-6 py-3 rounded-xl font-bold shadow-md hover:bg-blue-600 transition-colors flex items-center gap-2"
                        >
-                           <PlusCircle size={20} /> Create New Rubric
+                           <PlusCircle size={20} /> {t('teacher.new_rubric')}
                        </button>
                    </div>
                    
@@ -828,7 +830,7 @@ const TeacherDashboard: React.FC = () => {
                        })}
                        {rubrics.length === 0 && (
                            <div className="col-span-full text-center py-20 text-gray-400 border-2 border-dashed border-gray-200 rounded-3xl">
-                               <p className="font-bold text-lg">No rubrics yet. Create one to standardize your grading!</p>
+                               <p className="font-bold text-lg">{t('teacher.rubrics_empty')}</p>
                            </div>
                        )}
                    </div>
@@ -840,7 +842,7 @@ const TeacherDashboard: React.FC = () => {
        {editingStudent && (
            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-                   <h3 className="font-black text-xl text-gray-800 mb-4">Edit Student</h3>
+                   <h3 className="font-black text-xl text-gray-800 mb-4">{t('teacher.edit_student')}</h3>
                    
                    <label className="block text-sm font-bold text-gray-500 mb-1">Student Name</label>
                    <input 
@@ -852,7 +854,7 @@ const TeacherDashboard: React.FC = () => {
 
                    <div className="flex flex-col gap-3">
                        <button onClick={handleEditStudentSave} className="w-full bg-green-600 text-white py-3 rounded-xl font-bold">Save Changes</button>
-                       <button onClick={() => handleRemoveStudent(editingStudent.id)} className="w-full bg-red-100 text-red-600 py-3 rounded-xl font-bold">Remove from Class</button>
+                       <button onClick={() => handleRemoveStudent(editingStudent.id)} className="w-full bg-red-100 text-red-600 py-3 rounded-xl font-bold">{t('teacher.remove_student')}</button>
                        <button onClick={() => setEditingStudent(null)} className="w-full text-gray-400 font-bold py-2">Cancel</button>
                    </div>
                </div>

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useAppStore } from '../store';
 import { BusinessLogo } from '../types';
 import { Save, Rocket, Pizza, Star, Smile, Lightbulb, Coffee, Music, Camera, Globe, Anchor, Cpu, Car, Zap, Circle, Square, AppWindow } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface BrandBuilderProps {
   onBack: () => void;
@@ -43,6 +44,7 @@ const ICONS = [
 
 const BrandBuilder: React.FC<BrandBuilderProps> = ({ onBack }) => {
   const { user, updateBusinessLogo, completeGame } = useAppStore();
+  const { t } = useTranslation();
   const [logoState, setLogoState] = useState<BusinessLogo>(user?.businessLogo || {
     companyName: 'My Business',
     backgroundColor: '#FFC800',
@@ -70,16 +72,16 @@ const BrandBuilder: React.FC<BrandBuilderProps> = ({ onBack }) => {
       {/* Controls Sidebar */}
       <div className="w-full md:w-1/3 bg-gray-50 p-4 md:p-6 border-b md:border-b-0 md:border-r border-gray-200 overflow-y-auto custom-scrollbar shrink-0">
         <div className="flex items-center gap-2 mb-4 md:mb-6">
-            <button onClick={onBack} className="text-gray-400 font-bold hover:text-gray-600">
-                &larr; Back
+            <button onClick={onBack} className="text-gray-400 font-bold hover:text-gray-600 flex items-center gap-1 rtl:flex-row-reverse">
+                <span className="rtl:rotate-180">&larr;</span> {t('common.back')}
             </button>
-            <h2 className="text-xl md:text-2xl font-black text-gray-800">Brand Builder</h2>
+            <h2 className="text-xl md:text-2xl font-black text-gray-800">{t('brand.title')}</h2>
         </div>
 
         <div className="space-y-4 md:space-y-6">
             {/* Name Input */}
             <div>
-                <label className="block text-xs md:text-sm font-bold text-gray-500 mb-2 uppercase">Company Name</label>
+                <label className="block text-xs md:text-sm font-bold text-gray-500 mb-2 uppercase">{t('brand.label_name')}</label>
                 <input 
                     type="text" 
                     maxLength={15}
@@ -92,7 +94,7 @@ const BrandBuilder: React.FC<BrandBuilderProps> = ({ onBack }) => {
 
             {/* Shape Picker */}
             <div>
-                <label className="block text-xs md:text-sm font-bold text-gray-500 mb-2 uppercase">Logo Shape</label>
+                <label className="block text-xs md:text-sm font-bold text-gray-500 mb-2 uppercase">{t('brand.label_shape')}</label>
                 <div className="flex gap-4 bg-white p-2 rounded-xl border border-gray-200">
                     <button 
                        onClick={() => setLogoState({...logoState, shape: 'circle'})}
@@ -117,7 +119,7 @@ const BrandBuilder: React.FC<BrandBuilderProps> = ({ onBack }) => {
 
             {/* Background Color Picker */}
             <div>
-                <label className="block text-xs md:text-sm font-bold text-gray-500 mb-2 uppercase">Background Color</label>
+                <label className="block text-xs md:text-sm font-bold text-gray-500 mb-2 uppercase">{t('brand.label_bg')}</label>
                 <div className="flex flex-wrap gap-2">
                     {COLORS.map(color => (
                         <button
@@ -132,7 +134,7 @@ const BrandBuilder: React.FC<BrandBuilderProps> = ({ onBack }) => {
 
             {/* Icon Picker */}
             <div>
-                <label className="block text-xs md:text-sm font-bold text-gray-500 mb-2 uppercase">Logo Icon</label>
+                <label className="block text-xs md:text-sm font-bold text-gray-500 mb-2 uppercase">{t('brand.label_icon')}</label>
                 <div className="grid grid-cols-4 gap-2 bg-white p-2 rounded-xl border border-gray-200 h-32 md:h-48 overflow-y-auto custom-scrollbar">
                     {ICONS.map(item => (
                         <button
@@ -152,7 +154,7 @@ const BrandBuilder: React.FC<BrandBuilderProps> = ({ onBack }) => {
 
             {/* Icon Color Picker */}
             <div>
-                <label className="block text-xs md:text-sm font-bold text-gray-500 mb-2 uppercase">Icon Color</label>
+                <label className="block text-xs md:text-sm font-bold text-gray-500 mb-2 uppercase">{t('brand.label_color')}</label>
                 <div className="flex flex-wrap gap-2">
                     {COLORS.map(color => (
                         <button
@@ -172,7 +174,7 @@ const BrandBuilder: React.FC<BrandBuilderProps> = ({ onBack }) => {
                     ${saved ? 'bg-green-500 text-white' : 'bg-kid-primary text-yellow-900 shadow-[0_4px_0_0_rgba(202,138,4,1)] hover:bg-yellow-400'}
                 `}
             >
-                {saved ? 'Saved!' : <><Save size={20} /> Save Brand Logo</>}
+                {saved ? t('brand.saved') : <><Save size={20} /> {t('brand.save')}</>}
             </button>
         </div>
       </div>
@@ -193,7 +195,7 @@ const BrandBuilder: React.FC<BrandBuilderProps> = ({ onBack }) => {
 
               <h1 className="text-4xl md:text-5xl font-black text-gray-800 tracking-tight drop-shadow-sm">{logoState.companyName}</h1>
               <p className="text-gray-500 font-bold mt-3 uppercase tracking-widest text-xs md:text-sm flex items-center justify-center gap-2">
-                  <span className="w-8 h-[2px] bg-gray-300"></span> Est. 2024 <span className="w-8 h-[2px] bg-gray-300"></span>
+                  <span className="w-8 h-[2px] bg-gray-300"></span> {t('brand.est')} <span className="w-8 h-[2px] bg-gray-300"></span>
               </p>
           </div>
       </div>

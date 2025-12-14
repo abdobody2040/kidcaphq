@@ -5,12 +5,14 @@ import { manageSubscription } from '../services/stripeService';
 import { Clock, BookOpen, Flame, Bell, Music, CreditCard, RefreshCw, Check, Loader2, UserPlus, Zap } from 'lucide-react';
 import StripePaymentPage from './StripePaymentPage';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const ParentDashboard: React.FC = () => {
   const { user, users, updateUserSettings, upgradeSubscription } = useAppStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const { t } = useTranslation();
 
   if (!user) return null;
 
@@ -35,11 +37,6 @@ const ParentDashboard: React.FC = () => {
   }
 
   const isPremium = user.subscriptionStatus === 'PREMIUM';
-
-  // Calculate Stats
-  const completedModulesCount = child.completedLessonIds.length > 0 
-    ? new Set(child.completedLessonIds.map(id => id.split('_')[0])).size // Approximate module count by prefix logic or just raw count
-    : 0;
 
   // Mock graph data based on XP
   const xpGraphData = [
@@ -114,25 +111,25 @@ const ParentDashboard: React.FC = () => {
     <div className="space-y-8 pb-20">
       <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-black text-gray-800">Parent Dashboard</h2>
-            <p className="text-gray-500 font-medium">Monitoring: <span className="text-kid-accent font-bold">{child.name}</span></p>
+            <h2 className="text-3xl font-black text-gray-800">{t('parent.title')}</h2>
+            <p className="text-gray-500 font-medium">{t('parent.monitoring')} <span className="text-kid-accent font-bold">{child.name}</span></p>
           </div>
           <button className="bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-xl font-bold hover:bg-gray-50 flex items-center gap-2">
-             <RefreshCw size={18} /> Sync Data
+             <RefreshCw size={18} /> {t('parent.sync')}
           </button>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard icon={<Clock className="text-blue-500"/>} label="Total XP" value={child.xp.toString()} color="bg-blue-50" />
-        <StatCard icon={<BookOpen className="text-green-500"/>} label="Lessons Done" value={child.completedLessonIds.length.toString()} color="bg-green-50" />
-        <StatCard icon={<Flame className="text-orange-500"/>} label="Current Streak" value={`${child.streak} Days`} color="bg-orange-50" />
+        <StatCard icon={<Clock className="text-blue-500"/>} label={t('parent.stat_xp')} value={child.xp.toString()} color="bg-blue-50" />
+        <StatCard icon={<BookOpen className="text-green-500"/>} label={t('parent.stat_lessons')} value={child.completedLessonIds.length.toString()} color="bg-green-50" />
+        <StatCard icon={<Flame className="text-orange-500"/>} label={t('parent.stat_streak')} value={`${child.streak} ${t('stats.days')}`} color="bg-orange-50" />
       </div>
 
       {/* Activity Graph */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-         <h3 className="text-xl font-bold text-gray-800 mb-6">Weekly Activity (Est. XP Earned)</h3>
-         <div className="h-64 flex items-end justify-between gap-4">
+         <h3 className="text-xl font-bold text-gray-800 mb-6">{t('parent.graph_title')}</h3>
+         <div className="h-64 flex items-end justify-between gap-4" dir="ltr">
             {displayGraph.map((d, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
                     <div className="relative w-full flex justify-end flex-col h-full rounded-t-xl overflow-hidden bg-gray-50 group-hover:bg-gray-100 transition-colors">
@@ -158,10 +155,10 @@ const ParentDashboard: React.FC = () => {
                   <div>
                       <div className="flex items-center gap-2 text-yellow-400 mb-2">
                           <Check size={20} strokeWidth={3} />
-                          <span className="font-black tracking-widest text-xs uppercase">Premium Active</span>
+                          <span className="font-black tracking-widest text-xs uppercase">{t('parent.sub_active')}</span>
                       </div>
-                      <h3 className="text-2xl font-black mb-1">KidCap Pro</h3>
-                      <p className="text-gray-400 text-sm">Next billing date: July 15, 2025</p>
+                      <h3 className="text-2xl font-black mb-1">{t('parent.sub_pro')}</h3>
+                      <p className="text-gray-400 text-sm">{t('parent.sub_billing')}</p>
                   </div>
                   <button 
                     onClick={handleManage}
@@ -169,27 +166,27 @@ const ParentDashboard: React.FC = () => {
                     className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-colors"
                   >
                       {isProcessing ? <Loader2 className="animate-spin" /> : <CreditCard size={18} />}
-                      Manage Subscription
+                      {t('parent.manage_sub')}
                   </button>
               </div>
           ) : (
               <div className="flex flex-col md:flex-row justify-between items-center gap-8">
                   <div className="flex-1">
-                      <h3 className="text-2xl font-black text-gray-800 mb-2">Unlock Full Potential</h3>
-                      <p className="text-gray-500 font-medium mb-4">Get unlimited access to all 30+ business simulations, AI tutoring, and advanced analytics.</p>
-                      <div className="flex gap-4 text-sm font-bold text-gray-600">
-                          <span className="flex items-center gap-1"><Check size={16} className="text-green-500"/> No Ads</span>
-                          <span className="flex items-center gap-1"><Check size={16} className="text-green-500"/> All Games</span>
-                          <span className="flex items-center gap-1"><Check size={16} className="text-green-500"/> AI Tutor</span>
+                      <h3 className="text-2xl font-black text-gray-800 mb-2">{t('parent.upsell_title')}</h3>
+                      <p className="text-gray-500 font-medium mb-4">{t('parent.upsell_desc')}</p>
+                      <div className="flex gap-4 text-sm font-bold text-gray-600 flex-wrap">
+                          <span className="flex items-center gap-1"><Check size={16} className="text-green-500"/> {t('parent.feature_ads')}</span>
+                          <span className="flex items-center gap-1"><Check size={16} className="text-green-500"/> {t('parent.feature_games')}</span>
+                          <span className="flex items-center gap-1"><Check size={16} className="text-green-500"/> {t('parent.feature_ai')}</span>
                       </div>
                   </div>
                   <div className="text-center">
-                      <div className="text-3xl font-black text-gray-800 mb-2">$9.99<span className="text-base text-gray-400 font-bold">/mo</span></div>
+                      <div className="text-3xl font-black text-gray-800 mb-2">$9.99<span className="text-base text-gray-400 font-bold">{t('pricing.per_mo')}</span></div>
                       <button 
                         onClick={handleUpgradeClick}
                         className="bg-kid-primary text-yellow-900 px-8 py-3 rounded-xl font-black shadow-[0_4px_0_0_rgba(202,138,4,1)] btn-juicy hover:bg-yellow-400 flex items-center gap-2"
                       >
-                          <Zap size={20} /> Upgrade Now
+                          <Zap size={20} /> {t('parent.upgrade_btn')}
                       </button>
                   </div>
               </div>
@@ -199,28 +196,28 @@ const ParentDashboard: React.FC = () => {
       {/* Settings Control Panel */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
           <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-             <span>⚙️</span> Child Settings & Controls
+             <span>⚙️</span> {t('parent.settings_title')}
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-6">
                   <div>
-                      <label className="block text-sm font-bold text-gray-500 mb-2">Daily Goal</label>
+                      <label className="block text-sm font-bold text-gray-500 mb-2">{t('parent.label_goal')}</label>
                       <select 
                         value={child.settings.dailyGoalMinutes}
                         onChange={(e) => updateUserSettings({ dailyGoalMinutes: parseInt(e.target.value) })}
                         className="w-full p-3 rounded-xl border-2 border-gray-200 font-bold text-gray-700 focus:border-kid-accent outline-none"
                       >
-                          <option value={10}>10 Minutes / Day (Light)</option>
-                          <option value={15}>15 Minutes / Day (Recommended)</option>
-                          <option value={30}>30 Minutes / Day (Intense)</option>
+                          <option value={10}>10 Min</option>
+                          <option value={15}>15 Min</option>
+                          <option value={30}>30 Min</option>
                       </select>
                   </div>
                   
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                       <div className="flex items-center gap-3">
                           <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><Bell size={20} /></div>
-                          <span className="font-bold text-gray-700">Sound Effects</span>
+                          <span className="font-bold text-gray-700">{t('parent.label_sound')}</span>
                       </div>
                       <Toggle 
                          checked={child.settings.soundEnabled} 
@@ -231,7 +228,7 @@ const ParentDashboard: React.FC = () => {
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                       <div className="flex items-center gap-3">
                           <div className="p-2 bg-purple-100 rounded-lg text-purple-600"><Music size={20} /></div>
-                          <span className="font-bold text-gray-700">Background Music</span>
+                          <span className="font-bold text-gray-700">{t('parent.label_music')}</span>
                       </div>
                       <Toggle 
                          checked={child.settings.musicEnabled} 
@@ -242,10 +239,10 @@ const ParentDashboard: React.FC = () => {
 
               <div className="space-y-4">
                   <div className="p-4 rounded-xl border-l-4 border-red-400 bg-red-50">
-                      <h4 className="font-bold text-red-700 mb-1">Danger Zone</h4>
-                      <p className="text-xs text-red-500 mb-4">Resetting passwords cannot be undone.</p>
+                      <h4 className="font-bold text-red-700 mb-1">{t('parent.danger_zone')}</h4>
+                      <p className="text-xs text-red-500 mb-4">{t('parent.danger_desc')}</p>
                       <button className="text-sm bg-white border border-red-200 text-red-600 font-bold py-2 px-4 rounded-lg hover:bg-red-100">
-                          Reset Password
+                          {t('parent.reset_pwd')}
                       </button>
                   </div>
               </div>

@@ -361,7 +361,7 @@ interface AppState {
   collectIdleIncome: (businessId: string) => number;
   collectAllIdleIncome: () => void;
   getSkillModifiers: () => { xpMultiplier: number, costMultiplier: number, priceMultiplier: number };
-  upgradeSubscription: (tier: SubscriptionTier, token?: string) => void;
+  upgradeSubscription: (tier: SubscriptionTier) => void;
   hasUnlimitedEnergy: () => boolean;
   hasAiAccess: () => boolean;
 
@@ -906,16 +906,8 @@ export const useAppStore = create<AppState>()(
         return mods;
       },
 
-      upgradeSubscription: (tier, token) => set((state) => {
+      upgradeSubscription: (tier) => set((state) => {
           if (!state.user) return {};
-
-          // Simulated Security Check
-          const VALID_TOKEN = "PAYMENT_VERIFIED_SECRET_123";
-          if (token !== VALID_TOKEN && tier !== 'intern') {
-              console.warn("Unauthorized subscription upgrade attempt.");
-              return {};
-          }
-
           if (state.user.settings.soundEnabled) SoundService.playLevelUp();
           const updatedUser = { 
               ...state.user, 
@@ -999,25 +991,6 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'kidcap-storage-v5',
-      merge: (persistedState: any, currentState: AppState) => {
-        // Deep merge with safety checks to prevent corruption
-        return {
-          ...currentState,
-          ...persistedState,
-          user: persistedState.user || currentState.user,
-          // Ensure fallbacks for money being NaN or undefined
-          lemonadeState: {
-             ...currentState.lemonadeState,
-             ...(persistedState.lemonadeState || {}),
-             funds: (persistedState.lemonadeState?.funds && !isNaN(persistedState.lemonadeState.funds))
-                ? persistedState.lemonadeState.funds
-                : currentState.lemonadeState.funds
-          },
-          library: persistedState.library || currentState.library,
-          users: persistedState.users || currentState.users,
-          classrooms: persistedState.classrooms || currentState.classrooms,
-        };
-      },
       partialize: (state) => ({ 
         user: state.user,
         lemonadeState: state.lemonadeState,
