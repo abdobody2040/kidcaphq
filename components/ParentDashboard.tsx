@@ -65,7 +65,8 @@ const ParentDashboard: React.FC = () => {
   };
 
   const handlePaymentSuccess = () => {
-      upgradeSubscription('PREMIUM');
+      // Default to highest tier for Pro upgrade button for now
+      upgradeSubscription('tycoon');
       setShowPayment(false);
       setShowSuccessToast(true);
       setTimeout(() => setShowSuccessToast(false), 4000);

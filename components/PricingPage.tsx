@@ -1,84 +1,102 @@
 
 import React from 'react';
-import { ArrowLeft, Check, X as XIcon, Crown, Shield, Star } from 'lucide-react';
+import { ArrowLeft, Check, Crown, Star, Shield, Users, Rocket } from 'lucide-react';
+import { useAppStore, SUBSCRIPTION_PLANS } from '../store';
+import { useTranslation } from 'react-i18next';
 
 interface PricingPageProps {
   onBack: () => void;
   onGetStarted: () => void;
 }
 
+// Map Plan IDs to Translation Keys for Features
+const PLAN_FEATURES_KEYS: Record<string, string[]> = {
+    intern: ['feat_limited_energy', 'feat_standard_lessons', 'feat_ads'],
+    founder: ['feat_unlimited', 'feat_offline', 'feat_custom_hq'],
+    board: ['feat_family', 'feat_parent_dash', 'feat_founder_perks'],
+    tycoon: ['feat_ai_consultant', 'feat_negotiation', 'feat_board_perks']
+};
+
 const PricingPage: React.FC<PricingPageProps> = ({ onBack, onGetStarted }) => {
+  const { t } = useTranslation();
+
+  const getButtonText = (planId: string, price: number) => {
+      if (price === 0) return t('pricing.btn_start_free');
+      if (planId === 'founder') return `${t('pricing.btn_get_funded')}`;
+      if (planId === 'board') return `${t('pricing.btn_start_family')}`;
+      if (planId === 'tycoon') return `${t('pricing.btn_hire_ollie')}`;
+      return `${t('pricing.btn_select')} ${t(`pricing.tier_${planId}`)}`;
+  };
+
   return (
-    <div className="min-h-screen bg-green-50 font-sans text-gray-900 pb-20">
-      <div className="p-8 border-b border-green-100 bg-white">
-          <div className="max-w-6xl mx-auto">
-              <button onClick={onBack} className="flex items-center gap-2 text-gray-500 font-bold mb-6 hover:text-green-600 transition-colors">
-                  <ArrowLeft size={20} /> Back
+    <div className="min-h-screen bg-white font-sans text-gray-900 pb-20">
+      <div className="bg-gradient-to-b from-blue-50 to-white p-8 border-b border-blue-100">
+          <div className="max-w-7xl mx-auto">
+              <button onClick={onBack} className="flex items-center gap-2 text-gray-500 font-bold mb-6 hover:text-blue-600 transition-colors">
+                  <ArrowLeft size={20} /> {t('common.back')}
               </button>
               <div className="text-center max-w-3xl mx-auto py-10">
-                  <h1 className="text-5xl font-black mb-6 text-gray-900">Invest in Their Future</h1>
-                  <p className="text-xl text-gray-500 font-medium">Choose the plan that fits your family. Cancel anytime, risk-free.</p>
+                  <h1 className="text-5xl font-black mb-6 text-gray-900">{t('pricing.title')}</h1>
+                  <p className="text-xl text-gray-500 font-medium">{t('pricing.subtitle')}</p>
               </div>
           </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               
-              {/* Free Tier */}
-              <div className="bg-white rounded-3xl p-8 border-2 border-gray-100 shadow-sm">
-                  <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-gray-100 rounded-lg text-gray-500"><Shield size={24} /></div>
-                      <h3 className="text-2xl font-black text-gray-700">Starter</h3>
-                  </div>
-                  <div className="text-5xl font-black mb-2 text-gray-900">$0<span className="text-xl text-gray-400 font-medium">/mo</span></div>
-                  <p className="text-gray-500 mb-8 font-bold">For curious kids just starting out.</p>
-                  
-                  <button 
-                    onClick={onGetStarted}
-                    className="w-full py-4 rounded-xl font-black bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors mb-8"
-                  >
-                      Get Started Free
-                  </button>
+              {SUBSCRIPTION_PLANS.map((plan) => {
+                  const isRecommended = plan.recommended;
+                  const Icon = getPlanIcon(plan.id);
+                  const featureKeys = PLAN_FEATURES_KEYS[plan.id] || [];
 
-                  <div className="space-y-4">
-                      <Feature text="Access to Module 1 & 2" />
-                      <Feature text="Lemonade Stand Game" />
-                      <Feature text="Basic Profile" />
-                      <Feature text="Advanced Analytics" active={false} />
-                      <Feature text="AI Tutoring" active={false} />
-                      <Feature text="All 30+ Games" active={false} />
-                  </div>
-              </div>
+                  return (
+                      <div 
+                        key={plan.id} 
+                        className={`relative rounded-3xl p-6 flex flex-col h-full transition-all duration-300
+                            ${plan.color} ${isRecommended ? 'shadow-xl scale-105 z-10 border-2' : 'border shadow-sm hover:shadow-md'}
+                        `}
+                      >
+                          {isRecommended && (
+                              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg whitespace-nowrap">
+                                  {t('pricing.most_popular')}
+                              </div>
+                          )}
 
-              {/* Pro Tier */}
-              <div className="bg-white rounded-3xl p-10 border-4 border-kid-secondary relative shadow-xl transform md:scale-105 z-10">
-                  <div className="absolute top-0 right-0 bg-kid-secondary text-white text-xs font-black px-4 py-1 rounded-bl-xl uppercase tracking-widest">
-                      Recommended
-                  </div>
-                  <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-green-100 rounded-lg text-kid-secondary"><Crown size={24} /></div>
-                      <h3 className="text-2xl font-black text-kid-secondary">Future CEO</h3>
-                  </div>
-                  <div className="text-5xl font-black mb-2 text-gray-900">$9.99<span className="text-xl text-gray-400 font-medium">/mo</span></div>
-                  <p className="text-gray-500 mb-8 font-bold">The complete academy experience.</p>
-                  
-                  <button 
-                    onClick={onGetStarted}
-                    className="w-full py-4 rounded-xl font-black bg-kid-secondary text-white hover:bg-green-600 shadow-[0_4px_0_0_rgba(21,128,61,1)] btn-juicy transition-all mb-8"
-                  >
-                      Start Free Trial
-                  </button>
+                          <div className="flex items-center gap-3 mb-4">
+                              <div className={`p-2 rounded-xl bg-white shadow-sm text-gray-700`}>
+                                  {Icon}
+                              </div>
+                              <h3 className="text-xl font-black text-gray-800">{t(`pricing.tier_${plan.id}`)}</h3>
+                          </div>
 
-                  <div className="space-y-4">
-                      <Feature text="Unlimited Access to All Modules" active />
-                      <Feature text="Unlock All 30+ Mini-Games" active />
-                      <Feature text="AI Tutoring (Ollie)" active />
-                      <Feature text="Parent Analytics Dashboard" active />
-                      <Feature text="Certificate Downloads" active />
-                      <Feature text="Priority Support" active />
-                  </div>
-              </div>
+                          <div className="mb-2">
+                              <span className="text-4xl font-black text-gray-900">${plan.price}</span>
+                              {plan.price > 0 && <span className="text-gray-500 font-bold">{t(`pricing.per_${plan.interval}`)}</span>}
+                          </div>
+                          
+                          <p className="text-sm text-gray-500 font-medium mb-6 min-h-[40px]">
+                              {t(`pricing.desc_${plan.id}`)}
+                          </p>
+
+                          <div className="space-y-3 mb-8 flex-1">
+                              {featureKeys.map((key) => (
+                                  <div key={key} className="flex items-start gap-2 text-sm font-bold text-gray-700">
+                                      <Check size={16} className="text-green-500 shrink-0 mt-0.5" strokeWidth={3} />
+                                      {t(`pricing.${key}`)}
+                                  </div>
+                              ))}
+                          </div>
+
+                          <button 
+                            onClick={onGetStarted}
+                            className={`w-full py-3 rounded-xl font-black transition-all shadow-sm ${plan.buttonColor}`}
+                          >
+                              {getButtonText(plan.id, plan.price)}
+                          </button>
+                      </div>
+                  );
+              })}
 
           </div>
       </div>
@@ -86,13 +104,15 @@ const PricingPage: React.FC<PricingPageProps> = ({ onBack, onGetStarted }) => {
   );
 };
 
-const Feature = ({ text, active = true }: { text: string, active?: boolean }) => (
-    <div className={`flex items-center gap-3 font-bold ${active ? 'text-gray-700' : 'text-gray-300 decoration-2'}`}>
-        <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${active ? 'bg-green-100 text-kid-secondary' : 'bg-gray-100 text-gray-300'}`}>
-            {active ? <Check size={14} strokeWidth={4} /> : <XIcon size={14} strokeWidth={3} />}
-        </div>
-        {text}
-    </div>
-);
+// Helper to get icon based on ID
+const getPlanIcon = (id: string) => {
+    switch (id) {
+        case 'intern': return <Shield size={24} />;
+        case 'founder': return <Rocket size={24} className="text-blue-500" />;
+        case 'board': return <Users size={24} className="text-purple-500" />;
+        case 'tycoon': return <Crown size={24} className="text-yellow-500" />;
+        default: return <Star size={24} />;
+    }
+};
 
 export default PricingPage;

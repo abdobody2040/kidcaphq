@@ -1,4 +1,3 @@
-
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useAppStore, SHOP_ITEMS, LEVEL_THRESHOLDS } from '../store';
 import { User, UserRole } from '../types';
@@ -23,13 +22,17 @@ const createMockUser = (overrides?: Partial<User>): User => ({
     dailyGoalMinutes: 15,
     soundEnabled: false, // Disable sound for tests to avoid AudioContext issues
     musicEnabled: false,
-    themeColor: 'green'
+    themeColor: 'green',
+    themeMode: 'light'
   },
   hqLevel: 'hq_garage',
   unlockedSkills: [],
   portfolio: [],
   equippedItems: [],
   subscriptionStatus: 'FREE',
+  subscriptionTier: 'intern',
+  energy: 5,
+  lastEnergyRefill: Date.now(),
   ...overrides
 });
 

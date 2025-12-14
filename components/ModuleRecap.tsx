@@ -4,6 +4,7 @@ import { useAppStore } from '../store';
 import { UniversalLessonUnit } from '../types';
 import { motion } from 'framer-motion';
 import { Check, Trophy, Star, ArrowRight, Share2, Download, Printer } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ModuleRecapProps {
   moduleTitle: string;
@@ -14,6 +15,7 @@ interface ModuleRecapProps {
 
 const ModuleRecap: React.FC<ModuleRecapProps> = ({ moduleTitle, lessons, totalXp, onClose }) => {
   const { user } = useAppStore();
+  const { t } = useTranslation();
 
   const handleDownloadCertificate = () => {
       // Trigger browser print dialog. 
@@ -63,7 +65,7 @@ const ModuleRecap: React.FC<ModuleRecapProps> = ({ moduleTitle, lessons, totalXp
                                     <Check size={12} strokeWidth={4} />
                                 </div>
                                 <span className="text-sm font-bold text-gray-700 leading-tight">
-                                    {lesson.lesson_payload.headline}
+                                    {t(`lesson_${lesson.id}_title`, { defaultValue: lesson.lesson_payload.headline })}
                                 </span>
                             </div>
                         ))}

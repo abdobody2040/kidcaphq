@@ -2,11 +2,11 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../store';
 import { Book } from '../types';
-import { Trash2, Plus, Sparkles, Loader2, BookOpen } from 'lucide-react';
+import { Trash2, Plus, Sparkles, Loader2, BookOpen, AlertTriangle, BatteryWarning } from 'lucide-react';
 import { generateBookDetails } from '../services/geminiService';
 
 const AdminBookManager: React.FC = () => {
-  const { library, addBook, removeBook, isAdminMode } = useAppStore();
+  const { library, addBook, removeBook, isAdminMode, user, updateUser } = useAppStore();
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Form State
@@ -70,6 +70,16 @@ const AdminBookManager: React.FC = () => {
     setLesson1('');
     setLesson2('');
     setLesson3('');
+  };
+
+  const handleDebugReset = () => {
+    if (!user) return;
+    updateUser(user.id, {
+      subscriptionTier: 'intern',
+      subscriptionStatus: 'FREE',
+      energy: 0
+    });
+    alert("Debug: User reset to Intern with 0 Energy. Go try to start a game day!");
   };
 
   return (
@@ -175,28 +185,46 @@ const AdminBookManager: React.FC = () => {
           </form>
 
           {/* LIST */}
-          <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 overflow-y-auto max-h-[600px]">
-            <h3 className="font-bold text-gray-400 mb-4 uppercase text-xs tracking-widest">Current Books ({library.length})</h3>
-            <div className="space-y-3">
-              {library.map(book => (
-                <div key={book.id} className="flex gap-4 p-3 bg-gray-900 rounded-xl border border-gray-700 group">
-                  <img src={book.coverUrl} alt={book.title} className="w-12 h-16 object-cover rounded bg-gray-800" />
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-white truncate">{book.title}</h4>
-                    <p className="text-xs text-gray-500 truncate">{book.author}</p>
-                    <span className="inline-block mt-1 px-2 py-0.5 bg-gray-800 text-gray-300 text-[10px] rounded uppercase font-bold tracking-wide border border-gray-600">
-                      {book.category}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => removeBook(book.id)}
-                    className="p-2 text-gray-500 hover:text-red-500 hover:bg-gray-800 rounded-lg transition-colors self-center"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+          <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 overflow-y-auto max-h-[600px] flex flex-col justify-between">
+            <div>
+                <h3 className="font-bold text-gray-400 mb-4 uppercase text-xs tracking-widest">Current Books ({library.length})</h3>
+                <div className="space-y-3">
+                {library.map(book => (
+                    <div key={book.id} className="flex gap-4 p-3 bg-gray-900 rounded-xl border border-gray-700 group">
+                    <img src={book.coverUrl} alt={book.title} className="w-12 h-16 object-cover rounded bg-gray-800" />
+                    <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-white truncate">{book.title}</h4>
+                        <p className="text-xs text-gray-500 truncate">{book.author}</p>
+                        <span className="inline-block mt-1 px-2 py-0.5 bg-gray-800 text-gray-300 text-[10px] rounded uppercase font-bold tracking-wide border border-gray-600">
+                        {book.category}
+                        </span>
+                    </div>
+                    <button 
+                        onClick={() => removeBook(book.id)}
+                        className="p-2 text-gray-500 hover:text-red-500 hover:bg-gray-800 rounded-lg transition-colors self-center"
+                    >
+                        <Trash2 size={18} />
+                    </button>
+                    </div>
+                ))}
+                {library.length === 0 && <div className="text-gray-500 text-center py-10">Library is empty.</div>}
                 </div>
-              ))}
-              {library.length === 0 && <div className="text-gray-500 text-center py-10">Library is empty.</div>}
+            </div>
+
+            {/* DEBUG TOOLS */}
+            <div className="mt-12 pt-8 border-t border-gray-700">
+                <h3 className="text-xl font-bold text-red-400 mb-4 flex items-center gap-2">
+                    <AlertTriangle size={24} /> QA / Debug Tools
+                </h3>
+                <div className="bg-red-900/20 border border-red-800 p-6 rounded-2xl">
+                    <p className="text-gray-400 mb-4 text-sm font-bold">Use these tools to verify paywalls and game limits.</p>
+                    <button 
+                        onClick={handleDebugReset}
+                        className="w-full bg-red-600 hover:bg-red-500 text-white px-6 py-3 rounded-xl font-black shadow-lg flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95"
+                    >
+                        <BatteryWarning size={20} /> Reset to Intern & Drain Energy
+                    </button>
+                </div>
             </div>
           </div>
         </div>

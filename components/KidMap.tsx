@@ -3,6 +3,7 @@ import React, { useMemo } from 'react';
 import { useAppStore } from '../store';
 import { Check, Star, Lock, MapPin, ClipboardList } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface KidMapProps {
   onStartLesson: (moduleId: string) => void;
@@ -10,6 +11,7 @@ interface KidMapProps {
 
 const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
   const { user, lessons, assignments } = useAppStore();
+  const { t } = useTranslation();
   
   // Dynamically build course map from store data
   const courseMap = useMemo(() => {
@@ -18,9 +20,24 @@ const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
       // Simplified mapping for visual icons based on tag keywords
       return uniqueTags.map((tag: string) => {
           const safeTag = String(tag);
+          
+          // Map topic tags to translation keys safely
+          let translationKey = safeTag;
+          if (safeTag === "Money Basics") translationKey = "money_basics";
+          else if (safeTag === "Entrepreneurship") translationKey = "entrepreneurship";
+          else if (safeTag === "Investing & Wealth") translationKey = "investing_wealth";
+          else if (safeTag === "Marketing") translationKey = "marketing";
+          else if (safeTag === "Leadership") translationKey = "leadership";
+          else if (safeTag === "Economics") translationKey = "economics";
+          else if (safeTag === "Technology") translationKey = "technology";
+          else if (safeTag === "Social Responsibility") translationKey = "social_responsibility";
+          else if (safeTag === "Global Business") translationKey = "global_business";
+          else if (safeTag === "Financial Smarts") translationKey = "financial_smarts";
+
           return {
               id: `MOD_${safeTag.replace(/\s+/g, '_').toUpperCase()}`,
               title: safeTag,
+              translationKey: translationKey,
               icon: safeTag.includes('Money') ? '💰' : safeTag.includes('Tech') ? '💻' : safeTag.includes('Global') ? '✈️' : '🚀',
               lessonIds: lessons.filter(l => l.topic_tag === tag).map(l => l.id)
           };
@@ -51,24 +68,24 @@ const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
   };
 
   if (courseMap.length === 0) {
-      return <div className="text-center py-20 text-gray-400 font-bold">No curriculum loaded. Please contact Admin.</div>;
+      return <div className="text-center py-20 text-gray-400 dark:text-gray-500 font-bold">{t('map.no_curriculum')}</div>;
   }
 
   return (
     <div className="relative pb-20">
        <div className="text-center mb-12">
-          <h2 className="text-4xl font-black text-gray-800 mb-2">My Entrepreneur Path</h2>
-          <p className="text-gray-500 font-bold">Complete all modules to become a CEO!</p>
+          <h1 className="text-4xl font-black text-gray-800 dark:text-white mb-2">{t('path_title')}</h1>
+          <p className="text-gray-500 dark:text-gray-400 font-bold">{t('subtitle_complete')}</p>
           {user?.classId && (
-              <div className="mt-4 inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider">
-                  <ClipboardList size={14} /> Class Mode Active
+              <div className="mt-4 inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider">
+                  <ClipboardList size={14} /> {t('class_mode')}
               </div>
           )}
        </div>
 
        <div className="max-w-md mx-auto relative space-y-16">
           {/* Vertical Path Line */}
-          <div className="absolute left-1/2 top-0 bottom-0 w-4 bg-gray-200 -translate-x-1/2 rounded-full -z-10" />
+          <div className="absolute left-1/2 top-0 bottom-0 w-4 bg-gray-200 dark:bg-gray-700 -translate-x-1/2 rounded-full -z-10" />
 
           {courseMap.map((mod, index) => {
               // Unlock Logic: First module open, others check previous completion
@@ -103,36 +120,38 @@ const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
                         className={`
                             w-24 h-24 rounded-3xl flex flex-col items-center justify-center border-b-8 transition-all relative z-10 shadow-lg
                             ${isLocked 
-                                ? 'bg-gray-300 border-gray-400 cursor-not-allowed' 
+                                ? 'bg-gray-300 dark:bg-gray-600 border-gray-400 dark:border-gray-500 cursor-not-allowed' 
                                 : status === 'COMPLETE' 
                                     ? 'bg-kid-secondary border-green-700' 
                                     : 'bg-kid-primary border-yellow-600'}
                         `}
                     >
-                        <div className="text-3xl mb-1">{isLocked ? <Lock className="text-gray-500" /> : mod.icon}</div>
+                        <div className="text-3xl mb-1">{isLocked ? <Lock className="text-gray-500 dark:text-gray-400" /> : mod.icon}</div>
                         {status === 'COMPLETE' && (
-                             <div className="absolute -top-2 -right-2 bg-white text-green-600 rounded-full p-1 border-2 border-green-600">
+                             <div className="absolute -top-2 -right-2 bg-white dark:bg-gray-800 text-green-600 rounded-full p-1 border-2 border-green-600">
                                  <Check size={16} strokeWidth={4} />
                              </div>
                         )}
                         {/* Assignment Badge */}
                         {!isLocked && dueCount > 0 && (
                             <div className="absolute -top-2 -left-2 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-full border-2 border-white shadow-md animate-bounce">
-                                {dueCount} DUE
+                                {dueCount} {t('due')}
                             </div>
                         )}
                     </motion.button>
 
                     {/* Label */}
                     <div 
-                        className={`absolute top-1/2 -translate-y-1/2 w-40 bg-white p-3 rounded-xl border-2 border-gray-100 shadow-sm text-center
+                        className={`absolute top-1/2 -translate-y-1/2 w-40 bg-white dark:bg-gray-800 p-3 rounded-xl border-2 border-gray-100 dark:border-gray-700 shadow-sm text-center
                         ${isLeft ? 'left-28' : 'right-28'}
                         `}
                     >
-                        <h3 className="font-black text-gray-800 text-sm uppercase">{mod.title}</h3>
-                        <div className="text-xs font-bold text-gray-400 mt-1">{progress}/{total} Lessons</div>
-                        <div className="w-full bg-gray-100 h-2 rounded-full mt-2 overflow-hidden">
-                            <div className="bg-kid-secondary h-full transition-all" style={{ width: `${total > 0 ? (progress/total)*100 : 0}%` }} />
+                        <h3 className="font-black text-gray-800 dark:text-white text-sm uppercase">
+                            {t(mod.translationKey, { defaultValue: mod.title })}
+                        </h3>
+                        <div className="text-xs font-bold text-gray-400 mt-1">{progress}/{total} {t('lessons_count')}</div>
+                        <div className="w-full bg-gray-100 dark:bg-gray-700 h-2 rounded-full mt-2 overflow-hidden">
+                            <div className="bg-kid-secondary h-full transition-all" style={{ width: `${total > 0 ? (progress/total)*100 : 0}%` }} dir="ltr" />
                         </div>
                     </div>
 
@@ -141,8 +160,8 @@ const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
           })}
           
           <div className="text-center pt-8">
-              <div className="inline-block bg-yellow-100 text-yellow-800 px-6 py-3 rounded-full font-black text-xl border-4 border-white shadow-xl">
-                  🏆 CERTIFICATE 🏆
+              <div className="inline-block bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300 px-6 py-3 rounded-full font-black text-xl border-4 border-white dark:border-gray-800 shadow-xl">
+                  🏆 {t('certificate')} 🏆
               </div>
           </div>
        </div>

@@ -4,15 +4,64 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { 
   User, UserRole, LemonadeState, ShopItem, LeaderboardEntry, Classroom, UserSettings, 
   BusinessLogo, Skill, HQLevel, PortfolioItem, UniversalLessonUnit, BusinessSimulation,
-  StudentGroup, Rubric, Assignment, Submission, CMSContent, Book
+  StudentGroup, Rubric, Assignment, Submission, CMSContent, Book, SubscriptionTier
 } from './types';
 import { ALL_LESSONS } from './data/curriculum';
 import { GAMES_DB } from './data/games';
+import { INITIAL_LIBRARY } from './data/libraryBooks';
 import { SoundService } from './services/SoundService';
 
 // Constants
 export const LEVEL_THRESHOLDS = [0, 100, 250, 500, 1000, 2000, 5000];
 export const MAX_LOCAL_USERS = 50; // Safety limit for LocalStorage
+
+export const SUBSCRIPTION_PLANS = [
+  {
+    id: 'intern',
+    name: 'Intern',
+    price: 0,
+    interval: 'mo',
+    description: 'For curious kids just starting out.',
+    features: ['Limited Energy', 'Standard Lessons', 'Ads'],
+    color: 'bg-white border-gray-200',
+    buttonColor: 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+    tier: 'intern' as SubscriptionTier
+  },
+  {
+    id: 'founder',
+    name: 'Founder',
+    price: 9.99,
+    interval: 'mo',
+    description: 'Serious about building an empire.',
+    features: ['Unlimited Energy', 'Offline Mode', 'Custom HQ'],
+    color: 'bg-blue-50 border-blue-200',
+    buttonColor: 'bg-blue-600 text-white hover:bg-blue-700',
+    tier: 'founder' as SubscriptionTier,
+    recommended: true
+  },
+  {
+    id: 'board',
+    name: 'Board Member',
+    price: 119,
+    interval: 'yr',
+    description: 'For the whole family.',
+    features: ['6 Family Accounts', 'Parent Dashboard', 'All Founder Perks'],
+    color: 'bg-purple-50 border-purple-200',
+    buttonColor: 'bg-purple-600 text-white hover:bg-purple-700',
+    tier: 'board' as SubscriptionTier
+  },
+  {
+    id: 'tycoon',
+    name: 'Tycoon',
+    price: 169,
+    interval: 'yr',
+    description: 'The ultimate VIP experience.',
+    features: ['Ollie AI Consultant', 'Negotiation Battles', 'All Board Perks'],
+    color: 'bg-yellow-50 border-yellow-400 ring-4 ring-yellow-400/20',
+    buttonColor: 'bg-kid-primary text-yellow-900 hover:bg-yellow-400',
+    tier: 'tycoon' as SubscriptionTier
+  }
+];
 
 export const SHOP_ITEMS: ShopItem[] = [
   // Apparel
@@ -71,51 +120,6 @@ export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   { id: 'kid_1', name: 'Leo', xp: 120, avatar: '🐼', isCurrentUser: true },
 ];
 
-export const MOCK_LIBRARY: Book[] = [
-  {
-    id: 'book_1',
-    title: 'Rich Dad Poor Dad for Teens',
-    author: 'Robert Kiyosaki',
-    coverUrl: 'https://m.media-amazon.com/images/I/51X+uF+7uFL._SL500_.jpg',
-    summary: 'This book teaches you the difference between working for money and making money work for you. It explains why some people get rich and others struggle, using simple stories.',
-    category: 'Finance',
-    keyLessons: [
-      'Assets put money in your pocket; liabilities take it out.',
-      'You don’t need a high income to be rich.',
-      'Financial intelligence helps you solve money problems.'
-    ],
-    ageRating: '12+'
-  },
-  {
-    id: 'book_2',
-    title: 'The Lemonade War',
-    author: 'Jacqueline Davies',
-    coverUrl: 'https://m.media-amazon.com/images/I/91M-sM3z-CL._AC_UF1000,1000_QL80_.jpg',
-    summary: 'A brother and sister compete to see who can sell the most lemonade. It’s a fun story that secretly teaches you about marketing, location, and competition.',
-    category: 'Fiction',
-    keyLessons: [
-      'Location is key for any business.',
-      'Understanding your competition helps you win.',
-      'Teamwork is often better than fighting.'
-    ],
-    ageRating: '8+'
-  },
-  {
-    id: 'book_3',
-    title: 'Shoe Dog (Young Readers)',
-    author: 'Phil Knight',
-    coverUrl: 'https://m.media-amazon.com/images/I/71waiK-G2RL._AC_UF1000,1000_QL80_.jpg',
-    summary: 'The true story of how Nike started. It shows that even billion-dollar companies start with a crazy idea and a lot of hard work.',
-    category: 'Biography',
-    keyLessons: [
-      'Don’t be afraid to fail; keep going.',
-      'Believe in your "crazy idea" even if others don’t.',
-      'Business is an adventure, not just a job.'
-    ],
-    ageRating: '10+'
-  }
-];
-
 // Helper: Calculate Level
 const getLevel = (xp: number) => {
   let level = 1;
@@ -137,7 +141,8 @@ const DEFAULT_SETTINGS: UserSettings = {
   dailyGoalMinutes: 15,
   soundEnabled: true,
   musicEnabled: true,
-  themeColor: 'green'
+  themeColor: 'green',
+  themeMode: 'light' // Added
 };
 
 const DEFAULT_CMS_CONTENT: CMSContent = {
@@ -200,6 +205,9 @@ const MOCK_USER: User = {
   portfolio: [],
   equippedItems: [],
   subscriptionStatus: 'FREE',
+  subscriptionTier: 'intern',
+  energy: 5,
+  lastEnergyRefill: Date.now(),
   classId: 'class_1' // Part of the mock classroom
 };
 
@@ -211,7 +219,8 @@ const MOCK_PARENT: User = {
   role: UserRole.PARENT,
   name: 'Mom',
   linkedChildId: 'kid_1',
-  subscriptionStatus: 'FREE'
+  subscriptionStatus: 'FREE',
+  subscriptionTier: 'intern',
 };
 
 const MOCK_TEACHER: User = {
@@ -222,7 +231,8 @@ const MOCK_TEACHER: User = {
   role: UserRole.TEACHER,
   name: 'Mr. Stark',
   classId: 'class_1',
-  subscriptionStatus: 'PREMIUM'
+  subscriptionStatus: 'PREMIUM',
+  subscriptionTier: 'tycoon',
 };
 
 const MOCK_ADMIN: User = {
@@ -232,7 +242,8 @@ const MOCK_ADMIN: User = {
   password: '123',
   role: UserRole.ADMIN,
   name: 'Super Admin',
-  subscriptionStatus: 'PREMIUM'
+  subscriptionStatus: 'PREMIUM',
+  subscriptionTier: 'tycoon',
 };
 
 const MOCK_CLASSROOM: Classroom = {
@@ -350,7 +361,9 @@ interface AppState {
   collectIdleIncome: (businessId: string) => number;
   collectAllIdleIncome: () => void;
   getSkillModifiers: () => { xpMultiplier: number, costMultiplier: number, priceMultiplier: number };
-  upgradeSubscription: (status: 'PREMIUM') => void;
+  upgradeSubscription: (tier: SubscriptionTier) => void;
+  hasUnlimitedEnergy: () => boolean;
+  hasAiAccess: () => boolean;
 
   // Content CRUD
   addLesson: (lesson: UniversalLessonUnit) => void;
@@ -408,7 +421,7 @@ export const useAppStore = create<AppState>()(
       games: GAMES_DB,
       users: [MOCK_USER, MOCK_PARENT, MOCK_TEACHER, MOCK_ADMIN],
       cmsContent: DEFAULT_CMS_CONTENT,
-      library: MOCK_LIBRARY,
+      library: INITIAL_LIBRARY,
       isAdminMode: false,
       
       // Initialize Teacher Feature Data
@@ -512,7 +525,10 @@ export const useAppStore = create<AppState>()(
               unlockedSkills: [],
               portfolio: [],
               equippedItems: [],
-              subscriptionStatus: 'FREE'
+              subscriptionStatus: 'FREE',
+              subscriptionTier: 'intern',
+              energy: 5,
+              lastEnergyRefill: Date.now()
           };
 
           let newClassroom: Classroom | null = null;
@@ -812,8 +828,18 @@ export const useAppStore = create<AppState>()(
         if (itemIndex === -1) return 0;
 
         const item = state.user.portfolio[itemIndex];
-        const now = new Date();
         const last = new Date(item.lastCollected);
+        
+        // FIX: NaN Safety Check
+        if (isNaN(last.getTime())) {
+            console.warn("Found corrupted date in portfolio, resetting timestamp.");
+            const updatedPortfolio = [...state.user.portfolio];
+            updatedPortfolio[itemIndex] = { ...item, lastCollected: new Date().toISOString() };
+            set({ user: { ...state.user, portfolio: updatedPortfolio }});
+            return 0; 
+        }
+
+        const now = new Date();
         const diffMs = now.getTime() - last.getTime();
         const diffMinutes = Math.min(1440, diffMs / (1000 * 60));
         const hourlyRate = 10 * item.managerLevel;
@@ -836,6 +862,12 @@ export const useAppStore = create<AppState>()(
           const now = new Date();
           const updatedPortfolio = state.user.portfolio.map(item => {
               const last = new Date(item.lastCollected);
+              
+              // FIX: NaN Safety Check Loop
+              if (isNaN(last.getTime())) {
+                  return { ...item, lastCollected: now.toISOString() };
+              }
+
               const diffMs = now.getTime() - last.getTime();
               const diffMinutes = Math.min(1440, diffMs / (1000 * 60));
               const hourlyRate = 10 * item.managerLevel;
@@ -874,12 +906,28 @@ export const useAppStore = create<AppState>()(
         return mods;
       },
 
-      upgradeSubscription: (status) => set((state) => {
+      upgradeSubscription: (tier) => set((state) => {
           if (!state.user) return {};
           if (state.user.settings.soundEnabled) SoundService.playLevelUp();
-          const updatedUser = { ...state.user, subscriptionStatus: status };
+          const updatedUser = { 
+              ...state.user, 
+              subscriptionTier: tier,
+              subscriptionStatus: (tier === 'intern' ? 'FREE' : 'PREMIUM') as 'FREE' | 'PREMIUM'
+          };
           return { user: updatedUser, users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u) };
       }),
+
+      hasUnlimitedEnergy: () => {
+          const user = get().user;
+          if (!user) return false;
+          return ['founder', 'board', 'tycoon'].includes(user.subscriptionTier);
+      },
+
+      hasAiAccess: () => {
+          const user = get().user;
+          if (!user) return false;
+          return user.subscriptionTier === 'tycoon';
+      },
 
       // --- ADMIN ACTIONS ---
       addLesson: (lesson) => set((state) => ({ lessons: [...state.lessons, lesson] })),

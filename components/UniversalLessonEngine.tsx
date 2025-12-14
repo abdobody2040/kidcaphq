@@ -6,6 +6,7 @@ import { getOwlyExplanation, chatWithOllie } from '../services/geminiService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, ArrowRight, Coins, Zap, RotateCcw, Filter, Star, Info, AlertCircle, Loader2 } from 'lucide-react';
 import ModuleRecap from './ModuleRecap';
+import { useTranslation } from 'react-i18next';
 
 interface EngineProps {
   units: UniversalLessonUnit[];
@@ -17,6 +18,7 @@ type Phase = 'LEARN' | 'CHALLENGE' | 'FEEDBACK' | 'COMPLETE';
 const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
   // Global Store Access
   const { user, completeLesson } = useAppStore();
+  const { t } = useTranslation();
 
   // Local State
   const [difficultyFilter, setDifficultyFilter] = useState<number | 'ALL'>('ALL');
@@ -81,9 +83,28 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
   // Helper: Shuffle answers (Fisher-Yates)
   const shuffledOptions = useMemo(() => {
     if (!unit) return [];
+    // We only translate the text options here if needed, but usually options are dynamic.
+    // For now, we use the raw strings, but you could wrap them in t() if they were static keys.
     const opts = [unit.challenge_payload.correct_answer, ...unit.challenge_payload.distractors];
     return opts.sort(() => Math.random() - 0.5);
   }, [unit]);
+
+  // Helper: Translate Topic Tag
+  const getTopicLabel = (tag: string) => {
+      const map: Record<string, string> = {
+          "Money Basics": "money_basics",
+          "Entrepreneurship": "entrepreneurship",
+          "Investing & Wealth": "investing_wealth",
+          "Marketing": "marketing",
+          "Leadership": "leadership",
+          "Economics": "economics",
+          "Technology": "technology",
+          "Social Responsibility": "social_responsibility",
+          "Global Business": "global_business",
+          "Financial Smarts": "financial_smarts"
+      };
+      return t(map[tag] || tag);
+  };
 
   // Handler: Advance Phase
   const handleNextPhase = () => {
@@ -169,10 +190,10 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
   // Helpers for Difficulty UI
   const getDifficultyColor = (level: number) => {
       switch(level) {
-          case 1: return 'bg-green-100 text-green-700 border-green-200';
-          case 2: return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-          case 3: return 'bg-red-100 text-red-700 border-red-200';
-          default: return 'bg-gray-100 text-gray-700 border-gray-200';
+          case 1: return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800';
+          case 2: return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800';
+          case 3: return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
+          default: return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
       }
   };
 
@@ -190,6 +211,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
 
   // Render Body Text with Interactive Terms
   const renderBodyText = (text: string) => {
+      // Split by bold markdown to find key terms
       const parts = text.split(/(\*\*.*?\*\*)/g);
       return parts.map((part, index) => {
           if (part.startsWith('**') && part.endsWith('**')) {
@@ -201,7 +223,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
                           whileTap={{ scale: 0.95 }}
                           onClick={() => handleTermClick(term)}
                           className={`font-bold border-b-2 border-dashed border-yellow-400 cursor-pointer transition-colors px-1 rounded
-                              ${activeTooltip === term ? 'bg-yellow-200 text-yellow-900' : 'text-gray-800 hover:bg-yellow-50'}`}
+                              ${activeTooltip === term ? 'bg-yellow-200 text-yellow-900' : 'text-gray-800 dark:text-white hover:bg-yellow-50 dark:hover:bg-gray-700'}`}
                       >
                           {term}
                       </motion.button>
@@ -242,14 +264,14 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
   if (activeUnits.length === 0 && phase !== 'COMPLETE') {
       return (
         <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
-            <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center">
-                <h3 className="text-2xl font-black text-gray-800 mb-2">No Lessons Found</h3>
-                <p className="text-gray-500 mb-6">There are no lessons with this difficulty level in this module.</p>
+            <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-md w-full text-center">
+                <h3 className="text-2xl font-black text-gray-800 dark:text-white mb-2">No Lessons Found</h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-6">There are no lessons with this difficulty level in this module.</p>
                 <div className="flex gap-4 justify-center">
                     <button onClick={() => setDifficultyFilter('ALL')} className="bg-blue-100 text-blue-700 px-6 py-2 rounded-xl font-bold hover:bg-blue-200">
                         Show All
                     </button>
-                    <button onClick={onExit} className="bg-gray-100 text-gray-600 px-6 py-2 rounded-xl font-bold hover:bg-gray-200">
+                    <button onClick={onExit} className="bg-gray-100 text-gray-600 px-6 py-2 rounded-xl font-bold hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                         Exit
                     </button>
                 </div>
@@ -261,9 +283,15 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
   // Loading state
   if (!unit && phase !== 'COMPLETE') return <div>Loading Data...</div>;
 
+  // DYNAMIC TRANSLATION LOOKUP
+  const translatedHeadline = unit ? t(`lesson_${unit.id}_title`, { defaultValue: unit.lesson_payload.headline }) : "";
+  const translatedBody = unit ? t(`lesson_${unit.id}_body`, { defaultValue: unit.lesson_payload.body_text }) : "";
+  const translatedQuestion = unit ? t(`lesson_${unit.id}_question`, { defaultValue: unit.challenge_payload.question_text }) : "";
+  const translatedFlavor = unit ? t(`lesson_${unit.id}_flavor`, { defaultValue: unit.flavor_text }) : "";
+
   return (
     <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
-      <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
         
         {/* Header: HUD */}
         <div className="bg-gray-800 text-white p-4 flex justify-between items-center relative z-20">
@@ -273,7 +301,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
                 {/* Topic & Filter */}
                 <div className="flex items-center gap-2">
                     <span className="font-bold text-gray-400 text-sm uppercase tracking-widest hidden sm:block">
-                        {unit ? String(unit.topic_tag).replace(/_/g, ' ') : 'Mission Complete'}
+                        {unit ? getTopicLabel(unit.topic_tag) : 'Mission Complete'}
                     </span>
                     
                     {/* Filter Dropdown */}
@@ -287,11 +315,11 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
                         </button>
                         
                         {showFilterMenu && (
-                            <div className="absolute top-full left-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden text-gray-800 py-1">
-                                <button onClick={() => { setDifficultyFilter('ALL'); setShowFilterMenu(false); }} className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-bold">All Levels</button>
-                                <button onClick={() => { setDifficultyFilter(1); setShowFilterMenu(false); }} className="w-full text-left px-4 py-2 hover:bg-green-50 text-sm font-bold text-green-600">⭐ Easy</button>
-                                <button onClick={() => { setDifficultyFilter(2); setShowFilterMenu(false); }} className="w-full text-left px-4 py-2 hover:bg-yellow-50 text-sm font-bold text-yellow-600">⭐⭐ Medium</button>
-                                <button onClick={() => { setDifficultyFilter(3); setShowFilterMenu(false); }} className="w-full text-left px-4 py-2 hover:bg-red-50 text-sm font-bold text-red-600">⭐⭐⭐ Hard</button>
+                            <div className="absolute top-full left-0 mt-2 w-40 bg-white dark:bg-gray-700 rounded-xl shadow-xl border border-gray-100 dark:border-gray-600 overflow-hidden text-gray-800 dark:text-gray-200 py-1">
+                                <button onClick={() => { setDifficultyFilter('ALL'); setShowFilterMenu(false); }} className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm font-bold">All Levels</button>
+                                <button onClick={() => { setDifficultyFilter(1); setShowFilterMenu(false); }} className="w-full text-left px-4 py-2 hover:bg-green-50 dark:hover:bg-green-900/30 text-sm font-bold text-green-600 dark:text-green-400">⭐ Easy</button>
+                                <button onClick={() => { setDifficultyFilter(2); setShowFilterMenu(false); }} className="w-full text-left px-4 py-2 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 text-sm font-bold text-yellow-600 dark:text-yellow-400">⭐⭐ Medium</button>
+                                <button onClick={() => { setDifficultyFilter(3); setShowFilterMenu(false); }} className="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/30 text-sm font-bold text-red-600 dark:text-red-400">⭐⭐⭐ Hard</button>
                             </div>
                         )}
                     </div>
@@ -309,7 +337,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
         </div>
 
         {/* Progress Bar */}
-        <div className="h-2 bg-gray-200 w-full">
+        <div className="h-2 bg-gray-200 dark:bg-gray-700 w-full">
             <motion.div 
                 className="h-full bg-kid-secondary"
                 initial={{ width: 0 }}
@@ -317,7 +345,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
             />
         </div>
 
-        <div className="flex-1 overflow-y-auto p-8 relative">
+        <div className="flex-1 overflow-y-auto p-8 relative bg-white dark:bg-gray-800">
             <AnimatePresence mode="wait">
                 
                 {/* PHASE 1: LEARN */}
@@ -330,7 +358,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
                         className="space-y-6"
                     >
                         <div className="flex items-center justify-between">
-                            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider">
+                            <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider">
                                 Briefing
                             </span>
                             {/* Difficulty Badge */}
@@ -359,7 +387,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
                                 whileHover={{ scale: 1.02 }}
                                 src={unit.lesson_payload.image_url} 
                                 alt="Lesson Visual" 
-                                className={`w-full rounded-2xl shadow-sm border-2 border-gray-100 cursor-pointer bg-gray-50 ${
+                                className={`w-full rounded-2xl shadow-sm border-2 border-gray-100 dark:border-gray-700 cursor-pointer bg-gray-50 dark:bg-gray-700 ${
                                     unit.lesson_payload.image_url.toLowerCase().endsWith('.gif') 
                                         ? 'h-auto max-h-64 object-contain' 
                                         : 'h-48 object-cover'
@@ -367,10 +395,10 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
                             />
                         )}
 
-                        <h2 className="text-3xl font-black text-gray-800">{safeStr(unit.lesson_payload.headline)}</h2>
+                        <h2 className="text-3xl font-black text-gray-800 dark:text-white">{translatedHeadline}</h2>
                         
-                        <div className="text-lg text-gray-600 leading-relaxed space-y-4">
-                            <p>{renderBodyText(safeStr(unit.lesson_payload.body_text))}</p>
+                        <div className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed space-y-4">
+                            <p>{renderBodyText(translatedBody)}</p>
                         </div>
                     </motion.div>
                 )}
@@ -385,7 +413,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
                     >
                         <div className="flex items-center justify-between mb-2">
                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-500 font-black text-xl">?</div>
+                                <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-500 font-black text-xl">?</div>
                                 <h3 className="text-gray-400 font-bold uppercase text-sm">Decision Required</h3>
                              </div>
                              {/* Small diff badge in challenge mode too */}
@@ -394,7 +422,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
                              </div>
                         </div>
                         
-                        <h2 className="text-2xl font-bold text-gray-800">{safeStr(unit.challenge_payload.question_text)}</h2>
+                        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{translatedQuestion}</h2>
 
                         <div className="grid grid-cols-1 gap-3">
                             {shuffledOptions.map((opt, idx) => {
@@ -409,10 +437,10 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
                                         disabled={!!selectedAnswer}
                                         className={`p-5 rounded-2xl border-2 text-left font-bold text-lg transition-all
                                             ${isWrong 
-                                                ? 'bg-red-50 border-red-400 text-red-700 shake-animation' 
+                                                ? 'bg-red-50 border-red-400 text-red-700 shake-animation dark:bg-red-900/30 dark:text-red-300' 
                                                 : isRight
-                                                    ? 'bg-green-50 border-green-400 text-green-700'
-                                                    : 'bg-white border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-gray-700'}
+                                                    ? 'bg-green-50 border-green-400 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                                                    : 'bg-white border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600'}
                                         `}
                                     >
                                         {safeStr(opt)}
@@ -437,22 +465,22 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                                    className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto text-green-600 mb-4"
+                                    className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto text-green-600 dark:text-green-400 mb-4"
                                 >
                                     <Check size={48} strokeWidth={4} />
                                 </motion.div>
                                 
-                                <h2 className="text-3xl font-black text-gray-800">Success!</h2>
-                                <p className="text-xl text-gray-600 font-medium px-8">"{safeStr(unit.flavor_text)}"</p>
+                                <h2 className="text-3xl font-black text-gray-800 dark:text-white">Success!</h2>
+                                <p className="text-xl text-gray-600 dark:text-gray-300 font-medium px-8">"{translatedFlavor}"</p>
                                 
                                 <div className="flex justify-center gap-4 py-4">
-                                    <div className="bg-yellow-50 border border-yellow-200 px-6 py-3 rounded-xl flex flex-col items-center">
-                                        <span className="text-xs font-bold text-yellow-600 uppercase">Revenue</span>
-                                        <span className="text-2xl font-black text-gray-800">+${unit.game_rewards.currency_value}</span>
+                                    <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 px-6 py-3 rounded-xl flex flex-col items-center">
+                                        <span className="text-xs font-bold text-yellow-600 dark:text-yellow-400 uppercase">Revenue</span>
+                                        <span className="text-2xl font-black text-gray-800 dark:text-white">+${unit.game_rewards.currency_value}</span>
                                     </div>
-                                    <div className="bg-blue-50 border border-blue-200 px-6 py-3 rounded-xl flex flex-col items-center">
-                                        <span className="text-xs font-bold text-blue-600 uppercase">Experience</span>
-                                        <span className="text-2xl font-black text-gray-800">+{unit.game_rewards.base_xp} XP</span>
+                                    <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 px-6 py-3 rounded-xl flex flex-col items-center">
+                                        <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase">Experience</span>
+                                        <span className="text-2xl font-black text-gray-800 dark:text-white">+{unit.game_rewards.base_xp} XP</span>
                                     </div>
                                 </div>
                             </>
@@ -462,33 +490,33 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                                    className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-500 mb-4"
+                                    className="w-24 h-24 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto text-red-500 mb-4"
                                 >
                                     <X size={48} strokeWidth={4} />
                                 </motion.div>
                                 
-                                <h2 className="text-3xl font-black text-gray-800">Mission Failed</h2>
-                                <p className="text-lg text-gray-500 font-bold">Don't worry, even CEOs make mistakes.</p>
+                                <h2 className="text-3xl font-black text-gray-800 dark:text-white">Mission Failed</h2>
+                                <p className="text-lg text-gray-500 dark:text-gray-400 font-bold">Don't worry, even CEOs make mistakes.</p>
                                 
                                 {/* Specific Feedback: Correct Answer */}
-                                <div className="bg-red-50 border-2 border-red-100 p-4 rounded-xl mx-6 text-left flex items-start gap-3">
-                                    <div className="bg-red-200 p-1 rounded-full text-red-600 mt-1">
+                                <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-100 dark:border-red-800 p-4 rounded-xl mx-6 text-left flex items-start gap-3">
+                                    <div className="bg-red-200 dark:bg-red-800 p-1 rounded-full text-red-600 dark:text-red-200 mt-1">
                                         <AlertCircle size={16} />
                                     </div>
                                     <div>
-                                        <div className="text-xs font-bold text-red-500 uppercase mb-1">Correct Answer</div>
-                                        <div className="text-lg font-black text-gray-800 leading-tight">
+                                        <div className="text-xs font-bold text-red-500 dark:text-red-300 uppercase mb-1">Correct Answer</div>
+                                        <div className="text-lg font-black text-gray-800 dark:text-white leading-tight">
                                             {unit.challenge_payload.correct_answer}
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* AI Hint Bubble */}
-                                <div className="bg-yellow-50 border-2 border-yellow-200 p-4 rounded-xl mx-6 text-left flex items-start gap-3 mt-4 relative overflow-hidden">
+                                <div className="bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-800 p-4 rounded-xl mx-6 text-left flex items-start gap-3 mt-4 relative overflow-hidden">
                                     <div className="text-3xl relative z-10">🦉</div>
                                     <div className="flex-1 relative z-10">
-                                        <div className="text-xs font-bold text-yellow-600 uppercase mb-1">Ollie's Tip</div>
-                                        <div className="text-sm font-medium text-gray-700 leading-snug">
+                                        <div className="text-xs font-bold text-yellow-600 dark:text-yellow-400 uppercase mb-1">Ollie's Tip</div>
+                                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300 leading-snug">
                                             {isLoadingHint ? (
                                                 <span className="flex items-center gap-2 text-gray-500">
                                                     <Loader2 className="animate-spin text-yellow-500" size={16} /> Ollie is analyzing your answer...
@@ -499,7 +527,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
                                         </div>
                                     </div>
                                     {/* Decor */}
-                                    <div className="absolute -bottom-4 -right-4 text-yellow-100 opacity-50 rotate-12">
+                                    <div className="absolute -bottom-4 -right-4 text-yellow-100 dark:text-yellow-900 opacity-50 rotate-12">
                                         <Info size={100} />
                                     </div>
                                 </div>
@@ -524,7 +552,7 @@ const UniversalLessonEngine: React.FC<EngineProps> = ({ units, onExit }) => {
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+        <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex justify-end">
             {phase === 'LEARN' && (
                 <button 
                     onClick={handleNextPhase}

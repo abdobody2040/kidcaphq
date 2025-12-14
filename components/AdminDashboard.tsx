@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { useAppStore } from '../store';
-import { UserRole, User, BusinessSimulation, Classroom, Assignment, Submission, CMSContent, CustomPage, ContentBlock, Book } from '../types';
+import { UserRole, User, BusinessSimulation, Classroom, Assignment, Submission, CMSContent, CustomPage, ContentBlock, Book, SubscriptionTier } from '../types';
 import { 
   Trash2, Edit, Plus, Save, X, BookOpen, Gamepad2, Users, 
   AlertTriangle, Play, Coins, Star, Trophy, RefreshCcw, 
@@ -188,12 +187,15 @@ const AdminDashboard: React.FC = () => {
               completedLessonIds: [],
               badges: [],
               lastActivityDate: new Date().toISOString().split('T')[0],
-              settings: { dailyGoalMinutes: 15, soundEnabled: true, musicEnabled: true, themeColor: 'green' },
+              settings: { dailyGoalMinutes: 15, soundEnabled: true, musicEnabled: true, themeColor: 'green', themeMode: 'light' },
               hqLevel: 'hq_garage',
               unlockedSkills: [],
               portfolio: [],
               equippedItems: [],
-              subscriptionStatus: 'FREE'
+              subscriptionStatus: 'FREE',
+              subscriptionTier: 'intern',
+              energy: 5,
+              lastEnergyRefill: Date.now()
           });
       }
       setShowUserModal(true);
@@ -205,7 +207,9 @@ const AdminDashboard: React.FC = () => {
           ...editingUser,
           bizCoins: Number(editingUser.bizCoins) || 0,
           xp: Number(editingUser.xp) || 0,
-          level: Number(editingUser.level) || 1
+          level: Number(editingUser.level) || 1,
+          // Sync legacy status with tier
+          subscriptionStatus: (editingUser.subscriptionTier === 'intern' ? 'FREE' : 'PREMIUM') as 'FREE' | 'PREMIUM'
       };
       
       const existing = users.find(u => u.id === finalUser.id);
@@ -493,7 +497,7 @@ const AdminDashboard: React.FC = () => {
                           <tr>
                               <th className="p-4">Name / ID</th>
                               <th className="p-4">Role</th>
-                              <th className="p-4">Plan</th>
+                              <th className="p-4">Tier</th>
                               <th className="p-4">Stats</th>
                               <th className="p-4 text-right">Actions</th>
                           </tr>
@@ -507,11 +511,13 @@ const AdminDashboard: React.FC = () => {
                                   </td>
                                   <td className="p-4"><span className="bg-gray-100 px-2 py-1 rounded text-xs font-bold">{u.role}</span></td>
                                   <td className="p-4">
-                                      {u.subscriptionStatus === 'PREMIUM' ? (
-                                          <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-bold flex items-center w-fit gap-1"><Star size={10}/> PRO</span>
-                                      ) : (
-                                          <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-xs font-bold">Free</span>
-                                      )}
+                                      <span className={`px-2 py-1 rounded text-xs font-bold uppercase
+                                          ${u.subscriptionTier === 'tycoon' ? 'bg-purple-100 text-purple-800' : 
+                                            u.subscriptionTier === 'board' ? 'bg-blue-100 text-blue-800' :
+                                            u.subscriptionTier === 'founder' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-500'}
+                                      `}>
+                                          {u.subscriptionTier}
+                                      </span>
                                   </td>
                                   <td className="p-4 text-gray-500">
                                       Lvl {u.level} • {u.bizCoins} Coins
@@ -975,14 +981,16 @@ const AdminDashboard: React.FC = () => {
                               </select>
                           </div>
                           <div>
-                              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Subscription</label>
+                              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Tier</label>
                               <select 
-                                  value={editingUser.subscriptionStatus || 'FREE'} 
-                                  onChange={e => setEditingUser({...editingUser, subscriptionStatus: e.target.value as any})} 
+                                  value={editingUser.subscriptionTier || 'intern'} 
+                                  onChange={e => setEditingUser({...editingUser, subscriptionTier: e.target.value as SubscriptionTier})} 
                                   className="w-full p-2 border-2 border-gray-200 rounded-xl font-bold bg-white"
                               >
-                                  <option value="FREE">Free</option>
-                                  <option value="PREMIUM">Premium (Pro)</option>
+                                  <option value="intern">Intern</option>
+                                  <option value="founder">Founder</option>
+                                  <option value="board">Board</option>
+                                  <option value="tycoon">Tycoon</option>
                               </select>
                           </div>
                       </div>

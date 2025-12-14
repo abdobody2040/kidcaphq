@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useAppStore } from '../store';
 import { BusinessSimulation } from '../types';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import GameTutorialModal from './common/GameTutorialModal';
 
 // Import Templates
@@ -29,9 +29,9 @@ const GameEngine: React.FC<GameEngineProps> = ({ gameId, onExit, previewConfig }
 
   if (!gameConfig) {
       return (
-          <div className="flex flex-col items-center justify-center h-screen bg-gray-100 text-gray-500 relative z-[100]">
+          <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 relative z-[100]">
               <h2 className="text-2xl font-bold mb-4">Game Not Found</h2>
-              <button onClick={onExit} className="bg-gray-800 text-white px-6 py-2 rounded-xl font-bold">Exit</button>
+              <button onClick={onExit} className="bg-gray-800 dark:bg-gray-700 text-white px-6 py-2 rounded-xl font-bold">Exit</button>
           </div>
       );
   }
@@ -72,8 +72,8 @@ const GameEngine: React.FC<GameEngineProps> = ({ gameId, onExit, previewConfig }
           default:
               return (
                   <div className="text-center p-10">
-                      <h2 className="text-xl font-bold">Game Type '{gameConfig.game_type}' Not Implemented Yet</h2>
-                      <p className="text-gray-500">Please check back later.</p>
+                      <h2 className="text-xl font-bold text-gray-800 dark:text-white">Game Type '{gameConfig.game_type}' Not Implemented Yet</h2>
+                      <p className="text-gray-500 dark:text-gray-400">Please check back later.</p>
                   </div>
               );
       }
@@ -94,9 +94,14 @@ const GameEngine: React.FC<GameEngineProps> = ({ gameId, onExit, previewConfig }
        )}
 
        {/* Global Game Header */}
-       <div className="bg-gray-800 p-4 flex items-center justify-between shadow-md z-10">
+       <div className="bg-gray-800 p-4 flex items-center justify-between shadow-md z-10 shrink-0">
            <div className="flex items-center gap-4 text-white">
-               <button onClick={onExit} className="p-2 hover:bg-gray-700 rounded-full transition-colors"><ArrowLeft /></button>
+               <button 
+                  onClick={onExit} 
+                  className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors shadow-sm shrink-0"
+               >
+                   <X size={20} />
+               </button>
                <div>
                    <h1 className="font-black text-lg">{gameConfig.name}</h1>
                    <div className="text-xs text-gray-400 font-bold uppercase tracking-widest">{gameConfig.category}</div>
@@ -107,7 +112,7 @@ const GameEngine: React.FC<GameEngineProps> = ({ gameId, onExit, previewConfig }
            </button>
        </div>
 
-       <div className="flex-1 overflow-hidden bg-gray-50 relative">
+       <div className="flex-1 overflow-hidden bg-gray-50 dark:bg-gray-900 relative">
            {renderGameContent()}
        </div>
     </div>

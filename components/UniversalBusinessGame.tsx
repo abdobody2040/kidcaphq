@@ -1,12 +1,15 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppStore } from '../store';
+import { useEnergy } from '../hooks/useEnergy';
 import { 
   ArrowLeft, Play, TrendingUp, AlertTriangle, Zap, ShoppingCart, 
   CheckCircle, Users, BarChart3, Star, RotateCcw, Trash2, Save, 
-  HelpCircle, ChevronRight 
+  HelpCircle, ChevronRight, Lock, BatteryWarning
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import EnergyBar from './EnergyBar';
+import InvestorPitchModal from './InvestorPitchModal';
 
 interface Props {
   gameId: string;
@@ -32,6 +35,7 @@ interface GameSaveData {
 const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
   // Access store for live game data
   const { user, games, completeGame, getSkillModifiers } = useAppStore();
+  const { consumeEnergy } = useEnergy(); // Hook usage
   const gameData = games.find(g => g.business_id === gameId);
   
   // State
@@ -61,6 +65,9 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
   // Tutorial State
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
+
+  // Paywall Modal State
+  const [showPaywall, setShowPaywall] = useState(false);
 
   // Refs for cleanup
   const simulationIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -242,7 +249,18 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
     setTutorialStep(0);
   };
 
-  const startDay = () => {
+  const handleStartDay = () => {
+      // ENERGY CHECK
+      const hasEnergy = consumeEnergy();
+      if (!hasEnergy) {
+          setShowPaywall(true);
+          return;
+      }
+
+      startSimulation();
+  };
+
+  const startSimulation = () => {
     setPhase('SIMULATION');
     setProgress(0);
     setEventLog(null);
@@ -362,8 +380,8 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
 
   if (!gameData) {
     return (
-      <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
-        <p className="text-gray-500 font-bold">Game not found</p>
+      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8 text-center">
+        <p className="text-gray-500 dark:text-gray-400 font-bold">Game not found</p>
       </div>
     );
   }
@@ -372,9 +390,9 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
   const safeFunds = typeof funds === 'number' ? funds : 0;
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl overflow-hidden h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] flex flex-col relative border border-gray-200">
+    <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] flex flex-col relative border border-gray-200 dark:border-gray-700">
       {/* Header */}
-      <div className="bg-gray-900 text-white p-4 md:p-6 flex justify-between items-center relative z-20 shrink-0">
+      <div className="bg-gray-900 dark:bg-gray-950 text-white p-4 md:p-6 flex justify-between items-center relative z-20 shrink-0">
         <div className="flex items-center gap-4">
           <button 
             onClick={onExit} 
@@ -402,7 +420,10 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          {/* ENERGY BAR Integration */}
+          <EnergyBar />
+
           <button 
             onClick={() => { 
               setShowTutorial(true); 
@@ -428,6 +449,12 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
         </div>
       </div>
 
+      {/* Paywall Modal */}
+      <InvestorPitchModal 
+          isOpen={showPaywall} 
+          onClose={() => setShowPaywall(false)} 
+      />
+
       {/* TUTORIAL OVERLAY */}
       <AnimatePresence>
         {showTutorial && (
@@ -436,20 +463,20 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative overflow-hidden"
+              className="bg-white dark:bg-gray-800 rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative overflow-hidden"
             >
               <button 
                 onClick={() => setShowTutorial(false)} 
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold w-8 h-8 flex items-center justify-center"
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold w-8 h-8 flex items-center justify-center"
                 aria-label="Close tutorial"
               >
                 ×
               </button>
               
               <div className="mb-6 flex justify-center">
-                {tutorialStep === 0 && <div className="p-4 bg-blue-100 rounded-full text-4xl">🚀</div>}
-                {tutorialStep === 1 && <div className="p-4 bg-yellow-100 rounded-full text-4xl">🎯</div>}
-                {tutorialStep === 2 && <div className="p-4 bg-green-100 rounded-full text-4xl">🛒</div>}
+                {tutorialStep === 0 && <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-full text-4xl">🚀</div>}
+                {tutorialStep === 1 && <div className="p-4 bg-yellow-100 dark:bg-yellow-900/30 rounded-full text-4xl">🎯</div>}
+                {tutorialStep === 2 && <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded-full text-4xl">🛒</div>}
               </div>
 
               <div className="text-center min-h-[150px]">
@@ -461,8 +488,8 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                       animate={{ opacity: 1, x: 0 }} 
                       exit={{ opacity: 0, x: -20 }}
                     >
-                      <h3 className="text-2xl font-black text-gray-800 mb-2">Welcome, CEO!</h3>
-                      <p className="text-gray-600 font-medium mb-4">{gameData.description}</p>
+                      <h3 className="text-2xl font-black text-gray-800 dark:text-white mb-2">Welcome, CEO!</h3>
+                      <p className="text-gray-600 dark:text-gray-300 font-medium mb-4">{gameData.description}</p>
                       <p className="text-sm text-gray-400 font-bold">
                         Your goal is to maximize profit over time.
                       </p>
@@ -475,8 +502,8 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                       animate={{ opacity: 1, x: 0 }} 
                       exit={{ opacity: 0, x: -20 }}
                     >
-                      <h3 className="text-2xl font-black text-gray-800 mb-2">Daily Strategy</h3>
-                      <p className="text-gray-600 font-medium mb-4">
+                      <h3 className="text-2xl font-black text-gray-800 dark:text-white mb-2">Daily Strategy</h3>
+                      <p className="text-gray-600 dark:text-gray-300 font-medium mb-4">
                         Before each day starts, adjust your strategy sliders.
                       </p>
                       <p className="text-sm text-gray-400 font-bold">
@@ -491,8 +518,8 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                       animate={{ opacity: 1, x: 0 }} 
                       exit={{ opacity: 0, x: -20 }}
                     >
-                      <h3 className="text-2xl font-black text-gray-800 mb-2">Grow Your Biz</h3>
-                      <p className="text-gray-600 font-medium mb-4">
+                      <h3 className="text-2xl font-black text-gray-800 dark:text-white mb-2">Grow Your Biz</h3>
+                      <p className="text-gray-600 dark:text-gray-300 font-medium mb-4">
                         Use your profits to buy Upgrades in the Shop.
                       </p>
                       <p className="text-sm text-gray-400 font-bold">
@@ -503,13 +530,13 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                 </AnimatePresence>
               </div>
 
-              <div className="flex justify-between items-center mt-6 pt-6 border-t border-gray-100">
+              <div className="flex justify-between items-center mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
                 <div className="flex gap-1">
                   {[0, 1, 2].map(i => (
                     <div 
                       key={i} 
                       className={`w-2 h-2 rounded-full transition-colors ${
-                        i === tutorialStep ? 'bg-kid-primary' : 'bg-gray-200'
+                        i === tutorialStep ? 'bg-kid-primary' : 'bg-gray-200 dark:bg-gray-600'
                       }`} 
                     />
                   ))}
@@ -532,31 +559,31 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
         )}
       </AnimatePresence>
 
-      <div className="flex-1 p-4 md:p-8 bg-gray-50 overflow-y-auto">
+      <div className="flex-1 p-4 md:p-8 bg-gray-50 dark:bg-gray-900 overflow-y-auto">
         {phase === 'STRATEGY' && (
           <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto">
-            <div className="bg-blue-100 p-4 md:p-6 rounded-2xl border-l-8 border-blue-500 shadow-sm">
-              <h3 className="text-blue-800 font-bold uppercase text-sm mb-2">Objective</h3>
-              <p className="text-blue-900 font-medium text-lg">{gameData.description}</p>
+            <div className="bg-blue-100 dark:bg-blue-900/30 p-4 md:p-6 rounded-2xl border-l-8 border-blue-500 shadow-sm">
+              <h3 className="text-blue-800 dark:text-blue-300 font-bold uppercase text-sm mb-2">Objective</h3>
+              <p className="text-blue-900 dark:text-blue-100 font-medium text-lg">{gameData.description}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               {/* Inputs */}
-              <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-200">
-                <h3 className="font-black text-gray-800 mb-6 flex items-center gap-2">
+              <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <h3 className="font-black text-gray-800 dark:text-white mb-6 flex items-center gap-2">
                   <TrendingUp size={20} /> Daily Strategy
                 </h3>
                 <div className="space-y-6">
                   {gameData.variables?.player_inputs?.map(input => (
                     <div key={String(input)}>
-                      <div className="flex justify-between mb-2 font-bold text-gray-600 text-sm uppercase">
+                      <div className="flex justify-between mb-2 font-bold text-gray-600 dark:text-gray-300 text-sm uppercase">
                         {String(input).replace(/_/g, ' ')}
                         {/* Safe render for slider value */}
                         <span>{typeof sliderValues[String(input)] === 'number' ? sliderValues[String(input)] : 50}%</span>
                       </div>
                       <input 
                         type="range" 
-                        className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                        className="w-full h-3 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-600"
                         value={typeof sliderValues[String(input)] === 'number' ? sliderValues[String(input)] : 50}
                         onChange={(e) => setSliderValues({
                           ...sliderValues, 
@@ -571,8 +598,8 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
               </div>
 
               {/* Upgrades */}
-              <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-200">
-                <h3 className="font-black text-gray-800 mb-6 flex items-center gap-2">
+              <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <h3 className="font-black text-gray-800 dark:text-white mb-6 flex items-center gap-2">
                   <ShoppingCart size={20} /> Shop
                 </h3>
                 <div className="space-y-4 max-h-64 md:max-h-96 overflow-y-auto">
@@ -584,13 +611,13 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                         key={u.id} 
                         className={`p-4 rounded-xl border-2 flex justify-between items-center transition-all ${
                           isOwned 
-                            ? 'border-green-200 bg-green-50' 
-                            : 'border-gray-100'
+                            ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20' 
+                            : 'border-gray-100 dark:border-gray-700'
                         }`}
                       >
                         <div className="flex-1 pr-2">
-                          <div className="font-bold text-gray-800 text-sm md:text-base">{safeRender(u.name)}</div>
-                          <div className="text-xs text-gray-500">{safeRender(u.effect)}</div>
+                          <div className="font-bold text-gray-800 dark:text-gray-200 text-sm md:text-base">{safeRender(u.name)}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{safeRender(u.effect)}</div>
                         </div>
                         {isOwned ? (
                           <div className="text-green-600 font-bold flex items-center gap-1 text-sm">
@@ -603,7 +630,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                             className={`px-3 py-2 md:px-4 md:py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap ${
                               canAfford 
                                 ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md' 
-                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                             }`}
                           >
                             ${u.cost}
@@ -617,19 +644,19 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
             </div>
 
             <button 
-              onClick={startDay}
+              onClick={handleStartDay}
               className="w-full bg-kid-primary text-yellow-900 font-black py-4 rounded-2xl shadow-[0_4px_0_0_rgba(202,138,4,1)] btn-juicy text-xl flex items-center justify-center gap-3 hover:bg-yellow-400 transition-colors"
             >
-              <Play fill="currentColor" /> Start Day {day}
+              <Play fill="currentColor" /> Start Day {day} <span className="text-xs font-bold text-yellow-800 opacity-60">(-1 Energy)</span>
             </button>
           </div>
         )}
 
         {phase === 'SIMULATION' && (
           <div className="flex flex-col items-center justify-center h-full text-center space-y-8">
-            <h3 className="text-2xl font-bold text-gray-500">Simulating Market...</h3>
+            <h3 className="text-2xl font-bold text-gray-500 dark:text-gray-400 animate-pulse">Simulating Market...</h3>
             
-            <div className="w-full max-w-md bg-gray-200 h-6 rounded-full overflow-hidden border-2 border-gray-300">
+            <div className="w-full max-w-md bg-gray-200 dark:bg-gray-700 h-6 rounded-full overflow-hidden border-2 border-gray-300 dark:border-gray-600">
               <motion.div 
                 className="h-full bg-blue-500"
                 style={{ width: `${progress}%` }}
@@ -641,7 +668,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                 <motion.div 
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="bg-yellow-100 text-yellow-800 px-6 py-3 rounded-full font-bold flex items-center gap-2 border-2 border-yellow-400 shadow-sm text-sm md:text-base"
+                  className="inline-flex items-center gap-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 px-6 py-3 rounded-full font-bold border-2 border-yellow-400 dark:border-yellow-600 shadow-sm text-sm md:text-base"
                 >
                   <AlertTriangle size={20} /> {eventLog}!
                 </motion.div>
@@ -665,12 +692,12 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
               {activeModifiers && (
                 <div className="flex justify-center gap-3 mt-4 flex-wrap">
                   {activeModifiers.priceMultiplier > 1 && (
-                    <span className="bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                    <span className="bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-300 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                       <Zap size={12}/> Charisma Boost
                     </span>
                   )}
                   {activeModifiers.costMultiplier < 1 && (
-                    <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                    <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                       <Zap size={12}/> Efficiency Save
                     </span>
                   )}
@@ -679,40 +706,40 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center">
-                <div className="bg-green-100 p-2 rounded-full text-green-600 mb-2">
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center">
+                <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-full text-green-600 dark:text-green-400 mb-2">
                   <TrendingUp size={20}/>
                 </div>
                 <div className="text-sm text-gray-400 font-bold uppercase">Revenue</div>
-                <div className="text-2xl font-black text-gray-800">${dayStats.revenue}</div>
+                <div className="text-2xl font-black text-gray-800 dark:text-white">${dayStats.revenue}</div>
               </div>
-              <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center">
-                <div className="bg-red-100 p-2 rounded-full text-red-600 mb-2">
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center">
+                <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded-full text-red-600 dark:text-red-400 mb-2">
                   <BarChart3 size={20}/>
                 </div>
                 <div className="text-sm text-gray-400 font-bold uppercase">Expenses</div>
-                <div className="text-2xl font-black text-gray-800">${dayStats.expenses}</div>
+                <div className="text-2xl font-black text-gray-800 dark:text-white">${dayStats.expenses}</div>
               </div>
-              <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center">
-                <div className="bg-blue-100 p-2 rounded-full text-blue-600 mb-2">
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center">
+                <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full text-blue-600 dark:text-blue-400 mb-2">
                   <Users size={20}/>
                 </div>
                 <div className="text-sm text-gray-400 font-bold uppercase">Customers</div>
-                <div className="text-2xl font-black text-gray-800">{dayStats.customers}</div>
+                <div className="text-2xl font-black text-gray-800 dark:text-white">{dayStats.customers}</div>
               </div>
             </div>
 
             {/* Customer Satisfaction */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                <h3 className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                   Customer Satisfaction
                 </h3>
                 <span className="font-black text-xl text-yellow-500">
                   {dayStats.satisfaction}%
                 </span>
               </div>
-              <div className="w-full bg-gray-200 h-4 rounded-full overflow-hidden mb-4">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 h-4 rounded-full overflow-hidden mb-4">
                 <div 
                   className={`h-full transition-all ${
                     dayStats.satisfaction > 70 
@@ -729,7 +756,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                   <Star 
                     key={star} 
                     fill={dayStats.satisfaction >= star * 20 ? "currentColor" : "none"} 
-                    className={dayStats.satisfaction >= star * 20 ? "" : "text-gray-300"}
+                    className={dayStats.satisfaction >= star * 20 ? "" : "text-gray-300 dark:text-gray-600"}
                   />
                 ))}
               </div>
@@ -745,7 +772,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
             <div className="grid grid-cols-2 gap-4">
               <button 
                 onClick={quitGame}
-                className="py-4 rounded-xl font-bold text-gray-500 hover:bg-gray-200 border-2 border-transparent hover:border-gray-300 transition-all"
+                className="py-4 rounded-xl font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 transition-all"
               >
                 Save & Exit
               </button>

@@ -32,6 +32,8 @@ import StudentAssignmentDashboard from './components/StudentAssignmentDashboard'
 import BookLibrary from './components/BookLibrary';
 import AdminBookManager from './components/AdminBookManager';
 import { Check, Rocket, Pizza, Star, Smile, Lightbulb, Coffee, Music, Camera, Globe, Anchor, Cpu, Car, Zap } from 'lucide-react';
+import './i18n'; // Import i18n config
+import { useTranslation } from 'react-i18next';
 
 const ICON_MAP: Record<string, any> = {
   rocket: Rocket,
@@ -59,10 +61,28 @@ const App = () => {
   const [viewState, setViewState] = useState<'LANDING' | 'AUTH_LOGIN' | 'AUTH_REGISTER' | 'CURRICULUM' | 'PRICING' | 'FEATURES' | 'CUSTOM_PAGE'>('LANDING');
   const [activePageSlug, setActivePageSlug] = useState<string | null>(null);
 
+  const { i18n } = useTranslation();
+
+  // Handle RTL/LTR based on language
+  useEffect(() => {
+    const isArabic = i18n.language.startsWith('ar');
+    document.documentElement.dir = isArabic ? 'rtl' : 'ltr';
+    document.documentElement.lang = isArabic ? 'ar' : 'en';
+  }, [i18n.language]);
+
   // Initialize Data on Mount
   useEffect(() => {
       syncGames();
   }, [syncGames]);
+
+  // Theme Switching Effect
+  useEffect(() => {
+    if (user?.settings.themeMode === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [user?.settings.themeMode]);
 
   useEffect(() => {
     if (user?.role === UserRole.PARENT) setActiveTab('parent_dashboard');
@@ -120,7 +140,7 @@ const App = () => {
 
   const renderGame = () => {
       // Legacy Custom Games
-      if (activeGameId === 'lemonade') return <LemonadeStand />;
+      if (activeGameId === 'lemonade') return <LemonadeStand onBack={() => setActiveGameId(null)} />;
       if (activeGameId === 'brand') return <BrandBuilder onBack={() => setActiveGameId(null)} />;
       if (activeGameId === 'pizza') return <PizzaDelivery onBack={() => setActiveGameId(null)} />;
       if (activeGameId === 'coffee') return <CoffeeCart onBack={() => setActiveGameId(null)} />;
@@ -171,7 +191,7 @@ const App = () => {
                                 <div className="relative w-40 h-40 mx-auto mb-6">
                                     {user.businessLogo ? (
                                         <div 
-                                            className={`w-full h-full flex items-center justify-center shadow-lg border-4 border-white overflow-hidden relative z-0
+                                            className={`w-full h-full flex items-center justify-center shadow-lg border-4 border-white dark:border-gray-700 overflow-hidden relative z-0
                                                 ${user.businessLogo.shape === 'circle' ? 'rounded-full' : user.businessLogo.shape === 'rounded' ? 'rounded-3xl' : 'rounded-none'}
                                             `}
                                             style={{ backgroundColor: user.businessLogo.backgroundColor }}
@@ -183,7 +203,7 @@ const App = () => {
                                             />
                                         </div>
                                     ) : (
-                                        <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center text-6xl shadow-lg border-4 border-white">
+                                        <div className="w-full h-full rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-6xl shadow-lg border-4 border-white dark:border-gray-600">
                                             🏆
                                         </div>
                                     )}
@@ -212,31 +232,39 @@ const App = () => {
                                     })}
                                 </div>
 
-                                <h2 className="text-2xl font-black text-gray-800">My Profile</h2>
+                                <h2 className="text-2xl font-black text-gray-800 dark:text-white">My Profile</h2>
                                 {user.businessLogo && (
-                                    <h3 className="text-xl font-bold text-gray-600 mt-2">{user.businessLogo.companyName}</h3>
+                                    <h3 className="text-xl font-bold text-gray-600 dark:text-gray-300 mt-2">{user.businessLogo.companyName}</h3>
                                 )}
                                 
                                 <button onClick={() => setActiveGameId('brand')} className="mt-4 text-sm font-bold text-blue-500 hover:underline">Edit Brand Logo</button>
                             </div>
                             
                             {!user.classId && (
-                                <button onClick={() => setShowJoinClass(true)} className="bg-blue-100 text-blue-600 px-6 py-3 rounded-xl font-bold hover:bg-blue-200 transition-colors">Join a Class</button>
+                                <button onClick={() => setShowJoinClass(true)} className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-6 py-3 rounded-xl font-bold hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">Join a Class</button>
                             )}
 
-                            {user.classId && <div className="inline-block bg-blue-50 px-6 py-2 rounded-xl text-blue-600 font-bold border border-blue-100">Student of Future Founders 101</div>}
+                            {user.classId && <div className="inline-block bg-blue-50 dark:bg-blue-900/30 px-6 py-2 rounded-xl text-blue-600 dark:text-blue-300 font-bold border border-blue-100 dark:border-blue-800">Student of Future Founders 101</div>}
 
-                            <div className="max-w-2xl mx-auto bg-gray-50 p-6 rounded-3xl border-2 border-gray-100">
-                                <h3 className="text-gray-500 font-bold mb-4 uppercase text-sm tracking-widest">My Wardrobe</h3>
+                            <div className="max-w-2xl mx-auto bg-gray-50 dark:bg-gray-800 p-6 rounded-3xl border-2 border-gray-100 dark:border-gray-700">
+                                <h3 className="text-gray-500 dark:text-gray-400 font-bold mb-4 uppercase text-sm tracking-widest">My Wardrobe</h3>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {user.inventory.filter(itemId => !itemId.startsWith('cons_')).map(itemId => {
                                             const item = SHOP_ITEMS.find(i => i.id === itemId);
                                             if (!item) return null;
                                             const isEquipped = user.equippedItems.includes(itemId);
                                             return (
-                                                <button key={itemId} onClick={() => toggleEquipItem(itemId)} className={`p-4 rounded-xl shadow-sm border-2 transition-all relative flex flex-col items-center gap-2 ${isEquipped ? 'bg-green-50 border-green-400 ring-2 ring-green-200' : 'bg-white border-gray-200 hover:border-blue-300'}`}>
+                                                <button 
+                                                    key={itemId} 
+                                                    onClick={() => toggleEquipItem(itemId)} 
+                                                    className={`p-4 rounded-xl shadow-sm border-2 transition-all relative flex flex-col items-center gap-2 
+                                                        ${isEquipped 
+                                                            ? 'bg-green-50 dark:bg-green-900/30 border-green-400 dark:border-green-600 ring-2 ring-green-200 dark:ring-green-900' 
+                                                            : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500'}
+                                                    `}
+                                                >
                                                     <div className="text-4xl">{item.icon}</div>
-                                                    <div className="text-xs font-bold text-gray-600 leading-tight">{item.name}</div>
+                                                    <div className="text-xs font-bold text-gray-600 dark:text-gray-300 leading-tight">{item.name}</div>
                                                     {isEquipped && <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-0.5"><Check size={12} strokeWidth={4} /></div>}
                                                 </button>
                                             );

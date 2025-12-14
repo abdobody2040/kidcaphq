@@ -16,27 +16,27 @@ class ErrorBoundary extends Component<Props, State> {
     error: null
   };
 
-  public static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): State {
     // Update state so the next render will show the fallback UI.
     return { hasError: true, error };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
   }
 
-  private handleReload = () => {
+  handleReload = () => {
     window.location.reload();
   };
 
-  private handleClearData = () => {
+  handleClearData = () => {
     if (window.confirm("This will clear your local game data to fix the glitch. Are you sure?")) {
         localStorage.clear();
         window.location.reload();
     }
   };
 
-  public render() {
+  render(): ReactNode {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-yellow-50 flex items-center justify-center p-4 font-sans">

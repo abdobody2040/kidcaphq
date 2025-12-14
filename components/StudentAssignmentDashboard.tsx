@@ -14,11 +14,11 @@ const StudentAssignmentDashboard: React.FC = () => {
   if (!user || !user.classId) {
       return (
           <div className="flex flex-col items-center justify-center h-96 text-center">
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <ClipboardList size={32} className="text-gray-400"/>
+              <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                  <ClipboardList size={32} className="text-gray-400 dark:text-gray-500"/>
               </div>
-              <h2 className="text-xl font-black text-gray-800">No Assignments Yet</h2>
-              <p className="text-gray-500 font-bold max-w-xs mt-2">You need to join a class first! Go to your profile to join.</p>
+              <h2 className="text-xl font-black text-gray-800 dark:text-white">No Assignments Yet</h2>
+              <p className="text-gray-500 dark:text-gray-400 font-bold max-w-xs mt-2">You need to join a class first! Go to your profile to join.</p>
           </div>
       );
   }
@@ -85,26 +85,26 @@ const StudentAssignmentDashboard: React.FC = () => {
   };
 
   const getGradeStyle = (score: number, max: number) => {
-      if (score === max) return { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' };
-      if (score >= max * 0.8) return { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' };
-      if (score >= max * 0.5) return { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' };
-      return { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' };
+      if (score === max) return { bg: 'bg-blue-50 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300', border: 'border-blue-200 dark:border-blue-800' };
+      if (score >= max * 0.8) return { bg: 'bg-green-50 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300', border: 'border-green-200 dark:border-green-800' };
+      if (score >= max * 0.5) return { bg: 'bg-yellow-50 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-300', border: 'border-yellow-200 dark:border-yellow-800' };
+      return { bg: 'bg-red-50 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300', border: 'border-red-200 dark:border-red-800' };
   };
 
   return (
     <div className="pb-20 max-w-4xl mx-auto">
         <div className="flex items-center gap-4 mb-8">
-            <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600">
+            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400">
                 <ClipboardList size={32} />
             </div>
             <div>
-                <h2 className="text-3xl font-black text-gray-800">My Assignments</h2>
-                <p className="text-gray-500 font-bold">Keep up the good work!</p>
+                <h2 className="text-3xl font-black text-gray-800 dark:text-white">My Assignments</h2>
+                <p className="text-gray-500 dark:text-gray-400 font-bold">Keep up the good work!</p>
             </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-4 mb-8 border-b border-gray-200 pb-1">
+        <div className="flex gap-4 mb-8 border-b border-gray-200 dark:border-gray-700 pb-1 overflow-x-auto">
             <TabButton active={activeTab === 'TODO'} onClick={() => setActiveTab('TODO')} label={`To Do (${todo.length})`} />
             <TabButton active={activeTab === 'SUBMITTED'} onClick={() => setActiveTab('SUBMITTED')} label="Submitted" />
             <TabButton active={activeTab === 'GRADED'} onClick={() => setActiveTab('GRADED')} label="Graded" />
@@ -132,10 +132,10 @@ const StudentAssignmentDashboard: React.FC = () => {
                     <EmptyState message="No pending submissions." />
                 ) : (
                     submitted.map(({ assignment, submission }) => (
-                        <div key={assignment.id} className="bg-white p-6 rounded-2xl border-2 border-yellow-100 shadow-sm opacity-80">
+                        <div key={assignment.id} className="bg-white dark:bg-gray-800 p-6 rounded-2xl border-2 border-yellow-100 dark:border-yellow-900/30 shadow-sm opacity-80">
                             <div className="flex justify-between items-center mb-2">
-                                <h3 className="font-black text-lg text-gray-800">{assignment.title}</h3>
-                                <span className="bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">Pending Grade</span>
+                                <h3 className="font-black text-lg text-gray-800 dark:text-white">{assignment.title}</h3>
+                                <span className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">Pending Grade</span>
                             </div>
                             <p className="text-xs text-gray-400 font-bold">Submitted: {new Date(submission.submittedAt).toLocaleDateString()}</p>
                         </div>
@@ -150,9 +150,9 @@ const StudentAssignmentDashboard: React.FC = () => {
                     graded.map(({ assignment, submission }) => {
                         const style = getGradeStyle(submission.grade || 0, assignment.maxPoints);
                         return (
-                            <div key={assignment.id} className={`p-6 rounded-2xl border-2 shadow-sm flex justify-between items-center ${style.border} bg-white`}>
+                            <div key={assignment.id} className={`p-6 rounded-2xl border-2 shadow-sm flex justify-between items-center ${style.border} bg-white dark:bg-gray-800`}>
                                 <div>
-                                    <h3 className="font-black text-lg text-gray-800">{assignment.title}</h3>
+                                    <h3 className="font-black text-lg text-gray-800 dark:text-white">{assignment.title}</h3>
                                     <p className={`${style.text} font-bold text-sm mt-1`}>{submission.feedback}</p>
                                 </div>
                                 <div className={`text-center p-3 rounded-xl min-w-[80px] ${style.bg}`}>
@@ -174,34 +174,34 @@ const StudentAssignmentDashboard: React.FC = () => {
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
-                        className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+                        className="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
                     >
                         {/* Header */}
-                        <div className="p-6 bg-blue-50 border-b border-blue-100 flex justify-between items-start">
+                        <div className="p-6 bg-blue-50 dark:bg-gray-900 border-b border-blue-100 dark:border-gray-700 flex justify-between items-start">
                             <div>
-                                <div className="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">New Assignment</div>
-                                <h3 className="text-2xl font-black text-gray-800">{selectedAssignment.title}</h3>
+                                <div className="text-xs font-bold text-blue-500 dark:text-blue-400 uppercase tracking-widest mb-1">New Assignment</div>
+                                <h3 className="text-2xl font-black text-gray-800 dark:text-white">{selectedAssignment.title}</h3>
                             </div>
-                            <button onClick={() => setSelectedAssignment(null)} className="p-2 bg-white rounded-full hover:bg-gray-100 text-gray-500 font-bold">Close</button>
+                            <button onClick={() => setSelectedAssignment(null)} className="p-2 bg-white dark:bg-gray-700 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-400 font-bold transition-colors">Close</button>
                         </div>
 
                         {/* Body */}
-                        <div className="p-8 overflow-y-auto flex-1">
+                        <div className="p-8 overflow-y-auto flex-1 bg-white dark:bg-gray-800">
                             {/* Description */}
                             <div className="mb-8">
                                 <h4 className="text-sm font-bold text-gray-400 uppercase mb-2">Instructions</h4>
-                                <div className="text-gray-700 font-medium whitespace-pre-wrap leading-relaxed">
+                                <div className="text-gray-700 dark:text-gray-300 font-medium whitespace-pre-wrap leading-relaxed">
                                     {selectedAssignment.description || "No instructions provided."}
                                 </div>
                             </div>
 
                             {/* Resource Link */}
                             {selectedAssignment.resourceUrl && (
-                                <div className="mb-8 bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-3">
-                                    <div className="bg-white p-2 rounded-lg text-blue-500 border border-gray-100"><LinkIcon size={20} /></div>
+                                <div className="mb-8 bg-gray-50 dark:bg-gray-700 p-4 rounded-xl border border-gray-200 dark:border-gray-600 flex items-center gap-3">
+                                    <div className="bg-white dark:bg-gray-600 p-2 rounded-lg text-blue-500 dark:text-blue-400 border border-gray-100 dark:border-gray-500"><LinkIcon size={20} /></div>
                                     <div className="flex-1 overflow-hidden">
                                         <div className="text-xs font-bold text-gray-400 uppercase">Attached Resource</div>
-                                        <a href={selectedAssignment.resourceUrl} target="_blank" rel="noreferrer" className="text-blue-600 font-bold truncate block hover:underline">
+                                        <a href={selectedAssignment.resourceUrl} target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 font-bold truncate block hover:underline">
                                             {selectedAssignment.resourceUrl}
                                         </a>
                                     </div>
@@ -209,12 +209,12 @@ const StudentAssignmentDashboard: React.FC = () => {
                             )}
 
                             {/* Submission Area */}
-                            <div className="border-t pt-6">
+                            <div className="border-t border-gray-100 dark:border-gray-700 pt-6">
                                 <h4 className="text-sm font-bold text-gray-400 uppercase mb-4 flex items-center gap-2">
                                     <Upload size={16} /> Submit Your Work
                                 </h4>
                                 <textarea 
-                                    className="w-full p-4 rounded-xl border-2 border-gray-200 font-medium focus:border-kid-accent outline-none h-32 resize-none"
+                                    className="w-full p-4 rounded-xl border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white font-medium focus:border-kid-accent outline-none h-32 resize-none"
                                     placeholder="Type your answer here or paste a link to your project..."
                                     value={submissionContent}
                                     onChange={(e) => setSubmissionContent(e.target.value)}
@@ -223,7 +223,7 @@ const StudentAssignmentDashboard: React.FC = () => {
                         </div>
 
                         {/* Footer */}
-                        <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+                        <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex justify-end">
                             <button 
                                 onClick={handleSubmitWork}
                                 className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-black text-lg shadow-[0_4px_0_0_rgba(21,128,61,1)] btn-juicy flex items-center gap-2"
@@ -242,8 +242,8 @@ const StudentAssignmentDashboard: React.FC = () => {
 const TabButton = ({ active, onClick, label }: any) => (
     <button 
         onClick={onClick}
-        className={`px-6 py-2 font-black text-sm uppercase tracking-wide transition-all border-b-4 
-            ${active ? 'text-blue-600 border-blue-600' : 'text-gray-400 border-transparent hover:text-gray-600'}
+        className={`px-6 py-2 font-black text-sm uppercase tracking-wide transition-all border-b-4 whitespace-nowrap
+            ${active ? 'text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400' : 'text-gray-400 border-transparent hover:text-gray-600 dark:hover:text-gray-300'}
         `}
     >
         {label}
@@ -256,20 +256,20 @@ const AssignmentCard = ({ assignment, onClick, ctaLabel }: any) => {
     return (
         <div 
             onClick={onClick}
-            className="group bg-white p-6 rounded-2xl border-2 border-gray-100 hover:border-blue-200 shadow-sm transition-all cursor-pointer flex items-center gap-6"
+            className="group bg-white dark:bg-gray-800 p-6 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-600 shadow-sm transition-all cursor-pointer flex items-center gap-6"
         >
             <div className="flex-1">
                 <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-black text-xl text-gray-800 group-hover:text-blue-600 transition-colors">{assignment.title}</h3>
-                    {isDueSoon && <span className="bg-red-100 text-red-600 text-xs font-black px-2 py-1 rounded">DUE SOON</span>}
+                    <h3 className="font-black text-xl text-gray-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{assignment.title}</h3>
+                    {isDueSoon && <span className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-black px-2 py-1 rounded">DUE SOON</span>}
                 </div>
-                <div className="flex items-center gap-4 text-sm text-gray-500 font-bold">
+                <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 font-bold">
                     <span className="flex items-center gap-1"><Clock size={14} /> Due: {assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString() : 'No Date'}</span>
-                    <span className="flex items-center gap-1 text-gray-300">|</span>
-                    <span className="text-gray-400">{assignment.maxPoints} Pts</span>
+                    <span className="flex items-center gap-1 text-gray-300 dark:text-gray-600">|</span>
+                    <span className="text-gray-400 dark:text-gray-500">{assignment.maxPoints} Pts</span>
                 </div>
             </div>
-            <div className="bg-gray-50 group-hover:bg-blue-600 group-hover:text-white p-3 rounded-full transition-colors text-gray-300">
+            <div className="bg-gray-50 dark:bg-gray-700 group-hover:bg-blue-600 group-hover:text-white p-3 rounded-full transition-colors text-gray-300 dark:text-gray-500">
                 <ChevronRight size={24} strokeWidth={3} />
             </div>
         </div>
@@ -277,9 +277,9 @@ const AssignmentCard = ({ assignment, onClick, ctaLabel }: any) => {
 };
 
 const EmptyState = ({ message }: { message: string }) => (
-    <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+    <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700">
         <div className="text-4xl mb-2 opacity-50">🎉</div>
-        <p className="font-bold text-gray-400">{message}</p>
+        <p className="font-bold text-gray-400 dark:text-gray-500">{message}</p>
     </div>
 );
 

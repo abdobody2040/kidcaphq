@@ -3,12 +3,16 @@ import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../store';
 import { getLemonadeFeedback } from '../services/geminiService';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Sun, CloudRain, DollarSign, TrendingUp, RefreshCcw, Zap } from 'lucide-react';
+import { ShoppingCart, Sun, CloudRain, DollarSign, TrendingUp, RefreshCcw, Zap, ArrowLeft } from 'lucide-react';
 import GameTutorialModal from './common/GameTutorialModal';
 
 type GamePhase = 'PREP' | 'SIMULATION' | 'RESULT';
 
-const LemonadeStand: React.FC = () => {
+interface LemonadeStandProps {
+  onBack: () => void;
+}
+
+const LemonadeStand: React.FC<LemonadeStandProps> = ({ onBack }) => {
   const { lemonadeState, updateLemonadeState, getSkillModifiers } = useAppStore();
   const [phase, setPhase] = useState<GamePhase>('PREP');
   const [weather, setWeather] = useState<string>('Sunny');
@@ -125,7 +129,7 @@ const LemonadeStand: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-200 relative h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] flex flex-col">
+    <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 relative h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] flex flex-col">
       {showTutorial && (
           <GameTutorialModal 
             onStart={() => setShowTutorial(false)}
@@ -142,13 +146,23 @@ const LemonadeStand: React.FC = () => {
           />
       )}
 
+      {/* HEADER with RTL Support and Back Button */}
       <div className="bg-kid-primary p-4 md:p-6 text-indigo-900 flex justify-between items-center shrink-0 z-10">
-        <div>
-           <h2 className="text-xl md:text-3xl font-black">Lemonade Tycoon</h2>
-           <div className="text-xs md:text-sm font-bold opacity-80">Day {lemonadeState.day} • Forecast: {weather}</div>
+        <div className="flex items-center gap-3">
+           <button 
+              onClick={onBack} 
+              className="p-2 hover:bg-white/20 rounded-full transition-colors text-indigo-900"
+              title="Back"
+           >
+               <ArrowLeft size={28} strokeWidth={3} />
+           </button>
+           <div>
+               <h2 className="text-xl md:text-3xl font-black text-indigo-900 leading-none">Lemonade Tycoon</h2>
+               <div className="text-xs md:text-sm font-bold opacity-80 text-indigo-800 mt-1">Day {lemonadeState.day} • Forecast: {weather}</div>
+           </div>
         </div>
         <div className="flex items-center gap-2">
-            <button onClick={() => setShowTutorial(true)} className="bg-white/20 hover:bg-white/40 px-3 py-1 rounded-lg font-bold text-xs md:text-sm">Help</button>
+            <button onClick={() => setShowTutorial(true)} className="bg-white/20 hover:bg-white/40 px-3 py-1 rounded-lg font-bold text-xs md:text-sm hidden sm:block">Help</button>
             <div className="bg-white/30 px-3 py-1 md:px-4 md:py-2 rounded-xl backdrop-blur-sm font-black text-lg md:text-xl flex items-center gap-1 md:gap-2">
                 <DollarSign size={16} className="md:w-5 md:h-5" />
                 {lemonadeState.funds.toFixed(2)}
@@ -156,19 +170,19 @@ const LemonadeStand: React.FC = () => {
         </div>
       </div>
 
-      <div className="p-4 md:p-8 flex-1 overflow-y-auto">
+      <div className="p-4 md:p-8 flex-1 overflow-y-auto bg-white dark:bg-gray-900">
         {phase === 'PREP' && (
           <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto">
             {/* Skills Indicator */}
             {(modifiers.costMultiplier < 1 || modifiers.priceMultiplier > 1) && (
                 <div className="flex flex-wrap gap-2 md:gap-4 justify-center">
                     {modifiers.costMultiplier < 1 && (
-                        <div className="bg-blue-100 text-blue-700 px-3 py-1 md:px-4 md:py-2 rounded-full text-[10px] md:text-xs font-black flex items-center gap-2">
+                        <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 md:px-4 md:py-2 rounded-full text-[10px] md:text-xs font-black flex items-center gap-2">
                             <Zap size={12} /> Efficiency Discount Active
                         </div>
                     )}
                     {modifiers.priceMultiplier > 1 && (
-                        <div className="bg-pink-100 text-pink-700 px-3 py-1 md:px-4 md:py-2 rounded-full text-[10px] md:text-xs font-black flex items-center gap-2">
+                        <div className="bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 px-3 py-1 md:px-4 md:py-2 rounded-full text-[10px] md:text-xs font-black flex items-center gap-2">
                             <Zap size={12} /> Charisma Boost Active
                         </div>
                     )}
@@ -207,12 +221,12 @@ const LemonadeStand: React.FC = () => {
             </div>
 
             {/* Recipe / Pricing Section */}
-            <div className="bg-gray-50 p-4 md:p-6 rounded-2xl border-2 border-gray-100">
-               <h3 className="font-bold text-gray-700 mb-4 flex items-center gap-2 text-sm md:text-base">
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 md:p-6 rounded-2xl border-2 border-gray-100 dark:border-gray-700">
+               <h3 className="font-bold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2 text-sm md:text-base">
                  <TrendingUp size={20}/> Set Your Price
                </h3>
                <div className="flex items-center gap-4">
-                  <span className="text-2xl font-black text-gray-800">${lemonadeState.recipe.pricePerCup.toFixed(2)}</span>
+                  <span className="text-2xl font-black text-gray-800 dark:text-white">${lemonadeState.recipe.pricePerCup.toFixed(2)}</span>
                   <input 
                     type="range" 
                     min="0.10" 
@@ -220,7 +234,7 @@ const LemonadeStand: React.FC = () => {
                     step="0.10"
                     value={lemonadeState.recipe.pricePerCup}
                     onChange={(e) => updateLemonadeState({ recipe: { ...lemonadeState.recipe, pricePerCup: parseFloat(e.target.value) } })}
-                    className="w-full h-4 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-kid-accent"
+                    className="w-full h-4 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-kid-accent"
                   />
                </div>
             </div>
@@ -236,13 +250,13 @@ const LemonadeStand: React.FC = () => {
 
         {phase === 'SIMULATION' && (
            <div className="flex flex-col items-center justify-center h-full text-center py-12">
-              <h3 className="text-2xl font-bold text-gray-600 mb-8">Selling Lemonade...</h3>
-              <div className="w-full max-w-md bg-gray-200 rounded-full h-8 overflow-hidden mb-8 relative">
+              <h3 className="text-2xl font-bold text-gray-600 dark:text-gray-300 mb-8">Selling Lemonade...</h3>
+              <div className="w-full max-w-md bg-gray-200 dark:bg-gray-700 rounded-full h-8 overflow-hidden mb-8 relative">
                  <div 
                     className="h-full bg-kid-primary transition-all duration-100"
                     style={{ width: `${simProgress}%` }}
                  />
-                 <div className="absolute inset-0 flex items-center justify-center font-bold text-gray-600 text-sm">
+                 <div className="absolute inset-0 flex items-center justify-center font-bold text-gray-600 dark:text-gray-300 text-sm">
                     {simProgress}% Day Complete
                  </div>
               </div>
@@ -258,16 +272,16 @@ const LemonadeStand: React.FC = () => {
 
         {phase === 'RESULT' && (
             <div className="text-center space-y-6 max-w-2xl mx-auto py-8">
-                <h3 className="text-3xl font-black text-gray-800">Day Complete!</h3>
+                <h3 className="text-3xl font-black text-gray-800 dark:text-white">Day Complete!</h3>
                 
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                        <div className="text-sm text-gray-500 font-bold">Cups Sold</div>
-                        <div className="text-2xl md:text-3xl font-black text-blue-600">{dayResult.sold}</div>
+                    <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
+                        <div className="text-sm text-gray-500 dark:text-gray-400 font-bold">Cups Sold</div>
+                        <div className="text-2xl md:text-3xl font-black text-blue-600 dark:text-blue-400">{dayResult.sold}</div>
                     </div>
-                    <div className="bg-green-50 p-4 rounded-xl border border-green-100">
-                        <div className="text-sm text-gray-500 font-bold">Profit</div>
-                        <div className="text-2xl md:text-3xl font-black text-green-600">+${dayResult.profit.toFixed(2)}</div>
+                    <div className="bg-green-50 dark:bg-green-900/30 p-4 rounded-xl border border-green-100 dark:border-green-800">
+                        <div className="text-sm text-gray-500 dark:text-gray-400 font-bold">Profit</div>
+                        <div className="text-2xl md:text-3xl font-black text-green-600 dark:text-green-400">+${dayResult.profit.toFixed(2)}</div>
                         {dayResult.skillBonus > 0 && (
                             <div className="text-xs font-bold text-green-500 mt-1 flex items-center justify-center gap-1">
                                 <Zap size={10} /> +${dayResult.skillBonus.toFixed(2)} Skill Bonus
@@ -276,11 +290,11 @@ const LemonadeStand: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-yellow-50 p-6 rounded-xl border border-yellow-100 text-left flex gap-4">
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-6 rounded-xl border border-yellow-100 dark:border-yellow-800 text-left flex gap-4">
                      <div className="text-4xl">🦉</div>
                      <div>
-                        <div className="font-bold text-yellow-800 text-sm uppercase tracking-wide mb-1">CEO Ollie Says</div>
-                        <p className="text-gray-800 font-medium italic text-sm md:text-base">"{dayResult.feedback}"</p>
+                        <div className="font-bold text-yellow-800 dark:text-yellow-400 text-sm uppercase tracking-wide mb-1">CEO Ollie Says</div>
+                        <p className="text-gray-800 dark:text-gray-200 font-medium italic text-sm md:text-base">"{dayResult.feedback}"</p>
                      </div>
                 </div>
 
@@ -298,14 +312,14 @@ const LemonadeStand: React.FC = () => {
 };
 
 const InventoryCard = ({ icon, name, count, subtext, onBuy, price, originalPrice }: any) => (
-  <div className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100 flex flex-col items-center text-center">
+  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 flex flex-col items-center text-center">
      <div className="text-3xl md:text-4xl mb-2">{icon}</div>
-     <div className="font-bold text-gray-800 text-base md:text-lg">{name}</div>
-     <div className="text-xl md:text-2xl font-black text-gray-900 my-1">{count}</div>
-     <div className="text-[10px] md:text-xs text-gray-400 font-bold mb-4">{subtext}</div>
+     <div className="font-bold text-gray-800 dark:text-white text-base md:text-lg">{name}</div>
+     <div className="text-xl md:text-2xl font-black text-gray-900 dark:text-gray-100 my-1">{count}</div>
+     <div className="text-[10px] md:text-xs text-gray-400 dark:text-gray-400 font-bold mb-4">{subtext}</div>
      <button 
         onClick={onBuy}
-        className="w-full py-2 bg-white border-2 border-kid-secondary text-kid-secondary font-bold rounded-xl hover:bg-kid-secondary hover:text-white transition-colors relative text-sm"
+        className="w-full py-2 bg-white dark:bg-gray-700 border-2 border-kid-secondary text-kid-secondary dark:text-kid-secondary font-bold rounded-xl hover:bg-kid-secondary hover:text-white dark:hover:text-white transition-colors relative text-sm"
      >
         Buy {price}
         {originalPrice && (

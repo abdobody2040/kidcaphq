@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -6,12 +7,15 @@
     <title>KidCap HQ - Future CEO Academy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
             fontFamily: {
               sans: ['Nunito', 'sans-serif'],
+              arabic: ['Cairo', 'sans-serif'],
             },
             colors: {
               kid: {
@@ -33,6 +37,15 @@
         background-color: #f0fdf4; /* Light green bg */
         overflow-x: hidden;
       }
+      .dark body {
+        background-color: #111827; /* gray-900 */
+      }
+      
+      /* RTL Font Override */
+      html[lang="ar"] body {
+        font-family: 'Cairo', sans-serif;
+      }
+
       /* Juicy Button Effect */
       .btn-juicy {
         transition: transform 0.1s, box-shadow 0.1s;
@@ -46,8 +59,9 @@
 {
   "imports": {
     "react": "https://aistudiocdn.com/react@^19.2.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
     "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
     "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
     "zustand": "https://aistudiocdn.com/zustand@^5.0.9",
@@ -59,7 +73,10 @@
     "vitest": "https://esm.sh/vitest@^4.0.15",
     "vitest/": "https://esm.sh/vitest@^4.0.15/",
     "@testing-library/jest-dom": "https://esm.sh/@testing-library/jest-dom@^6.9.1",
-    "@testing-library/react": "https://esm.sh/@testing-library/react@^16.3.0"
+    "@testing-library/react": "https://esm.sh/@testing-library/react@^16.3.0",
+    "i18next": "https://esm.sh/i18next@^23.10.0",
+    "react-i18next": "https://esm.sh/react-i18next@^14.1.0?external=react,react-dom,i18next",
+    "i18next-browser-languagedetector": "https://esm.sh/i18next-browser-languagedetector@^7.2.0?external=i18next"
   }
 }
 </script>

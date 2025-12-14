@@ -7,11 +7,14 @@ export enum UserRole {
   ADMIN = 'ADMIN'
 }
 
+export type SubscriptionTier = 'intern' | 'founder' | 'board' | 'tycoon';
+
 export interface UserSettings {
   dailyGoalMinutes: number;
   soundEnabled: boolean;
   musicEnabled: boolean;
   themeColor: 'blue' | 'green' | 'purple';
+  themeMode: 'light' | 'dark';
 }
 
 export interface BusinessLogo {
@@ -80,6 +83,9 @@ export interface User {
 
   // Phase 6: SaaS / Subscription
   subscriptionStatus: 'FREE' | 'PREMIUM';
+  subscriptionTier: SubscriptionTier;
+  energy: number; // Current energy, max 5
+  lastEnergyRefill: number; // timestamp
   billingCycle?: 'MONTHLY' | 'YEARLY';
 }
 

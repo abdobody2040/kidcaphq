@@ -1,80 +1,74 @@
 
 # KidCap HQ - Future CEO Academy 🚀
 
-**KidCap HQ** is the world's #1 gamified business academy for kids. We turn screen time into real-world skills like entrepreneurship, financial literacy, and leadership through addictive mini-games and an RPG-style progression system.
+**KidCap HQ** is the world's #1 gamified business academy for kids. We turn screen time into real-world skills like entrepreneurship, financial literacy, and leadership through addictive mini-games, an RPG-style progression system, and AI-powered tutoring.
 
-![KidCap HQ Banner](https://via.placeholder.com/1200x400.png?text=KidCap+HQ+Screenshot)
-
-## 🦉 Meet Your C.E.O. (Chief Education Officer)
-
-**Ollie the Wise Owl**
-
-> *"Hoot hoot! Mistakes are just tuition for success! Let's build your empire!"*
-
-<img src="ollie.png" alt="Ollie the Wise Owl" width="200" style="border-radius: 20px; border: 4px solid #FFC800; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
-
-*   **Role:** Personal AI Tutor & Mentor
-*   **Education:** Graduate of **Owl-vard Business School** 🎓
-*   **Style:** Sharp Navy Blazer, crisp white shirt, and a backpack full of blueprints.
-*   **Personality:** Optimistic, patient, and loves a good bird pun.
-*   **Function:** Ollie lives in the app (bottom right corner!) to answer questions, explain complex math, and cheer you on.
+![KidCap HQ Banner](https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80)
 
 ---
 
-## 🌟 Features
+## 🌟 Key Features
 
 ### 🎓 Interactive Learning Engine
-*   **100+ Gamified Lessons**: From "The History of Money" to "Crypto & Space Biz".
-*   **AI Chatbot (Ollie)**: A persistent, personality-driven AI companion available on every screen. Ask him anything!
-*   **Smart Quizzes**: Earn XP and BizCoins for correct answers.
+*   **Universal Lesson System**: 100+ gamified lessons covering Money Basics, Crypto, AI, and Global Trade.
+*   **Ollie (AI Tutor)**: Powered by **Google Gemini 2.5**, Ollie provides real-time homework help, business advice, and cheeky bird puns.
+*   **Book Library**: Read summaries of business classics like *Rich Dad Poor Dad* and *Shoe Dog* to earn XP.
 
-### 🎮 Business Arcade
-*   **Lemonade Tycoon**: The classic start. Manage weather, inventory, and pricing.
-*   **Pizza Rush**: A Phaser-based delivery game teaching logistics and time management.
-*   **Brand Builder**: Design your own company logo, pick colors, and save your brand identity.
-*   **Universal Simulation Engine**: Supports 30+ scenarios (YouTuber, Pet Salon, Robot Factory).
+### 🎮 The Universal Business Arcade
+Runs on our custom `GameEngine.tsx` supporting multiple genres:
+*   **Tycoon Sims**: Lemonade Stand, Coffee Cart, Factory Manager.
+*   **Action/Arcade**: Pizza Rush (Phaser-based driving), Rhythm Car Wash.
+*   **Puzzle/Logic**: Recycling Sorter, Fair Trade Matcher.
+*   **Clicker/Idle**: App Developer, Dropship Empire.
 
-### 🏆 Gamification & Progression
-*   **My Empire**: Upgrade your HQ from a "Messy Garage" to a "Private Island".
-*   **MBA Skill Tree**: Unlock passive buffs like "Silver Tongue" (Charisma) or "Fast Hands" (Efficiency).
-*   **Portfolio**: Hire managers to earn idle income while offline.
-*   **Leaderboards**: Compete weekly with other "Kidpreneurs".
-*   **Avatar Shop**: Customize your look with hats, suits, and accessories.
+### 🌍 Localization & Accessibility
+*   **Multi-Language Support**: Full **English** and **Arabic (RTL)** support via `i18next`.
+*   **Accessible Design**: High-contrast modes, screen-reader friendly structure, and intuitive UI for kids.
 
-### 🛡️ Safety & Control
-*   **Parent Dashboard**: Monitor screen time, progress, and toggle sound/music.
-*   **Teacher Mode**: Manage classrooms, lock/unlock curriculum modules.
-*   **Privacy First**: Uses masked usernames and avatars.
+### 🏫 Education & Management
+*   **Teacher Dashboard**: Create assignments, manage student groups, and grade submissions with custom rubrics.
+*   **Parent Dashboard**: Monitor screen time, view learning graphs, and manage subscriptions.
+*   **Admin Console (CMS)**:
+    *   **Dynamic Page Builder**: Create marketing pages without code.
+    *   **Library Manager**: Add books and auto-generate summaries using AI.
+    *   **User Management**: Impersonate users, manage classes, and moderation tools.
 
----
-
-## 🏗️ Architecture & Scalability
-
-KidCap HQ is built as a **Client-Side Single Page Application (SPA)**. This ensures maximum privacy (data stays on the device) and offline capability.
-
-| Component | Capacity / Limit | Notes |
-| :--- | :--- | :--- |
-| **Global Users** | **Unlimited** | Served via CDN. No central database bottleneck. |
-| **Local Profiles** | **~50 per Device** | Data stored in `localStorage` (Max 5MB). |
-| **AI Tutor** | **~15 RPM (Free Tier)** | Limited by Google Gemini API quotas. Upgrade to Paid Tier for scale. |
-| **Offline Mode** | **100% Supported** | Core gameplay works without internet (except AI features). |
-
-> **Note:** Because there is no backend database, user progress is not synced between devices. A user on an iPad cannot continue their game on a Laptop.
+### 💎 Monetization & Progression
+*   **Subscription System**: Tiered access (Intern, Founder, Board Member, Tycoon).
+*   **Energy Mechanics**: Freemium energy loops to encourage breaks (or upgrades).
+*   **BizStore**: Spend earned "BizCoins" on avatars, outfits, and power-ups.
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Tech Stack & Architecture
 
-*   **Frontend**: React 19, TypeScript, Vite
-*   **Styling**: Tailwind CSS, Framer Motion
-*   **State Management**: Zustand (Persistence Middleware)
-*   **Game Engine**: Phaser 3
-*   **AI**: Google GenAI SDK (Gemini 2.5 Flash)
-*   **Icons**: Lucide React
+KidCap HQ is built as a robust **Client-Side Single Page Application (SPA)** using the latest modern web technologies.
+
+| Category | Technology |
+| :--- | :--- |
+| **Core** | React 19, TypeScript, Vite |
+| **State Management** | Zustand (with Persistence Middleware) |
+| **Styling** | Tailwind CSS, Framer Motion |
+| **Game Engine** | Phaser 3 + Custom React Reconciler |
+| **AI Integration** | Google GenAI SDK (Gemini 2.5 Flash) |
+| **Localization** | i18next, i18next-browser-languagedetector |
+| **Testing** | Vitest, React Testing Library |
+
+### 🛡️ Enterprise-Grade Stability
+Recent audits have fortified the codebase against common exploits and crashes:
+*   **Infinite Energy Exploit**: Fixed timestamp validation logic in `useEnergy.ts`.
+*   **Save Corruption**: Implemented robust `NaN` and date parsing guards in `store.ts`.
+*   **Runtime Crashes**: Added fallback rendering for invalid asset IDs in `Headquarters.tsx`.
 
 ---
 
 ## 🚀 Getting Started
+
+### Prerequisites
+*   Node.js (v18+)
+*   Google Gemini API Key (for AI features)
+
+### Installation
 
 1.  **Clone the repository**
     ```bash
@@ -88,15 +82,15 @@ KidCap HQ is built as a **Client-Side Single Page Application (SPA)**. This ensu
     ```
 
 3.  **Configure Environment**
-    Create a `.env` file and add your Google Gemini API Key:
+    Create a `.env` file in the root directory:
     ```env
     API_KEY=your_google_gemini_api_key_here
     ```
 
-4.  **Add Ollie's Picture**
-    Place your image of Ollie in the root folder and name it `ollie.png`.
+4.  **Add Assets**
+    Place your `ollie.png` image in the `public/` or root folder.
 
-5.  **Run the development server**
+5.  **Run Development Server**
     ```bash
     npm run dev
     ```
@@ -107,25 +101,37 @@ KidCap HQ is built as a **Client-Side Single Page Application (SPA)**. This ensu
 
 ```
 /
-├── components/         
-│   ├── OllieChat.tsx              # The AI Chatbot Component
-│   ├── UniversalBusinessGame.tsx  # Core Simulation Engine
-│   ├── UniversalLessonEngine.tsx  # Core Learning Engine
-│   ├── KidMap.tsx                 # Adventure Path UI
+├── components/
+│   ├── AdminDashboard.tsx       # CMS & User Management
+│   ├── GameEngine.tsx           # Universal Game Launcher
+│   ├── game-templates/          # Reusable Game Logic (Tycoon, Clicker, etc.)
+│   ├── OllieChat.tsx            # AI Chat Interface
+│   ├── TeacherDashboard.tsx     # Classroom Management
 │   └── ...
-├── data/               
-│   ├── curriculum.ts   # Lesson Database (100+ units)
-│   └── games.ts        # Game Definitions (30+ scenarios)
-├── services/           
-│   ├── geminiService.ts   # AI Integration (Ollie's Brain)
-│   └── SoundService.ts    # Audio Synthesis
-├── store.ts            # Global State (Zustand)
-├── App.tsx             # Main Router
-└── README.md
+├── data/
+│   ├── curriculum.ts            # 100+ Lesson Definitions
+│   ├── games.ts                 # Config for 30+ Games
+│   └── libraryBooks.ts          # Book Database
+├── locales/                     # i18n Translation Files
+├── services/
+│   ├── geminiService.ts         # AI Integration
+│   └── stripeService.ts         # Mock Payment Gateway
+├── store.ts                     # Global State (Zustand)
+└── App.tsx                      # Main Router & Layout
 ```
+
+---
+
+## 🦉 Meet Ollie (C.E.O.)
+
+**Chief Education Officer**
+
+> *"Hoot hoot! Failure is just market research for your next success!"*
+
+Ollie is more than a mascot; he's a context-aware AI agent integrated into every aspect of the app. He provides hints in games, explains difficult words in lessons, and roleplays as a consultant for premium users.
 
 ---
 
 ## 📄 License
 
-Distributed under the MIT License.
+Distributed under the MIT License. Built for the Future Leaders of the World.

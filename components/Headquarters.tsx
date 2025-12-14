@@ -3,6 +3,7 @@ import React from 'react';
 import { useAppStore, HQ_LEVELS } from '../store';
 import { Lock, CheckCircle, ArrowUpCircle, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const THEMES: Record<string, string> = {
   'hq_garage': 'from-gray-700 to-gray-900',
@@ -13,26 +14,32 @@ const THEMES: Record<string, string> = {
 
 const Headquarters: React.FC = () => {
   const { user, upgradeHQ } = useAppStore();
+  const { t } = useTranslation();
 
   if (!user) return null;
 
-  const currentLevelIndex = HQ_LEVELS.findIndex(h => h.id === user.hqLevel);
-  const currentLevel = HQ_LEVELS[currentLevelIndex];
+  // FIX: White Screen Crash Prevention
+  // Fallback to 0 if findIndex returns -1 (invalid ID)
+  const hqIndex = HQ_LEVELS.findIndex(h => h.id === user.hqLevel);
+  const currentLevelIndex = hqIndex === -1 ? 0 : hqIndex;
   
-  // Dynamic Background based on level
-  const bgGradient = THEMES[currentLevel.id] || 'from-gray-200 to-gray-400';
+  // Safe Access with Fallback
+  const currentLevel = HQ_LEVELS[currentLevelIndex] || HQ_LEVELS[0];
+  
+  // Dynamic Background based on level with safety check
+  const bgGradient = THEMES[currentLevel?.id] || 'from-gray-700 to-gray-900';
 
   return (
     <div className="pb-20 space-y-8">
       <div className="text-center mb-10">
-        <h2 className="text-4xl font-black text-gray-800 mb-2">My Headquarters</h2>
-        <p className="text-gray-500 font-bold">Upgrade your office to show off your success!</p>
+        <h2 className="text-4xl font-black text-gray-800 dark:text-white mb-2">{t('hq.title')}</h2>
+        <p className="text-gray-500 dark:text-gray-400 font-bold">{t('hq.subtitle')}</p>
       </div>
 
       {/* Main Visual */}
       <motion.div 
         layout
-        className={`rounded-3xl p-10 shadow-2xl border-4 border-white relative overflow-hidden text-center bg-gradient-to-br ${bgGradient}`}
+        className={`rounded-3xl p-10 shadow-2xl border-4 border-white dark:border-gray-700 relative overflow-hidden text-center bg-gradient-to-br ${bgGradient}`}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -94,22 +101,22 @@ const Headquarters: React.FC = () => {
                     key={level.id}
                     whileHover={isNext ? { scale: 1.05 } : {}}
                     className={`p-6 rounded-2xl border-2 flex flex-col items-center text-center transition-all relative overflow-hidden
-                        ${isUnlocked ? 'bg-green-50 border-green-200 opacity-80' : 'bg-white border-gray-100'}
+                        ${isUnlocked ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800 opacity-80' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'}
                         ${isNext ? 'ring-4 ring-yellow-300 border-yellow-500 shadow-xl z-10 opacity-100' : ''}
                     `}
                  >
                      {isNext && (
-                         <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-black px-2 py-1 rounded-bl-lg">
-                             NEXT
+                         <div className="absolute top-0 right-0 rtl:left-0 rtl:right-auto bg-yellow-400 text-yellow-900 text-xs font-black px-2 py-1 rounded-bl-lg rtl:rounded-br-lg rtl:rounded-bl-none">
+                             {t('hq.next')}
                          </div>
                      )}
 
                      <div className="text-4xl mb-3 filter drop-shadow-sm">{level.icon}</div>
-                     <div className="font-bold text-gray-800 mb-1">{level.name}</div>
+                     <div className="font-bold text-gray-800 dark:text-white mb-1">{level.name}</div>
                      
                      {isUnlocked ? (
-                         <div className="mt-auto pt-4 text-green-600 font-bold flex items-center gap-2">
-                             <CheckCircle size={18} /> Owned
+                         <div className="mt-auto pt-4 text-green-600 dark:text-green-400 font-bold flex items-center gap-2">
+                             <CheckCircle size={18} /> {t('hq.owned')}
                          </div>
                      ) : isNext ? (
                          <button 
@@ -118,15 +125,15 @@ const Headquarters: React.FC = () => {
                             className={`mt-auto w-full py-2 rounded-xl font-bold flex items-center justify-center gap-2 transition-all
                                 ${canAfford 
                                     ? 'bg-kid-primary text-yellow-900 hover:bg-yellow-400 btn-juicy shadow-md' 
-                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'}
+                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'}
                             `}
                          >
                             {canAfford ? <ArrowUpCircle size={18} /> : <Lock size={18} />}
                             ${level.cost.toLocaleString()}
                          </button>
                      ) : (
-                         <div className="mt-auto pt-4 text-gray-400 font-bold flex items-center gap-2">
-                             <Lock size={18} /> Locked
+                         <div className="mt-auto pt-4 text-gray-400 dark:text-gray-500 font-bold flex items-center gap-2">
+                             <Lock size={18} /> {t('hq.locked')}
                          </div>
                      )}
                  </motion.div>
