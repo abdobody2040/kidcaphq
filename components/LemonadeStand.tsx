@@ -54,6 +54,10 @@ const LemonadeStand: React.FC<LemonadeStandProps> = ({ onBack }) => {
           [item]: lemonadeState.inventory[item] + amount
         }
       });
+    } else {
+        // Bankruptcy Edge Case Feedback
+        alert("Not enough funds!");
+        // Note: Ideally use a toast or SoundService.playError() here if available
     }
   };
 

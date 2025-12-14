@@ -26,9 +26,17 @@ export const useEnergy = () => {
     const checkRefill = () => {
       const now = Date.now();
       // Safety check: if lastRefill is missing/invalid, treat as now
-      const lastRefill = user.lastEnergyRefill && !isNaN(new Date(user.lastEnergyRefill).getTime()) 
+      let lastRefill = user.lastEnergyRefill && !isNaN(new Date(user.lastEnergyRefill).getTime())
         ? user.lastEnergyRefill 
         : now;
+
+      // Time Travel Check
+      if (now < lastRefill) {
+          // Cheat detected (User moved clock back or system time invalid)
+          // Fix: Reset to now to prevent exploiting infinite waits or loops
+          lastRefill = now;
+          updateUser(user.id, { lastEnergyRefill: now });
+      }
         
       const timePassed = now - lastRefill;
 

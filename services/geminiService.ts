@@ -6,7 +6,8 @@ let aiClient: GoogleGenAI | null = null;
 
 const getAiClient = () => {
   if (!aiClient) {
-    const apiKey = process.env.API_KEY || '';
+    // FIX: Use import.meta.env for Vite, fallback to empty string to prevent crash
+    const apiKey = import.meta.env.VITE_API_KEY || '';
     // Prevent crashing if no key is provided, though calls will fail gracefully later
     try {
         aiClient = new GoogleGenAI({ apiKey });
@@ -40,7 +41,7 @@ Context:
 
 export const getOwlyExplanation = async (topic: string, kidAge: number = 8): Promise<string> => {
   const ai = getAiClient();
-  if (!ai || !process.env.API_KEY) return "Hoot! I can't connect to my brain right now! (Missing API Key)";
+  if (!ai || !import.meta.env.VITE_API_KEY) return "Hoot! I can't connect to my brain right now! (Missing API Key)";
 
   try {
     const model = ai.models;
@@ -64,7 +65,7 @@ export const getLemonadeFeedback = async (
   sales: number
 ): Promise<string> => {
   const ai = getAiClient();
-  if (!ai || !process.env.API_KEY) return "Great day of sales! 🦉";
+  if (!ai || !import.meta.env.VITE_API_KEY) return "Great day of sales! 🦉";
 
   try {
     const model = ai.models;
@@ -91,7 +92,7 @@ export interface ChatMessage {
 
 export const chatWithOllie = async (history: ChatMessage[], newMessage: string): Promise<string> => {
   const ai = getAiClient();
-  if (!ai || !process.env.API_KEY) return "Hoot! Check your internet connection (or API Key). 🌐";
+  if (!ai || !import.meta.env.VITE_API_KEY) return "Hoot! Check your internet connection (or API Key). 🌐";
 
   try {
     const chat = ai.chats.create({
@@ -118,7 +119,7 @@ export interface GeneratedBookDetails {
 
 export const generateBookDetails = async (title: string, author: string): Promise<GeneratedBookDetails | null> => {
   const ai = getAiClient();
-  if (!ai || !process.env.API_KEY) return null;
+  if (!ai || !import.meta.env.VITE_API_KEY) return null;
 
   try {
     const model = ai.models;
