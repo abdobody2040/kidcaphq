@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { Rocket, Brain, Shield, Star, Check, ArrowRight, Play, Users, Globe, Trophy, Zap, ArrowUpRight } from 'lucide-react';
 import { useAppStore } from '../store';
 import { ContentBlock } from '../types';
+import PublicNavbar from './PublicNavbar';
+import SmartImage from './SmartImage';
 
 interface LandingPageProps {
   onGetStarted: () => void;
@@ -44,7 +46,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                       <div className={`flex flex-col md:flex-row gap-12 items-center ${block.layout === 'image_right' ? 'md:flex-row-reverse' : ''}`}>
                           {block.image && (
                               <div className="flex-1">
-                                  <img src={block.image} alt={block.title} className="w-full rounded-3xl shadow-xl" />
+                                  <SmartImage src={block.image} alt={block.title || 'Section Image'} type="feature" className="w-full rounded-3xl shadow-xl h-64 object-cover" />
                               </div>
                           )}
                           <div className={`flex-1 space-y-6 ${block.layout === 'center' ? 'text-center' : ''}`}>
@@ -68,36 +70,14 @@ const LandingPage: React.FC<LandingPageProps> = ({
   return (
     <div className="min-h-screen bg-white font-sans text-gray-900 overflow-x-hidden selection:bg-yellow-200">
       
-      {/* --- NAVBAR --- */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div className="flex justify-between items-center p-4 max-w-7xl mx-auto">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={onGetStarted}>
-                <div className="w-10 h-10 bg-kid-secondary rounded-xl flex items-center justify-center text-white font-black text-xl shadow-[0_4px_0_0_rgba(21,128,61,1)]">
-                    K
-                </div>
-                <span className="text-2xl font-black text-gray-800 tracking-tight">KidCap HQ</span>
-            </div>
-            <div className="hidden md:flex gap-8 font-bold text-gray-500">
-                <button onClick={onViewFeatures} className="hover:text-kid-secondary transition-colors">Features</button>
-                <button onClick={onViewCurriculum} className="hover:text-kid-secondary transition-colors">Curriculum</button>
-                <button onClick={onViewPricing} className="hover:text-kid-secondary transition-colors">Pricing</button>
-            </div>
-            <div className="flex items-center gap-3">
-                <button 
-                    onClick={onLogin}
-                    className="px-5 py-2 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors"
-                >
-                    Log In
-                </button>
-                <button 
-                    onClick={onRegister}
-                    className="px-6 py-2 bg-kid-primary text-yellow-900 font-black rounded-xl shadow-[0_4px_0_0_rgba(202,138,4,1)] btn-juicy hover:bg-yellow-400 transition-all"
-                >
-                    Start Free
-                </button>
-            </div>
-        </div>
-      </nav>
+      <PublicNavbar 
+        onHome={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        onFeatures={onViewFeatures}
+        onCurriculum={onViewCurriculum}
+        onPricing={onViewPricing}
+        onLogin={onLogin}
+        onRegister={onRegister}
+      />
 
       {/* --- HERO SECTION --- */}
       <section className="relative pt-40 pb-20 px-4 overflow-hidden bg-gradient-to-b from-green-50 via-blue-50 to-white">
@@ -175,12 +155,13 @@ const LandingPage: React.FC<LandingPageProps> = ({
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.2 }}
-                    className="relative z-10"
+                    className="relative z-10 w-full max-w-md"
                   >
-                      <img 
+                      <SmartImage 
                         src={landing.heroImage} 
                         alt="App Screenshot" 
-                        className="rounded-3xl shadow-2xl border-8 border-white w-full max-w-md mx-auto transform rotate-2 hover:rotate-0 transition-transform duration-500 object-cover"
+                        type="hero"
+                        className="rounded-3xl shadow-2xl border-8 border-white w-full transform rotate-2 hover:rotate-0 transition-transform duration-500 object-cover h-[400px]"
                       />
                   </motion.div>
               </div>

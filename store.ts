@@ -117,7 +117,7 @@ export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   { id: 'u2', name: 'RocketCEO', xp: 4800, avatar: '🚀' },
   { id: 'u3', name: 'MoneyMaker', xp: 3500, avatar: '🦁' },
   { id: 'u4', name: 'DiamondHands', xp: 2100, avatar: '💎' },
-  { id: 'kid_1', name: 'Leo', xp: 120, avatar: '🐼', isCurrentUser: true },
+  { id: 'kid_1', name: 'Leo', xp: 1250, avatar: '🐼', isCurrentUser: true },
 ];
 
 // Helper: Calculate Level
@@ -150,7 +150,7 @@ const DEFAULT_CMS_CONTENT: CMSContent = {
     heroTitle: "Don't just play games.\nBuild an Empire.",
     heroSubtitle: "KidCap HQ turns screen time into real-world business skills. Learn finance, leadership, and marketing through addictive mini-games.",
     heroCta: "Play Now - It's Free!",
-    heroImage: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+    heroImage: "https://images.unsplash.com/photo-1544531586-fde5298cdd40?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
     featuresTitle: "How KidCap Works",
     featuresSubtitle: "We use a simple loop to make learning sticky and addictive.",
     arcadeTitle: "Real Business Simulations",
@@ -183,27 +183,28 @@ const MOCK_USER: User = {
   username: 'leo',
   password: '123',
   role: UserRole.KID,
-  xp: 120,
-  level: 2,
+  xp: 1250,
+  level: 5,
   streak: 3,
   lastActivityDate: getYesterday(),
   bizCoins: 1500,
   currentModuleId: 'mod_1',
   completedLessonIds: [],
-  badges: ['First Sale'],
-  inventory: [],
+  readBookIds: ['rich-dad-poor-dad', 'shoe-dog'],
+  badges: ['First Sale', 'Bookworm'],
+  inventory: ['item_sunglasses'],
   settings: DEFAULT_SETTINGS,
   businessLogo: {
-      companyName: 'Kid Inc.',
+      companyName: 'Leo Corp',
       backgroundColor: '#FFC800',
       icon: 'rocket',
       iconColor: '#FFFFFF',
       shape: 'circle'
   },
   hqLevel: 'hq_garage',
-  unlockedSkills: [],
-  portfolio: [],
-  equippedItems: [],
+  unlockedSkills: ['skl_silver_tongue', 'skl_fast_hands'],
+  portfolio: [{ businessId: 'BIZ_01_LEMONADE', managerLevel: 1, lastCollected: new Date().toISOString() }],
+  equippedItems: ['item_sunglasses'],
   subscriptionStatus: 'FREE',
   subscriptionTier: 'intern',
   energy: 5,
@@ -344,6 +345,7 @@ interface AppState {
   logout: () => void;
   checkStreak: () => void;
   completeLesson: (lessonId: string, xpReward?: number, coinReward?: number) => void;
+  readBook: (bookId: string) => void;
   buyItem: (item: ShopItem) => void;
   toggleEquipItem: (itemId: string) => void;
   closeLevelUpModal: () => void;
@@ -364,6 +366,7 @@ interface AppState {
   upgradeSubscription: (tier: SubscriptionTier) => void;
   hasUnlimitedEnergy: () => boolean;
   hasAiAccess: () => boolean;
+  consumeEnergy: () => boolean; // NEW: Robust energy consumption action
 
   // Content CRUD
   addLesson: (lesson: UniversalLessonUnit) => void;
@@ -394,7 +397,7 @@ interface AppState {
   updateRubric: (id: string, updates: Partial<Rubric>) => void;
   deleteRubric: (id: string) => void;
   
-  addAssignment: (assignment: Assignment) => void;
+  addAssignment: (assignment) => void;
   updateAssignment: (id: string, updates: Partial<Assignment>) => void;
   deleteAssignment: (id: string) => void;
   
@@ -518,6 +521,7 @@ export const useAppStore = create<AppState>()(
               bizCoins: 100, // Sign up bonus
               currentModuleId: 'mod_1',
               completedLessonIds: [],
+              readBookIds: [],
               badges: ['Newbie'],
               inventory: [],
               settings: DEFAULT_SETTINGS,
@@ -640,6 +644,23 @@ export const useAppStore = create<AppState>()(
           levelUpData: leveledUp ? { level: newLevel, xp: newXp } : null
         });
       },
+
+      readBook: (bookId: string) => set((state) => {
+        if (!state.user) return {};
+        // Use empty array fallback if readBookIds is undefined
+        const currentBooks = state.user.readBookIds || [];
+        if (currentBooks.includes(bookId)) return {};
+
+        const updatedUser = { 
+            ...state.user, 
+            readBookIds: [...currentBooks, bookId] 
+        };
+        
+        return { 
+            user: updatedUser, 
+            users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u) 
+        };
+      }),
 
       buyItem: (item) => set((state) => {
         if (!state.user) return {};
@@ -920,13 +941,41 @@ export const useAppStore = create<AppState>()(
       hasUnlimitedEnergy: () => {
           const user = get().user;
           if (!user) return false;
-          return ['founder', 'board', 'tycoon'].includes(user.subscriptionTier);
+          // IMPORTANT: If tier is missing or undefined, assume intern (false)
+          return ['founder', 'board', 'tycoon'].includes(user.subscriptionTier || 'intern');
       },
 
       hasAiAccess: () => {
           const user = get().user;
           if (!user) return false;
           return user.subscriptionTier === 'tycoon';
+      },
+
+      consumeEnergy: () => {
+          const state = get();
+          if (!state.user) return false;
+          
+          const isUnlimited = ['founder', 'board', 'tycoon'].includes(state.user.subscriptionTier || 'intern');
+          if (isUnlimited) return true;
+
+          if (state.user.energy > 0) {
+              const newEnergy = state.user.energy - 1;
+              const updates: Partial<User> = { energy: newEnergy };
+              
+              // If we are consuming from MAX, set the timestamp to start refill timer
+              if (state.user.energy === 5) {
+                  updates.lastEnergyRefill = Date.now();
+              }
+              
+              // Directly update state to ensure consistency
+              const updatedUser = { ...state.user, ...updates };
+              set({
+                  user: updatedUser,
+                  users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u)
+              });
+              return true;
+          }
+          return false;
       },
 
       // --- ADMIN ACTIONS ---
@@ -990,7 +1039,7 @@ export const useAppStore = create<AppState>()(
       updateCMSContent: (updates) => set((state) => ({ cmsContent: { ...state.cmsContent, ...updates } })),
     }),
     {
-      name: 'kidcap-storage-v5',
+      name: 'kidcap-storage-v6', // CHANGED VERSION TO FORCE RESET
       partialize: (state) => ({ 
         user: state.user,
         lemonadeState: state.lemonadeState,
@@ -1003,8 +1052,8 @@ export const useAppStore = create<AppState>()(
         assignments: state.assignments,
         submissions: state.submissions,
         cmsContent: state.cmsContent,
-        library: state.library, // Persist library
-        isAdminMode: state.isAdminMode // Persist admin mode toggle
+        library: state.library,
+        isAdminMode: state.isAdminMode
       }),
     }
   )

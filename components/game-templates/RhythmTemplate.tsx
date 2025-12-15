@@ -40,7 +40,8 @@ const RhythmTemplate: React.FC<Props> = ({ config, onExit }) => {
               const laneIdx = Math.floor(Math.random() * 3);
               const entity = config.entities?.[0] || { emoji: '🎵' }; // Default
               setLanes(prev => {
-                  const newLanes = [...prev];
+                  // Create a deep copy of the lanes to avoid state mutation
+                  const newLanes = prev.map(lane => [...lane]);
                   newLanes[laneIdx].push({ ...entity, id: Math.random(), y: -50 });
                   return newLanes;
               });
@@ -84,7 +85,7 @@ const RhythmTemplate: React.FC<Props> = ({ config, onExit }) => {
 
           // Remove item
           setLanes(prev => {
-              const newLanes = [...prev];
+              const newLanes = prev.map(l => [...l]);
               newLanes[laneIdx].splice(hitItemIndex, 1);
               return newLanes;
           });

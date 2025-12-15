@@ -64,6 +64,7 @@ export interface User {
   bizCoins: number;
   currentModuleId: string;
   completedLessonIds: string[];
+  readBookIds?: string[]; // New: Track books read
   badges: string[];
   inventory: string[]; // IDs of bought items
   
@@ -87,6 +88,9 @@ export interface User {
   energy: number; // Current energy, max 5
   lastEnergyRefill: number; // timestamp
   billingCycle?: 'MONTHLY' | 'YEARLY';
+  
+  // Customization
+  hqTheme?: 'blue' | 'gold' | 'modern';
 }
 
 export interface Classroom {
@@ -274,7 +278,7 @@ export interface UniversalLessonUnit {
 
 // --- DYNAMIC GAME ENGINE TYPES ---
 
-export type GameType = 'simulation_tycoon' | 'clicker_idle' | 'sorting_game' | 'driving_game' | 'matching_game' | 'rhythm_game';
+export type GameType = 'simulation_tycoon' | 'clicker_idle' | 'sorting_game' | 'driving_game' | 'matching_game' | 'rhythm_game' | 'negotiation_game';
 
 export interface VisualConfig {
   theme: 'eco' | 'neon' | 'pastel' | 'realistic' | 'dark' | 'light';

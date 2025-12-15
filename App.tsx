@@ -91,15 +91,23 @@ const App = () => {
     if (user?.role === UserRole.KID) setActiveTab('map');
   }, [user?.role]);
 
+  // Navigation Handlers
+  const navHome = () => setViewState('LANDING');
+  const navLogin = () => setViewState('AUTH_LOGIN');
+  const navRegister = () => setViewState('AUTH_REGISTER');
+  const navFeatures = () => setViewState('FEATURES');
+  const navCurriculum = () => setViewState('CURRICULUM');
+  const navPricing = () => setViewState('PRICING');
+
   if (!user) {
       if (viewState === 'LANDING') {
           return <LandingPage 
-                    onGetStarted={() => setViewState('AUTH_REGISTER')} 
-                    onLogin={() => setViewState('AUTH_LOGIN')}
-                    onRegister={() => setViewState('AUTH_REGISTER')}
-                    onViewCurriculum={() => setViewState('CURRICULUM')}
-                    onViewPricing={() => setViewState('PRICING')}
-                    onViewFeatures={() => setViewState('FEATURES')}
+                    onGetStarted={navRegister} 
+                    onLogin={navLogin}
+                    onRegister={navRegister}
+                    onViewCurriculum={navCurriculum}
+                    onViewPricing={navPricing}
+                    onViewFeatures={navFeatures}
                     onNavigateToPage={(slug) => {
                         setActivePageSlug(slug);
                         setViewState('CUSTOM_PAGE');
@@ -107,16 +115,35 @@ const App = () => {
                  />;
       }
       if (viewState === 'CURRICULUM') {
-          return <CurriculumPage onBack={() => setViewState('LANDING')} />;
+          return <CurriculumPage 
+                    onHome={navHome}
+                    onFeatures={navFeatures}
+                    onCurriculum={navCurriculum}
+                    onPricing={navPricing}
+                    onLogin={navLogin}
+                    onRegister={navRegister}
+                 />;
       }
       if (viewState === 'PRICING') {
           return <PricingPage 
-                    onBack={() => setViewState('LANDING')} 
-                    onGetStarted={() => setViewState('AUTH_REGISTER')}
+                    onHome={navHome}
+                    onFeatures={navFeatures}
+                    onCurriculum={navCurriculum}
+                    onPricing={navPricing}
+                    onLogin={navLogin}
+                    onRegister={navRegister}
+                    onGetStarted={navRegister}
                  />;
       }
       if (viewState === 'FEATURES') {
-          return <FeaturesPage onBack={() => setViewState('LANDING')} />;
+          return <FeaturesPage 
+                    onHome={navHome}
+                    onFeatures={navFeatures}
+                    onCurriculum={navCurriculum}
+                    onPricing={navPricing}
+                    onLogin={navLogin}
+                    onRegister={navRegister}
+                 />;
       }
       if (viewState === 'CUSTOM_PAGE' && activePageSlug) {
           const page = cmsContent.customPages.find(p => p.slug === activePageSlug);
@@ -184,6 +211,7 @@ const App = () => {
                     {activeTab === 'hq' && <Headquarters />}
                     {activeTab === 'skills' && <SkillTree />}
                     {activeTab === 'portfolio' && <Portfolio />}
+                    {activeTab === 'parent_dashboard' && <ParentDashboard />} {/* New Route for Kids */}
                     {activeTab === 'profile' && (
                         <div className="text-center py-10 space-y-8">
                             <div>

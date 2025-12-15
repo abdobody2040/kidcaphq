@@ -3,7 +3,7 @@ import React, { useRef, useState } from 'react';
 import { useAppStore } from '../store';
 import { UniversalLessonUnit } from '../types';
 import { motion } from 'framer-motion';
-import { Check, Trophy, Star, ArrowRight, Share2, Download, Loader2 } from 'lucide-react';
+import { Check, Trophy, Star, ArrowRight, Share2, Download, Loader2, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -21,7 +21,14 @@ const ModuleRecap: React.FC<ModuleRecapProps> = ({ moduleTitle, lessons, totalXp
   const certificateRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  const isIntern = user?.subscriptionTier === 'intern';
+
   const handleDownloadCertificate = async () => {
+      if (isIntern) {
+          alert('Upgrade to Founder to download your Diploma!');
+          return;
+      }
+
       if (!certificateRef.current) return;
       setIsGenerating(true);
 
@@ -123,9 +130,11 @@ const ModuleRecap: React.FC<ModuleRecapProps> = ({ moduleTitle, lessons, totalXp
                         <button 
                             onClick={handleDownloadCertificate}
                             disabled={isGenerating}
-                            className="py-3 rounded-xl border-2 border-gray-200 font-bold text-gray-500 flex items-center justify-center gap-2 hover:bg-gray-50 hover:text-kid-accent hover:border-kid-accent transition-colors disabled:opacity-50 disabled:cursor-wait"
+                            className={`py-3 rounded-xl border-2 border-gray-200 font-bold text-gray-500 flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-wait
+                                ${isIntern ? 'hover:bg-red-50 hover:text-red-500 hover:border-red-200' : 'hover:bg-gray-50 hover:text-kid-accent hover:border-kid-accent'}
+                            `}
                         >
-                            {isGenerating ? <Loader2 className="animate-spin" size={18} /> : <Download size={18} />} 
+                            {isGenerating ? <Loader2 className="animate-spin" size={18} /> : isIntern ? <Lock size={18} /> : <Download size={18} />} 
                             {isGenerating ? 'Saving...' : 'Download PDF'}
                         </button>
                         <button className="py-3 rounded-xl border-2 border-gray-200 font-bold text-gray-500 flex items-center justify-center gap-2 hover:bg-gray-50 cursor-not-allowed opacity-50">

@@ -1,12 +1,18 @@
 
 import React from 'react';
-import { ArrowLeft, Check, Crown, Star, Shield, Users, Rocket } from 'lucide-react';
+import { Check, Crown, Star, Shield, Users, Rocket } from 'lucide-react';
 import { useAppStore, SUBSCRIPTION_PLANS } from '../store';
 import { useTranslation } from 'react-i18next';
+import PublicNavbar from './PublicNavbar';
 
 interface PricingPageProps {
-  onBack: () => void;
-  onGetStarted: () => void;
+  onHome: () => void;
+  onFeatures: () => void;
+  onCurriculum: () => void;
+  onPricing: () => void;
+  onLogin: () => void;
+  onRegister: () => void;
+  onGetStarted: () => void; // Kept for the buttons inside cards
 }
 
 // Map Plan IDs to Translation Keys for Features
@@ -17,7 +23,9 @@ const PLAN_FEATURES_KEYS: Record<string, string[]> = {
     tycoon: ['feat_ai_consultant', 'feat_negotiation', 'feat_board_perks']
 };
 
-const PricingPage: React.FC<PricingPageProps> = ({ onBack, onGetStarted }) => {
+const PricingPage: React.FC<PricingPageProps> = ({ 
+  onHome, onFeatures, onCurriculum, onPricing, onLogin, onRegister, onGetStarted 
+}) => {
   const { t } = useTranslation();
 
   const getButtonText = (planId: string, price: number) => {
@@ -30,11 +38,17 @@ const PricingPage: React.FC<PricingPageProps> = ({ onBack, onGetStarted }) => {
 
   return (
     <div className="min-h-screen bg-white font-sans text-gray-900 pb-20">
-      <div className="bg-gradient-to-b from-blue-50 to-white p-8 border-b border-blue-100">
+      <PublicNavbar 
+        onHome={onHome}
+        onFeatures={onFeatures}
+        onCurriculum={onCurriculum}
+        onPricing={onPricing}
+        onLogin={onLogin}
+        onRegister={onRegister}
+      />
+
+      <div className="bg-gradient-to-b from-blue-50 to-white p-8 border-b border-blue-100 pt-32">
           <div className="max-w-7xl mx-auto">
-              <button onClick={onBack} className="flex items-center gap-2 text-gray-500 font-bold mb-6 hover:text-blue-600 transition-colors">
-                  <ArrowLeft size={20} /> {t('common.back')}
-              </button>
               <div className="text-center max-w-3xl mx-auto py-10">
                   <h1 className="text-5xl font-black mb-6 text-gray-900">{t('pricing.title')}</h1>
                   <p className="text-xl text-gray-500 font-medium">{t('pricing.subtitle')}</p>

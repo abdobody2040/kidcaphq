@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useAppStore, HQ_LEVELS } from '../store';
-import { Lock, CheckCircle, ArrowUpCircle, Sparkles } from 'lucide-react';
+import { Lock, CheckCircle, ArrowUpCircle, Palette } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
@@ -12,8 +12,14 @@ const THEMES: Record<string, string> = {
   'hq_island': 'from-teal-400 to-emerald-600'
 };
 
+const CUSTOM_THEMES: Record<string, string> = {
+  blue: 'from-blue-600 to-indigo-800',
+  gold: 'from-yellow-500 to-amber-700',
+  modern: 'from-slate-700 to-zinc-900'
+};
+
 const Headquarters: React.FC = () => {
-  const { user, upgradeHQ } = useAppStore();
+  const { user, upgradeHQ, updateUser } = useAppStore();
   const { t } = useTranslation();
 
   if (!user) return null;
@@ -26,8 +32,30 @@ const Headquarters: React.FC = () => {
   // Safe Access with Fallback
   const currentLevel = HQ_LEVELS[currentLevelIndex] || HQ_LEVELS[0];
   
-  // Dynamic Background based on level with safety check
-  const bgGradient = THEMES[currentLevel?.id] || 'from-gray-700 to-gray-900';
+  const isIntern = user.subscriptionTier === 'intern';
+  const isFounderPlus = !isIntern; // Founder, Board, or Tycoon
+
+  // Dynamic Background based on level with safety check, overridden by theme if eligible
+  let bgGradient = THEMES[currentLevel?.id] || 'from-gray-700 to-gray-900';
+  if (isFounderPlus && user.hqTheme && CUSTOM_THEMES[user.hqTheme]) {
+      bgGradient = CUSTOM_THEMES[user.hqTheme];
+  }
+
+  const handleCustomize = () => {
+      // FORCE LOCK CHECK
+      const currentUser = useAppStore.getState().user;
+      if (currentUser?.subscriptionTier === 'intern') {
+          alert('Custom HQ is a Founder feature!');
+          return;
+      }
+
+      // Normal Logic
+      const themes: ('blue' | 'gold' | 'modern')[] = ['blue', 'gold', 'modern'];
+      const currentTheme = user.hqTheme || 'blue';
+      const nextIndex = (themes.indexOf(currentTheme) + 1) % themes.length;
+      
+      updateUser(user.id, { hqTheme: themes[nextIndex] });
+  };
 
   return (
     <div className="pb-20 space-y-8">
@@ -44,6 +72,24 @@ const Headquarters: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
+         {/* Customize Button */}
+         <button 
+            onClick={handleCustomize}
+            className={`absolute top-4 right-4 p-2 rounded-full backdrop-blur-sm transition-colors z-20 flex items-center gap-2 group
+                ${isFounderPlus ? 'bg-white/20 hover:bg-white/30 cursor-pointer' : 'bg-gray-900/50 cursor-pointer hover:bg-red-900/50'}
+            `}
+            title={isFounderPlus ? "Change Theme" : "Locked (Founder Only)"}
+         >
+            {isFounderPlus ? (
+                <>
+                    <Palette size={20} className="text-white" />
+                    <span className="text-xs font-bold text-white uppercase hidden group-hover:block">{user.hqTheme || 'Default'}</span>
+                </>
+            ) : (
+                <Lock size={20} className="text-red-400" />
+            )}
+         </button>
+
          {/* Particle Effects for Island Level */}
          {currentLevel.id === 'hq_island' && (
              <>

@@ -4,6 +4,8 @@ import { useAppStore } from '../store';
 import { motion } from 'framer-motion';
 import { Coffee, ArrowLeft, RotateCcw, DollarSign, Cloud, Sun, CloudRain } from 'lucide-react';
 import GameTutorialModal from './common/GameTutorialModal';
+import { useEnergy } from '../hooks/useEnergy';
+import InvestorPitchModal from './InvestorPitchModal';
 
 interface Props {
   onBack: () => void;
@@ -11,12 +13,14 @@ interface Props {
 
 const CoffeeCart: React.FC<Props> = ({ onBack }) => {
   const { completeGame } = useAppStore();
+  const { consumeEnergy } = useEnergy();
   const [phase, setPhase] = useState<'PREP' | 'BREW' | 'RESULT'>('PREP');
   const [funds, setFunds] = useState(50);
   const [stock, setStock] = useState({ beans: 0, milk: 0, cups: 0 });
   const [recipe, setRecipe] = useState({ roast: 5, foam: 5, price: 3.5 });
   const [weather, setWeather] = useState('Sunny');
   const [showTutorial, setShowTutorial] = useState(true);
+  const [showPaywall, setShowPaywall] = useState(false);
   
   // Brew Phase
   const [progress, setProgress] = useState(0);
@@ -36,6 +40,13 @@ const CoffeeCart: React.FC<Props> = ({ onBack }) => {
 
   const startDay = () => {
       if (stock.cups === 0) return alert("You need cups!");
+      
+      // Energy Check
+      if (!consumeEnergy()) {
+          setShowPaywall(true);
+          return;
+      }
+
       setPhase('BREW');
       
       // Simulation
@@ -66,6 +77,8 @@ const CoffeeCart: React.FC<Props> = ({ onBack }) => {
 
   return (
     <div className="bg-[#3e2723] rounded-3xl overflow-hidden shadow-2xl text-[#d7ccc8] flex flex-col relative h-[calc(100vh-140px)] md:h-[calc(100vh-100px)]">
+        <InvestorPitchModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} />
+        
         {showTutorial && (
             <GameTutorialModal 
                 onStart={() => setShowTutorial(false)}

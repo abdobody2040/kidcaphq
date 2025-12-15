@@ -7,7 +7,7 @@ const MAX_ENERGY = 5;
 const REFILL_INTERVAL_MS = 4 * 60 * 60 * 1000; // 4 Hours
 
 export const useEnergy = () => {
-  const { user, updateUser, hasUnlimitedEnergy } = useAppStore();
+  const { user, updateUser, hasUnlimitedEnergy, consumeEnergy } = useAppStore();
   const [timeToNextRefill, setTimeToNextRefill] = useState<string>('');
 
   const isUnlimited = hasUnlimitedEnergy();
@@ -65,33 +65,11 @@ export const useEnergy = () => {
     return () => clearInterval(interval);
   }, [user?.energy, user?.lastEnergyRefill, isUnlimited, updateUser, user?.id]);
 
-  const consumeEnergy = (): boolean => {
-    if (!user) return false;
-    
-    if (isUnlimited) return true;
-
-    if (user.energy > 0) {
-      const updates: Partial<User> = { energy: user.energy - 1 };
-      
-      // FIX: Infinite Energy Exploit
-      // If we are at MAX_ENERGY, the timer isn't running (or is stale).
-      // We must set lastEnergyRefill to Date.now() immediately to start the fresh 4-hour countdown.
-      if (user.energy === MAX_ENERGY) {
-          updates.lastEnergyRefill = Date.now();
-      }
-      
-      updateUser(user.id, updates);
-      return true;
-    }
-
-    return false;
-  };
-
   return {
     energy: user?.energy || 0,
     maxEnergy: MAX_ENERGY,
     isUnlimited,
     timeToNextRefill,
-    consumeEnergy
+    consumeEnergy // Pass through the store action
   };
 };

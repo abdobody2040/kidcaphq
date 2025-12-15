@@ -1,9 +1,10 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAppStore } from '../store';
 import { Check, Star, Lock, MapPin, ClipboardList } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import InvestorPitchModal from './InvestorPitchModal';
 
 interface KidMapProps {
   onStartLesson: (moduleId: string) => void;
@@ -12,6 +13,7 @@ interface KidMapProps {
 const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
   const { user, lessons, assignments } = useAppStore();
   const { t } = useTranslation();
+  const [showPaywall, setShowPaywall] = useState(false);
   
   // Dynamically build course map from store data
   const courseMap = useMemo(() => {
@@ -71,8 +73,13 @@ const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
       return <div className="text-center py-20 text-gray-400 dark:text-gray-500 font-bold">{t('map.no_curriculum')}</div>;
   }
 
+  const isIntern = user?.subscriptionTier === 'intern';
+  const ALLOWED_INTERN_MODULES = ['Money Basics', 'Entrepreneurship'];
+
   return (
     <div className="relative pb-20">
+       <InvestorPitchModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} />
+
        <div className="text-center mb-12">
           <h1 className="text-4xl font-black text-gray-800 dark:text-white mb-2">{t('path_title')}</h1>
           <p className="text-gray-500 dark:text-gray-400 font-bold">{t('subtitle_complete')}</p>
@@ -88,12 +95,16 @@ const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
           <div className="absolute left-1/2 top-0 bottom-0 w-4 bg-gray-200 dark:bg-gray-700 -translate-x-1/2 rounded-full -z-10" />
 
           {courseMap.map((mod, index) => {
-              // Unlock Logic: First module open, others check previous completion
+              // 1. Progression Locking: First module open, others check previous completion
               const prevModule = index > 0 ? courseMap[index - 1] : null;
               const isPrevComplete = prevModule ? getModuleStatus(prevModule.lessonIds) === 'COMPLETE' : true;
-              
-              // Only lock if previous is not complete. Index 0 is always unlocked.
-              const isLocked = index > 0 && !isPrevComplete;
+              const isProgressionLocked = index > 0 && !isPrevComplete;
+
+              // 2. Tier Locking: Interns only get Money Basics & Entrepreneurship
+              const isTierLocked = isIntern && !ALLOWED_INTERN_MODULES.includes(mod.title);
+
+              // Combined Lock State
+              const isLocked = isProgressionLocked || isTierLocked;
               
               const status = getModuleStatus(mod.lessonIds);
               const progress = mod.lessonIds.filter(id => user?.completedLessonIds.includes(id)).length;
@@ -104,7 +115,11 @@ const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
               const isLeft = index % 2 === 0;
 
               const handleModuleClick = () => {
-                  if (isLocked) return;
+                  if (isTierLocked) {
+                      setShowPaywall(true);
+                      return;
+                  }
+                  if (isProgressionLocked) return; // Silent block for progression
                   if (mod.lessonIds.length === 0) return; // Empty module safety
                   onStartLesson(mod.lessonIds[0]);
               };
@@ -126,7 +141,10 @@ const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
                                     : 'bg-kid-primary border-yellow-600'}
                         `}
                     >
-                        <div className="text-3xl mb-1">{isLocked ? <Lock className="text-gray-500 dark:text-gray-400" /> : mod.icon}</div>
+                        <div className="text-3xl mb-1">
+                            {/* Visual differentiation for lock type */}
+                            {isTierLocked ? <Lock className="text-red-500" /> : isLocked ? <Lock className="text-gray-500 dark:text-gray-400" /> : mod.icon}
+                        </div>
                         {status === 'COMPLETE' && (
                              <div className="absolute -top-2 -right-2 bg-white dark:bg-gray-800 text-green-600 rounded-full p-1 border-2 border-green-600">
                                  <Check size={16} strokeWidth={4} />
@@ -149,10 +167,16 @@ const KidMap: React.FC<KidMapProps> = ({ onStartLesson }) => {
                         <h3 className="font-black text-gray-800 dark:text-white text-sm uppercase">
                             {t(mod.translationKey, { defaultValue: mod.title })}
                         </h3>
-                        <div className="text-xs font-bold text-gray-400 mt-1">{progress}/{total} {t('lessons_count')}</div>
-                        <div className="w-full bg-gray-100 dark:bg-gray-700 h-2 rounded-full mt-2 overflow-hidden">
-                            <div className="bg-kid-secondary h-full transition-all" style={{ width: `${total > 0 ? (progress/total)*100 : 0}%` }} dir="ltr" />
-                        </div>
+                        {isTierLocked ? (
+                            <span className="text-xs font-black text-red-500 uppercase mt-1 block">Premium Only</span>
+                        ) : (
+                            <>
+                                <div className="text-xs font-bold text-gray-400 mt-1">{progress}/{total} {t('lessons_count')}</div>
+                                <div className="w-full bg-gray-100 dark:bg-gray-700 h-2 rounded-full mt-2 overflow-hidden">
+                                    <div className="bg-kid-secondary h-full transition-all" style={{ width: `${total > 0 ? (progress/total)*100 : 0}%` }} dir="ltr" />
+                                </div>
+                            </>
+                        )}
                     </div>
 
                  </div>

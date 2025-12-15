@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, X, Minimize2, Lock, Crown } from 'lucide-react';
+import { Send, X, Minimize2, Lock, Crown, Sparkles } from 'lucide-react';
 import { chatWithOllie, ChatMessage } from '../services/geminiService';
 import { useAppStore } from '../store';
 import StripePaymentPage from './StripePaymentPage';
@@ -23,6 +23,8 @@ const OllieChat: React.FC = () => {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const hasAccess = hasAiAccess();
+  // Explicit Tycoon check for UI branding
+  const isTycoon = user?.subscriptionTier === 'tycoon';
 
   // Initial greeting
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -49,7 +51,7 @@ const OllieChat: React.FC = () => {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
     
-    // Gating Check
+    // Gating Check: Block if no access and limit used
     if (!hasAccess && freeMessageUsed) {
         return;
     }
@@ -126,25 +128,34 @@ const OllieChat: React.FC = () => {
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border-4 border-yellow-400 w-80 sm:w-96 mb-4 overflow-hidden flex flex-col h-[500px] max-h-[60vh] pointer-events-auto relative"
+            className={`bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-80 sm:w-96 mb-4 overflow-hidden flex flex-col h-[500px] max-h-[60vh] pointer-events-auto relative
+                ${isTycoon ? 'border-4 border-yellow-500' : 'border-4 border-yellow-400'}
+            `}
           >
             {/* Header */}
-            <div className="bg-yellow-400 p-4 flex justify-between items-center text-yellow-900 shrink-0">
+            <div className={`p-4 flex justify-between items-center shrink-0
+                ${isTycoon ? 'bg-gradient-to-r from-gray-900 to-gray-800 text-white' : 'bg-yellow-400 text-yellow-900'}
+            `}>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-yellow-600 shadow-sm overflow-hidden flex-shrink-0">
+                <div className={`w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 shadow-sm overflow-hidden flex-shrink-0
+                    ${isTycoon ? 'border-yellow-500' : 'border-yellow-600'}
+                `}>
                   {renderOllieAvatar("w-full h-full")}
                 </div>
                 <div>
-                  <h3 className="font-black text-lg leading-none">CEO Ollie</h3>
-                  <p className="text-xs font-bold opacity-80 flex items-center gap-1">
-                      {hasAccess ? t('chat.role_consultant') : t('chat.role_free')}
+                  <h3 className="font-black text-lg leading-none flex items-center gap-2">
+                      CEO Ollie
+                      {isTycoon && <Crown size={16} className="text-yellow-400 fill-yellow-400" />}
+                  </h3>
+                  <p className={`text-xs font-bold flex items-center gap-1 ${isTycoon ? 'text-yellow-400' : 'opacity-80'}`}>
+                      {hasAccess ? (isTycoon ? 'VIP Consultant' : t('chat.role_consultant')) : t('chat.role_free')}
                   </p>
                 </div>
               </div>
               <div className="flex gap-2">
                 <button 
                   onClick={() => setIsOpen(false)} 
-                  className="p-1 hover:bg-yellow-500 rounded-lg transition-colors"
+                  className={`p-1 rounded-lg transition-colors ${isTycoon ? 'hover:bg-gray-700' : 'hover:bg-yellow-500'}`}
                 >
                   <Minimize2 size={20} />
                 </button>
@@ -225,7 +236,7 @@ const OllieChat: React.FC = () => {
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
-                      placeholder={hasAccess ? t('chat.placeholder_paid') : t('chat.placeholder_free')}
+                      placeholder={hasAccess ? (isTycoon ? "Ask your executive consultant..." : t('chat.placeholder_paid')) : t('chat.placeholder_free')}
                       className="flex-1 bg-transparent border-none outline-none p-2 text-sm font-bold text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
                       disabled={isLoading}
                     />
@@ -252,8 +263,12 @@ const OllieChat: React.FC = () => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-16 h-16 rounded-full shadow-[0_4px_0_0_rgba(0,0,0,0.2)] flex items-center justify-center border-4 border-white dark:border-gray-700 transition-colors relative overflow-hidden pointer-events-auto
-          ${isOpen ? 'bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-300' : 'bg-yellow-400 text-yellow-900'}
+        className={`w-16 h-16 rounded-full shadow-[0_4px_0_0_rgba(0,0,0,0.2)] flex items-center justify-center border-4 transition-colors relative overflow-hidden pointer-events-auto
+          ${isOpen 
+            ? 'bg-gray-200 dark:bg-gray-600 border-white dark:border-gray-700 text-gray-500 dark:text-gray-300' 
+            : isTycoon
+                ? 'bg-gray-900 text-yellow-400 border-yellow-500'
+                : 'bg-yellow-400 text-yellow-900 border-white dark:border-gray-700'}
         `}
       >
         {isOpen ? (
@@ -264,6 +279,12 @@ const OllieChat: React.FC = () => {
             {/* Notification Badge */}
             {!hasAccess && !freeMessageUsed && (
                 <span className="absolute top-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></span>
+            )}
+            {/* Sparkle for Tycoon */}
+            {isTycoon && (
+                <div className="absolute top-0 right-0 bg-yellow-500 rounded-full p-1 border border-white">
+                    <Sparkles size={10} className="text-white" />
+                </div>
             )}
             {/* Lock Badge if limit reached */}
             {!hasAccess && freeMessageUsed && (

@@ -1,21 +1,35 @@
 
 import React from 'react';
 import { COURSE_MAP } from '../data/curriculum';
-import { ArrowLeft, BookOpen, Clock, Star } from 'lucide-react';
+import { BookOpen, Clock, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
+import PublicNavbar from './PublicNavbar';
 
 interface CurriculumPageProps {
-  onBack: () => void;
+  onHome: () => void;
+  onFeatures: () => void;
+  onCurriculum: () => void;
+  onPricing: () => void;
+  onLogin: () => void;
+  onRegister: () => void;
 }
 
-const CurriculumPage: React.FC<CurriculumPageProps> = ({ onBack }) => {
+const CurriculumPage: React.FC<CurriculumPageProps> = ({ 
+  onHome, onFeatures, onCurriculum, onPricing, onLogin, onRegister 
+}) => {
   return (
     <div className="min-h-screen bg-white font-sans text-gray-900 pb-20">
-      <div className="bg-green-50 p-8 border-b border-green-100">
+      <PublicNavbar 
+        onHome={onHome}
+        onFeatures={onFeatures}
+        onCurriculum={onCurriculum}
+        onPricing={onPricing}
+        onLogin={onLogin}
+        onRegister={onRegister}
+      />
+
+      <div className="bg-green-50 p-8 border-b border-green-100 pt-32">
           <div className="max-w-5xl mx-auto">
-              <button onClick={onBack} className="flex items-center gap-2 text-green-700 font-bold mb-6 hover:underline">
-                  <ArrowLeft size={20} /> Back
-              </button>
               <h1 className="text-5xl font-black text-gray-800 mb-4">The Academy Curriculum</h1>
               <p className="text-xl text-gray-600 max-w-2xl">A complete business education designed for kids. From the history of money to launching a global startup.</p>
           </div>

@@ -1,24 +1,39 @@
 
 import React from 'react';
-import { ArrowLeft, Brain, Rocket, Shield, Gamepad2, TrendingUp, Users } from 'lucide-react';
+import { Brain, Gamepad2, TrendingUp, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '../store';
+import PublicNavbar from './PublicNavbar';
+import SmartImage from './SmartImage';
 
 interface FeaturesPageProps {
-  onBack: () => void;
+  onHome: () => void;
+  onFeatures: () => void;
+  onCurriculum: () => void;
+  onPricing: () => void;
+  onLogin: () => void;
+  onRegister: () => void;
 }
 
-const FeaturesPage: React.FC<FeaturesPageProps> = ({ onBack }) => {
+const FeaturesPage: React.FC<FeaturesPageProps> = ({ 
+  onHome, onFeatures, onCurriculum, onPricing, onLogin, onRegister 
+}) => {
   const { cmsContent } = useAppStore();
   const features = cmsContent.features;
 
   return (
     <div className="min-h-screen bg-white font-sans text-gray-900 pb-20">
-      <div className="bg-blue-50 p-8 border-b border-blue-100">
+      <PublicNavbar 
+        onHome={onHome}
+        onFeatures={onFeatures}
+        onCurriculum={onCurriculum}
+        onPricing={onPricing}
+        onLogin={onLogin}
+        onRegister={onRegister}
+      />
+
+      <div className="bg-blue-50 p-8 border-b border-blue-100 pt-32">
           <div className="max-w-5xl mx-auto">
-              <button onClick={onBack} className="flex items-center gap-2 text-blue-700 font-bold mb-6 hover:underline">
-                  <ArrowLeft size={20} /> Back
-              </button>
               <h1 className="text-5xl font-black text-gray-800 mb-4">Platform Features</h1>
               <p className="text-xl text-gray-600 max-w-2xl">Discover how KidCap HQ builds the next generation of leaders through play.</p>
           </div>
@@ -94,13 +109,12 @@ const FeatureSection = ({ title, desc, icon, color, items, image, reverse }: any
         </div>
         <div className="flex-1">
             <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-gray-100 aspect-video relative group">
-               {image && image.startsWith('http') ? (
-                   <img src={image} alt={title} className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-700" />
-               ) : (
-                   <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100 font-black text-xl uppercase tracking-widest">
-                       Preview Image
-                   </div>
-               )}
+               <SmartImage 
+                  src={image} 
+                  alt={title} 
+                  type="feature"
+                  className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-700"
+               />
                <div className={`absolute inset-0 opacity-10 ${color} mix-blend-overlay`}></div>
             </div>
         </div>

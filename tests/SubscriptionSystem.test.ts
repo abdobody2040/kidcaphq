@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent, renderHook, act } from '@testing-library/react';
@@ -118,13 +119,13 @@ describe('Subscription & Energy System', () => {
     const startButton = screen.getByText(/Start Day/i);
     fireEvent.click(startButton);
 
-    // Expect the modal to appear.
-    // The InvestorPitchModal has specific text: "INVESTMENT PROPOSAL"
-    const modalText = await screen.findByText(/Investment Proposal/i);
+    // Expect the modal to appear with actual text from locales/en.ts
+    // The modal title is "Choose Your Path to Success"
+    const modalText = await screen.findByText(/Choose Your Path to Success/i);
     expect(modalText).toBeInTheDocument();
     
-    // Check for "Bootstrap" button which closes it
-    expect(screen.getByText(/Bootstrap/i)).toBeInTheDocument();
+    // Check for the "Intern" column which indicates the plan comparison view
+    expect(screen.getByText(/Intern/i)).toBeInTheDocument();
   });
 
   // Test 4: The Upgrade Flow

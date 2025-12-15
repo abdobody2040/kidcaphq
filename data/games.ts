@@ -608,5 +608,21 @@ export const GAMES_DB: BusinessSimulation[] = [
     ],
     "upgrade_tree": [],
     "event_triggers": { positive: { event_name: "", effect: "", duration: "" }, negative: { event_name: "", effect: "", duration: "" } }
+  },
+  // --- New Tycoon Exclusive ---
+  {
+    "business_id": "BIZ_NEGOTIATION",
+    "name": "Negotiation Battle",
+    "category": "Tycoon Exclusive",
+    "game_type": "negotiation_game",
+    "description": "Master the art of the deal. Face tough suppliers and win.",
+    "visual_config": {
+        "theme": "dark",
+        "colors": { "primary": "#EAB308", "secondary": "#A16207", "accent": "#1E293B", "background": "#0F172A" },
+        "icon": "🤝"
+    },
+    "upgrade_tree": [],
+    "variables": { resources: [], dynamic_factors: [], player_inputs: [] },
+    "event_triggers": { positive: { event_name: "", effect: "", duration: "" }, negative: { event_name: "", effect: "", duration: "" } }
   }
 ];

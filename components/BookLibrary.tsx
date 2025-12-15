@@ -3,15 +3,17 @@ import React, { useState } from 'react';
 import { useAppStore } from '../store';
 import { Book } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, Star, X, Lock, CheckCircle2 } from 'lucide-react';
+import { BookOpen, Star, X, Lock, CheckCircle2, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import InvestorPitchModal from './InvestorPitchModal';
 
 interface BookLibraryProps {}
 
 const BookLibrary: React.FC<BookLibraryProps> = () => {
-  const { library, toggleAdminMode, completeGame } = useAppStore();
+  const { library, toggleAdminMode, completeGame, readBook, user } = useAppStore();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [secretCount, setSecretCount] = useState(0);
+  const [showPaywall, setShowPaywall] = useState(false);
   const { t } = useTranslation();
 
   const handleSecretClick = () => {
@@ -24,21 +26,30 @@ const BookLibrary: React.FC<BookLibraryProps> = () => {
     }
   };
 
-  const handleReadSummary = (book: Book) => {
+  const handleReadSummary = (book: Book, isLocked: boolean) => {
+      if (isLocked) {
+          setShowPaywall(true);
+          return;
+      }
       setSelectedBook(book);
+      // Track book reading progress
+      readBook(book.id);
       // Award small XP for reading (The Bookworm Journey)
       completeGame(0, 15); 
   };
 
   // Helper to normalize keys for i18n (replace dashes with underscores)
   const getBookKey = (id: string, suffix: string) => {
-      // Ensure the ID is normalized to match locales/ar.ts format (e.g. think-and-grow-rich -> think_and_grow_rich)
       const normalizedId = id.replace(/-/g, '_');
       return `book_${normalizedId}_${suffix}`;
   };
 
+  const isIntern = user?.subscriptionTier === 'intern';
+
   return (
     <div className="pb-20 max-w-6xl mx-auto">
+      <InvestorPitchModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} />
+
       {/* Header */}
       <div className="flex justify-between items-end mb-8 px-4">
         <div>
@@ -60,47 +71,81 @@ const BookLibrary: React.FC<BookLibraryProps> = () => {
 
       {/* Bookshelf Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
-        {library.map((book, index) => (
-          <motion.div
-            key={book.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="group relative bg-amber-50 dark:bg-gray-800 rounded-r-2xl rounded-l-md shadow-md border-r-8 border-b-8 border-amber-200 dark:border-gray-700 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 flex flex-col"
-          >
-            {/* Spine Effect */}
-            <div className="absolute left-0 top-0 bottom-0 w-4 bg-amber-800 dark:bg-gray-900 rounded-l-md opacity-20" />
+        {library.map((book, index) => {
+          const isRead = user?.readBookIds?.includes(book.id);
+          // Gating Logic: Interns only see first 3 books
+          const isLocked = isIntern && index >= 3;
+          
+          return (
+            <motion.div
+              key={book.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className={`group relative bg-amber-50 dark:bg-gray-800 rounded-r-2xl rounded-l-md shadow-md border-r-8 border-b-8 border-amber-200 dark:border-gray-700 flex flex-col overflow-hidden
+                  ${isLocked ? 'cursor-pointer' : 'hover:-translate-y-2 hover:shadow-xl transition-all duration-300'}
+              `}
+              onClick={() => isLocked && setShowPaywall(true)}
+            >
+              {/* Locked Overlay */}
+              {isLocked && (
+                  <div className="absolute inset-0 bg-gray-900/60 z-20 flex flex-col items-center justify-center text-white backdrop-blur-[2px]">
+                      <div className="bg-yellow-500 p-4 rounded-full shadow-lg mb-2">
+                          <Lock size={32} />
+                      </div>
+                      <span className="font-black uppercase tracking-widest text-sm">Premium Only</span>
+                  </div>
+              )}
 
-            <div className="p-6 flex gap-6 items-start">
-              {/* Cover */}
-              <div className="w-24 h-36 shrink-0 rounded-lg shadow-md overflow-hidden border-2 border-white dark:border-gray-600 transform -rotate-2 group-hover:rotate-0 transition-transform duration-300 bg-gray-200 dark:bg-gray-700">
-                <img src={book.coverUrl} alt={book.title} className="w-full h-full object-cover" />
+              {/* Spine Effect */}
+              <div className="absolute left-0 top-0 bottom-0 w-4 bg-amber-800 dark:bg-gray-900 rounded-l-md opacity-20" />
+              
+              {/* Read Badge */}
+              {isRead && !isLocked && (
+                  <div className="absolute top-4 right-4 z-10 bg-green-500 text-white rounded-full p-1 shadow-md">
+                      <CheckCircle size={20} strokeWidth={3} />
+                  </div>
+              )}
+
+              <div className={`p-6 flex gap-6 items-start ${isLocked ? 'opacity-50' : ''}`}>
+                {/* Cover */}
+                <div className="w-24 h-36 shrink-0 rounded-lg shadow-md overflow-hidden border-2 border-white dark:border-gray-600 transform -rotate-2 group-hover:rotate-0 transition-transform duration-300 bg-gray-200 dark:bg-gray-700">
+                  <img src={book.coverUrl} alt={book.title} className="w-full h-full object-cover" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="inline-block bg-white dark:bg-gray-700 text-amber-800 dark:text-amber-400 text-[10px] font-black uppercase px-2 py-1 rounded mb-2 border border-amber-100 dark:border-gray-600 tracking-wider">
+                    {book.category}
+                  </div>
+                  <h3 className="font-black text-gray-800 dark:text-white text-lg leading-tight mb-1 line-clamp-2">
+                    {t(getBookKey(book.id, 'title'), { defaultValue: book.title })}
+                  </h3>
+                  <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-4">{book.author}</p>
+                  <div className="flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-gray-700 px-2 py-1 rounded-full w-fit">
+                    <Star size={12} fill="currentColor" /> {book.ageRating}
+                  </div>
+                </div>
               </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="inline-block bg-white dark:bg-gray-700 text-amber-800 dark:text-amber-400 text-[10px] font-black uppercase px-2 py-1 rounded mb-2 border border-amber-100 dark:border-gray-600 tracking-wider">
-                  {book.category}
-                </div>
-                <h3 className="font-black text-gray-800 dark:text-white text-lg leading-tight mb-1 line-clamp-2">
-                  {t(getBookKey(book.id, 'title'), { defaultValue: book.title })}
-                </h3>
-                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-4">{book.author}</p>
-                <div className="flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-gray-700 px-2 py-1 rounded-full w-fit">
-                  <Star size={12} fill="currentColor" /> {book.ageRating}
-                </div>
+              <div className="mt-auto p-4 border-t border-amber-100 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 rounded-br-xl">
+                <button 
+                  onClick={(e) => {
+                      e.stopPropagation();
+                      handleReadSummary(book, isLocked);
+                  }}
+                  className={`w-full py-3 text-white font-black rounded-xl shadow-[0_4px_0_0_rgba(180,83,9,1)] dark:shadow-[0_4px_0_0_rgba(146,64,14,1)] flex items-center justify-center gap-2 transition-colors
+                      ${isLocked 
+                          ? 'bg-gray-500 cursor-not-allowed shadow-none' 
+                          : 'bg-amber-500 dark:bg-amber-600 btn-juicy hover:bg-amber-600 dark:hover:bg-amber-500'}
+                  `}
+                >
+                  {isLocked ? <Lock size={18} /> : <BookOpen size={18} />} 
+                  {isLocked ? "Unlock" : t('library.read_summary')}
+                </button>
               </div>
-            </div>
-
-            <div className="mt-auto p-4 border-t border-amber-100 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 rounded-br-xl">
-              <button 
-                onClick={() => handleReadSummary(book)}
-                className="w-full py-3 bg-amber-500 dark:bg-amber-600 text-white font-black rounded-xl shadow-[0_4px_0_0_rgba(180,83,9,1)] dark:shadow-[0_4px_0_0_rgba(146,64,14,1)] btn-juicy hover:bg-amber-600 dark:hover:bg-amber-500 transition-colors flex items-center justify-center gap-2"
-              >
-                <BookOpen size={18} /> {t('library.read_summary')}
-              </button>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          );
+        })}
       </div>
 
       {library.length === 0 && (

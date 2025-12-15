@@ -4,6 +4,8 @@ import Phaser from 'phaser';
 import { useAppStore } from '../store';
 import { RotateCcw } from 'lucide-react';
 import GameTutorialModal from './common/GameTutorialModal';
+import { useEnergy } from '../hooks/useEnergy';
+import InvestorPitchModal from './InvestorPitchModal';
 
 interface PizzaDeliveryProps {
   onBack: () => void;
@@ -177,11 +179,19 @@ const PizzaDelivery: React.FC<PizzaDeliveryProps> = ({ onBack }) => {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
   const [showTutorial, setShowTutorial] = useState(true);
+  const [showPaywall, setShowPaywall] = useState(false);
   const { completeGame } = useAppStore();
+  const { consumeEnergy } = useEnergy();
   
   const gameInstanceRef = useRef<Phaser.Game | null>(null);
 
   const startGame = () => {
+    // Energy Check
+    if (!consumeEnergy()) {
+        setShowPaywall(true);
+        return;
+    }
+
     setShowTutorial(false);
     if (!gameRef.current) return;
 
@@ -225,6 +235,8 @@ const PizzaDelivery: React.FC<PizzaDeliveryProps> = ({ onBack }) => {
 
   return (
     <div className="flex flex-col items-center justify-center bg-gray-50 rounded-3xl p-4 md:p-8 border border-gray-200 shadow-xl relative h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] overflow-hidden">
+        <InvestorPitchModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} />
+        
         {showTutorial && (
             <GameTutorialModal 
                 onStart={startGame}

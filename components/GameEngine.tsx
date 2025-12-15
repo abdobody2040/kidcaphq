@@ -13,6 +13,7 @@ import SortingTemplate from './game-templates/SortingTemplate';
 import DrivingTemplate from './game-templates/DrivingTemplate';
 import MatchingTemplate from './game-templates/MatchingTemplate';
 import RhythmTemplate from './game-templates/RhythmTemplate';
+import NegotiationBattle from './NegotiationBattle';
 
 interface GameEngineProps {
   gameId: string;
@@ -50,6 +51,8 @@ const GameEngine: React.FC<GameEngineProps> = ({ gameId, onExit, previewConfig }
             return ["Watch the falling notes.", "Tap the button when they hit the line.", "Keep your combo streak alive!"];
         case 'sorting_game': 
             return ["Sort items into the correct bins.", "Left, Down, or Right based on the type.", "Don't let the trash pile up!"];
+        case 'negotiation_game':
+            return ["Lower the supplier's price to the target.", "Use 'Flatter' to keep their patience up.", "Don't let patience hit zero!"];
         default: return ["Play and have fun!"];
       }
   };
@@ -69,6 +72,8 @@ const GameEngine: React.FC<GameEngineProps> = ({ gameId, onExit, previewConfig }
               return <MatchingTemplate config={gameConfig} onExit={onExit} />;
           case 'rhythm_game':
               return <RhythmTemplate config={gameConfig} onExit={onExit} />;
+          case 'negotiation_game':
+              return <NegotiationBattle onExit={onExit} />;
           default:
               return (
                   <div className="text-center p-10">

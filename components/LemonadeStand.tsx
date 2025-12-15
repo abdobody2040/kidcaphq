@@ -3,9 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../store';
 import { getLemonadeFeedback } from '../services/geminiService';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Sun, CloudRain, DollarSign, TrendingUp, RefreshCcw, Zap, ArrowLeft } from 'lucide-react';
+import { ShoppingCart, Sun, CloudRain, DollarSign, TrendingUp, RefreshCcw, Zap, ArrowLeft, Play } from 'lucide-react';
 import GameTutorialModal from './common/GameTutorialModal';
 import { useTranslation } from 'react-i18next';
+import { useEnergy } from '../hooks/useEnergy';
+import InvestorPitchModal from './InvestorPitchModal';
 
 type GamePhase = 'PREP' | 'SIMULATION' | 'RESULT';
 
@@ -15,11 +17,14 @@ interface LemonadeStandProps {
 
 const LemonadeStand: React.FC<LemonadeStandProps> = ({ onBack }) => {
   const { lemonadeState, updateLemonadeState, getSkillModifiers } = useAppStore();
+  // We use useEnergy for the UI bar, but for logic we'll use store actions directly as requested
+  const { energy } = useEnergy(); 
   const [phase, setPhase] = useState<GamePhase>('PREP');
   const [weather, setWeather] = useState<string>('Sunny');
   const [simProgress, setSimProgress] = useState(0);
   const [dayResult, setDayResult] = useState({ sold: 0, profit: 0, revenue: 0, cost: 0, feedback: '', skillBonus: 0 });
   const [showTutorial, setShowTutorial] = useState(true);
+  const [showPaywall, setShowPaywall] = useState(false);
   const { t } = useTranslation();
 
   // Get active skills
@@ -59,7 +64,20 @@ const LemonadeStand: React.FC<LemonadeStandProps> = ({ onBack }) => {
     }
   };
 
-  const startDay = async () => {
+  const handleStartDay = async () => {
+    const { user, consumeEnergy } = useAppStore.getState();
+    
+    // CHECK 1: If Intern, try to consume 1 Heart
+    // Note: consumeEnergy in store checks tier internally, but we add explicit alert handling here
+    const hasEnergy = consumeEnergy(); 
+    
+    if (!hasEnergy) {
+       // Stop if no energy
+       alert('Out of Energy! Wait for refill or Upgrade to Founder.');
+       return; 
+    }
+
+    // If passed checks, start game
     setPhase('SIMULATION');
     setSimProgress(0);
 
@@ -132,6 +150,8 @@ const LemonadeStand: React.FC<LemonadeStandProps> = ({ onBack }) => {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 relative h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] flex flex-col">
+      <InvestorPitchModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} />
+      
       {showTutorial && (
           <GameTutorialModal 
             onStart={() => setShowTutorial(false)}
@@ -148,7 +168,6 @@ const LemonadeStand: React.FC<LemonadeStandProps> = ({ onBack }) => {
           />
       )}
 
-      {/* HEADER with RTL Support and Back Button */}
       <div className="bg-kid-primary p-4 md:p-6 text-indigo-900 flex justify-between items-center shrink-0 z-10">
         <div className="flex items-center gap-3">
            <button 
@@ -179,7 +198,6 @@ const LemonadeStand: React.FC<LemonadeStandProps> = ({ onBack }) => {
       <div className="p-4 md:p-8 flex-1 overflow-y-auto bg-white dark:bg-gray-900">
         {phase === 'PREP' && (
           <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto">
-            {/* Skills Indicator */}
             {(modifiers.costMultiplier < 1 || modifiers.priceMultiplier > 1) && (
                 <div className="flex flex-wrap gap-2 md:gap-4 justify-center">
                     {modifiers.costMultiplier < 1 && (
@@ -195,7 +213,6 @@ const LemonadeStand: React.FC<LemonadeStandProps> = ({ onBack }) => {
                 </div>
             )}
 
-            {/* Inventory Section */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                 <InventoryCard 
                   icon="🍋" 
@@ -229,7 +246,6 @@ const LemonadeStand: React.FC<LemonadeStandProps> = ({ onBack }) => {
                 />
             </div>
 
-            {/* Recipe / Pricing Section */}
             <div className="bg-gray-50 dark:bg-gray-800 p-4 md:p-6 rounded-2xl border-2 border-gray-100 dark:border-gray-700">
                <h3 className="font-bold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2 text-sm md:text-base">
                  <TrendingUp size={20}/> {t('lemonade.set_price')}
@@ -249,10 +265,14 @@ const LemonadeStand: React.FC<LemonadeStandProps> = ({ onBack }) => {
             </div>
 
             <button 
-              onClick={startDay}
+              onClick={handleStartDay}
               className="w-full py-4 bg-kid-secondary hover:bg-green-600 text-white font-black text-xl md:text-2xl rounded-2xl shadow-[0_6px_0_0_rgba(21,128,61,1)] btn-juicy transition-all flex items-center justify-center gap-3 mb-8"
             >
-              <Sun className="animate-spin-slow" /> {t('lemonade.start_day')}
+              <Play fill="currentColor" size={24} /> 
+              {t('lemonade.start_day')} 
+              <span className="text-sm bg-black/20 px-2 py-1 rounded ml-2 flex items-center gap-1">
+                  <Zap size={12} className="fill-current"/> -1 Energy
+              </span>
             </button>
           </div>
         )}
