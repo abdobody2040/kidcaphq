@@ -150,7 +150,7 @@ const DEFAULT_CMS_CONTENT: CMSContent = {
     heroTitle: "Don't just play games.\nBuild an Empire.",
     heroSubtitle: "KidCap HQ turns screen time into real-world business skills. Learn finance, leadership, and marketing through addictive mini-games.",
     heroCta: "Play Now - It's Free!",
-    heroImage: "https://images.unsplash.com/photo-1544531586-fde5298cdd40?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+    heroImage: "/images/hero/hero.jpg",
     featuresTitle: "How KidCap Works",
     featuresSubtitle: "We use a simple loop to make learning sticky and addictive.",
     arcadeTitle: "Real Business Simulations",
@@ -162,16 +162,16 @@ const DEFAULT_CMS_CONTENT: CMSContent = {
   features: {
     learningTitle: "Interactive Learning Engine",
     learningDesc: "Forget boring textbooks. Our curriculum is broken down into bite-sized, gamified lessons that cover everything from Bartering to Blockchain.",
-    learningImage: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80",
+    learningImage: "/images/features/learning.jpg",
     arcadeTitle: "Business Arcade",
     arcadeDesc: "Theory is good, practice is better. Kids run virtual companies, manage budgets, and react to market changes in real-time.",
-    arcadeImage: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80",
+    arcadeImage: "/images/features/arcade.jpg",
     progressionTitle: "RPG Progression",
     progressionDesc: "We use game mechanics to keep kids engaged. As they learn, they level up, earn badges, and upgrade their virtual headquarters.",
-    progressionImage: "https://images.unsplash.com/photo-1511882150382-421056c8d32e?auto=format&fit=crop&w=800&q=80",
+    progressionImage: "/images/features/progression.jpg",
     safetyTitle: "Safe & Secure",
     safetyDesc: "A worry-free environment for parents. We prioritize privacy, safety, and positive reinforcement.",
-    safetyImage: "https://images.unsplash.com/photo-1506459225024-1428097a7e18?auto=format&fit=crop&w=800&q=80"
+    safetyImage: "/images/features/safety.jpg"
   },
   customPages: [] // Initialize empty
 };
