@@ -8,6 +8,7 @@ KidCap HQ is an educational financial literacy game for kids. It's a React/Vite 
 - `/data` - Static data files (curriculum, games, library books)
 - `/hooks` - Custom React hooks
 - `/locales` - Internationalization files (English and Arabic)
+- `/public/images` - Local image assets (hero, features, lessons, books)
 - `/services` - External services (Gemini AI, Sound, Stripe)
 - `/tests` - Test files using Vitest
 
