@@ -10,18 +10,19 @@
     "download-assets": "node scripts/download-assets.mjs"
   },
   "dependencies": {
+    "@google/genai": "^1.30.0",
+    "@types/node": "^25.0.3",
+    "framer-motion": "^12.23.25",
+    "html2canvas": "^1.4.1",
+    "i18next": "^23.7.11",
+    "i18next-browser-languagedetector": "^7.2.0",
+    "jspdf": "^2.5.1",
+    "lucide-react": "^0.555.0",
+    "phaser": "^3.80.1",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
-    "lucide-react": "^0.555.0",
-    "framer-motion": "^12.23.25",
-    "zustand": "^5.0.9",
-    "phaser": "^3.80.1",
-    "@google/genai": "^1.30.0",
-    "i18next": "^23.7.11",
     "react-i18next": "^14.0.0",
-    "i18next-browser-languagedetector": "^7.2.0",
-    "html2canvas": "^1.4.1",
-    "jspdf": "^2.5.1"
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
