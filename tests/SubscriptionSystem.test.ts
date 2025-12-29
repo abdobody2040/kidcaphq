@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, renderHook, act } from '@testing-library/react';
 import { useAppStore } from '../store';
 import { useEnergy } from '../hooks/useEnergy';
@@ -9,15 +9,15 @@ import { User, UserRole } from '../types';
 
 // Mock Game Data
 const MOCK_GAME = {
-    business_id: 'test_game',
-    name: 'Test Game',
-    category: 'Retail',
-    game_type: 'simulation_tycoon',
-    description: 'Test Description',
-    visual_config: { theme: 'light', colors: { primary: '#000', secondary: '#000', accent: '#000', background: '#fff' }, icon: '🎮' },
-    upgrade_tree: [],
-    variables: { player_inputs: ['price'] },
-    event_triggers: { positive: { event_name: 'Good', effect: '', duration: '' }, negative: { event_name: 'Bad', effect: '', duration: '' } }
+  business_id: 'test_game',
+  name: 'Test Game',
+  category: 'Retail',
+  game_type: 'simulation_tycoon',
+  description: 'Test Description',
+  visual_config: { theme: 'light', colors: { primary: '#000', secondary: '#000', accent: '#000', background: '#fff' }, icon: '🎮' },
+  upgrade_tree: [],
+  variables: { player_inputs: ['price'] },
+  event_triggers: { positive: { event_name: 'Good', effect: '', duration: '' }, negative: { event_name: 'Bad', effect: '', duration: '' } }
 };
 
 // Helper to reset store
@@ -25,7 +25,7 @@ const resetStore = () => {
   useAppStore.setState({
     user: null,
     users: [],
-    games: [MOCK_GAME as any], 
+    games: [MOCK_GAME as any],
   });
 };
 
@@ -58,7 +58,17 @@ const createMockUser = (overrides: Partial<User> = {}): User => ({
 
 describe('Subscription & Energy System', () => {
   beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
+    localStorage.clear();
     resetStore();
+  });
+
+
+
+
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   // Test 1: The Poverty Trap (Intern Logic)
@@ -71,15 +81,15 @@ describe('Subscription & Energy System', () => {
     // Call consumeEnergy(). Expect result true and Energy to become 0.
     let success;
     act(() => {
-        success = result.current.consumeEnergy();
+      success = result.current.consumeEnergy();
     });
-    
+
     expect(success).toBe(true);
     expect(useAppStore.getState().user?.energy).toBe(0);
 
     // Call consumeEnergy() again. Expect result false (Action Blocked).
     act(() => {
-        success = result.current.consumeEnergy();
+      success = result.current.consumeEnergy();
     });
 
     expect(success).toBe(false);
@@ -97,7 +107,7 @@ describe('Subscription & Energy System', () => {
     // Call consumeEnergy(). Expect result true.
     let success;
     act(() => {
-        success = result.current.consumeEnergy();
+      success = result.current.consumeEnergy();
     });
 
     expect(success).toBe(true);
@@ -112,7 +122,7 @@ describe('Subscription & Energy System', () => {
     useAppStore.setState({ user, users: [user] });
 
     // Render the UniversalBusinessGame component.
-    render(React.createElement(UniversalBusinessGame, { gameId: "test_game", onExit: () => {} }));
+    render(React.createElement(UniversalBusinessGame, { gameId: "test_game", onExit: () => { } }));
 
     // Verify that clicking 'Start' triggers the InvestorPitchModal to appear.
     // In UniversalBusinessGame, the button contains "Start Day".
@@ -123,7 +133,7 @@ describe('Subscription & Energy System', () => {
     // The modal title is "Choose Your Path to Success"
     const modalText = await screen.findByText(/Choose Your Path to Success/i);
     expect(modalText).toBeInTheDocument();
-    
+
     // Check for the "Intern" column which indicates the plan comparison view
     expect(screen.getByText(/Intern/i)).toBeInTheDocument();
   });
@@ -136,7 +146,7 @@ describe('Subscription & Energy System', () => {
 
     // Call upgradeSubscription('tycoon').
     act(() => {
-        useAppStore.getState().upgradeSubscription('tycoon');
+      useAppStore.getState().upgradeSubscription('tycoon');
     });
 
     // Verify hasAiAccess becomes true and hasUnlimitedEnergy becomes true.

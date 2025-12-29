@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Star, X, Lock, CheckCircle2, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import InvestorPitchModal from './InvestorPitchModal';
+import SmartImage from './SmartImage';
 
-interface BookLibraryProps {}
+interface BookLibraryProps { }
 
 const BookLibrary: React.FC<BookLibraryProps> = () => {
   const { library, toggleAdminMode, completeGame, readBook, user } = useAppStore();
@@ -27,21 +28,21 @@ const BookLibrary: React.FC<BookLibraryProps> = () => {
   };
 
   const handleReadSummary = (book: Book, isLocked: boolean) => {
-      if (isLocked) {
-          setShowPaywall(true);
-          return;
-      }
-      setSelectedBook(book);
-      // Track book reading progress
-      readBook(book.id);
-      // Award small XP for reading (The Bookworm Journey)
-      completeGame(0, 15); 
+    if (isLocked) {
+      setShowPaywall(true);
+      return;
+    }
+    setSelectedBook(book);
+    // Track book reading progress
+    readBook(book.id);
+    // Award small XP for reading (The Bookworm Journey)
+    completeGame(0, 15);
   };
 
   // Helper to normalize keys for i18n (replace dashes with underscores)
   const getBookKey = (id: string, suffix: string) => {
-      const normalizedId = id.replace(/-/g, '_');
-      return `book_${normalizedId}_${suffix}`;
+    const normalizedId = id.replace(/-/g, '_');
+    return `book_${normalizedId}_${suffix}`;
   };
 
   const isIntern = user?.subscriptionTier === 'intern';
@@ -59,10 +60,10 @@ const BookLibrary: React.FC<BookLibraryProps> = () => {
           </h2>
           <p className="text-gray-500 dark:text-gray-400 font-bold text-lg">{t('library.subtitle')}</p>
         </div>
-        
+
         {/* Secret Trigger */}
-        <button 
-          onClick={handleSecretClick} 
+        <button
+          onClick={handleSecretClick}
           className="text-gray-200 dark:text-gray-700 hover:text-gray-300 dark:hover:text-gray-600 transition-colors p-2"
         >
           <Lock size={20} />
@@ -75,7 +76,7 @@ const BookLibrary: React.FC<BookLibraryProps> = () => {
           const isRead = user?.readBookIds?.includes(book.id);
           // Gating Logic: Interns only see first 3 books
           const isLocked = isIntern && index >= 3;
-          
+
           return (
             <motion.div
               key={book.id}
@@ -89,28 +90,33 @@ const BookLibrary: React.FC<BookLibraryProps> = () => {
             >
               {/* Locked Overlay */}
               {isLocked && (
-                  <div className="absolute inset-0 bg-gray-900/60 z-20 flex flex-col items-center justify-center text-white backdrop-blur-[2px]">
-                      <div className="bg-yellow-500 p-4 rounded-full shadow-lg mb-2">
-                          <Lock size={32} />
-                      </div>
-                      <span className="font-black uppercase tracking-widest text-sm">Premium Only</span>
+                <div className="absolute inset-0 bg-gray-900/60 z-20 flex flex-col items-center justify-center text-white backdrop-blur-[2px]">
+                  <div className="bg-yellow-500 p-4 rounded-full shadow-lg mb-2">
+                    <Lock size={32} />
                   </div>
+                  <span className="font-black uppercase tracking-widest text-sm">Premium Only</span>
+                </div>
               )}
 
               {/* Spine Effect */}
               <div className="absolute left-0 top-0 bottom-0 w-4 bg-amber-800 dark:bg-gray-900 rounded-l-md opacity-20" />
-              
+
               {/* Read Badge */}
               {isRead && !isLocked && (
-                  <div className="absolute top-4 right-4 z-10 bg-green-500 text-white rounded-full p-1 shadow-md">
-                      <CheckCircle size={20} strokeWidth={3} />
-                  </div>
+                <div className="absolute top-4 right-4 z-10 bg-green-500 text-white rounded-full p-1 shadow-md">
+                  <CheckCircle size={20} strokeWidth={3} />
+                </div>
               )}
 
               <div className={`p-6 flex gap-6 items-start ${isLocked ? 'opacity-50' : ''}`}>
                 {/* Cover */}
                 <div className="w-24 h-36 shrink-0 rounded-lg shadow-md overflow-hidden border-2 border-white dark:border-gray-600 transform -rotate-2 group-hover:rotate-0 transition-transform duration-300 bg-gray-200 dark:bg-gray-700">
-                  <img src={book.coverUrl} alt={book.title} className="w-full h-full object-cover" />
+                  <SmartImage
+                    src={book.coverUrl}
+                    alt={book.title}
+                    type="book"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -128,18 +134,18 @@ const BookLibrary: React.FC<BookLibraryProps> = () => {
               </div>
 
               <div className="mt-auto p-4 border-t border-amber-100 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 rounded-br-xl">
-                <button 
+                <button
                   onClick={(e) => {
-                      e.stopPropagation();
-                      handleReadSummary(book, isLocked);
+                    e.stopPropagation();
+                    handleReadSummary(book, isLocked);
                   }}
                   className={`w-full py-3 text-white font-black rounded-xl shadow-[0_4px_0_0_rgba(180,83,9,1)] dark:shadow-[0_4px_0_0_rgba(146,64,14,1)] flex items-center justify-center gap-2 transition-colors
-                      ${isLocked 
-                          ? 'bg-gray-500 cursor-not-allowed shadow-none' 
-                          : 'bg-amber-500 dark:bg-amber-600 btn-juicy hover:bg-amber-600 dark:hover:bg-amber-500'}
+                      ${isLocked
+                      ? 'bg-gray-500 cursor-not-allowed shadow-none'
+                      : 'bg-amber-500 dark:bg-amber-600 btn-juicy hover:bg-amber-600 dark:hover:bg-amber-500'}
                   `}
                 >
-                  {isLocked ? <Lock size={18} /> : <BookOpen size={18} />} 
+                  {isLocked ? <Lock size={18} /> : <BookOpen size={18} />}
                   {isLocked ? "Unlock" : t('library.read_summary')}
                 </button>
               </div>
@@ -158,7 +164,7 @@ const BookLibrary: React.FC<BookLibraryProps> = () => {
       <AnimatePresence>
         {selectedBook && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -168,7 +174,12 @@ const BookLibrary: React.FC<BookLibraryProps> = () => {
               <div className="bg-amber-50 dark:bg-gray-950 p-6 border-b border-amber-100 dark:border-gray-800 flex justify-between items-start">
                 <div className="flex gap-6">
                   <div className="w-24 h-36 rounded-lg shadow-lg border-4 border-white dark:border-gray-700 overflow-hidden shrink-0 bg-gray-200 dark:bg-gray-700">
-                    <img src={selectedBook.coverUrl} alt={selectedBook.title} className="w-full h-full object-cover" />
+                    <SmartImage
+                      src={selectedBook.coverUrl}
+                      alt={selectedBook.title}
+                      type="book"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div>
                     <div className="text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest mb-1">{selectedBook.category}</div>
@@ -178,7 +189,7 @@ const BookLibrary: React.FC<BookLibraryProps> = () => {
                     <p className="text-gray-500 dark:text-gray-400 font-bold text-lg">{selectedBook.author}</p>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => setSelectedBook(null)}
                   className="p-2 bg-white dark:bg-gray-800 rounded-full text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
@@ -214,7 +225,7 @@ const BookLibrary: React.FC<BookLibraryProps> = () => {
 
               {/* Modal Footer */}
               <div className="p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 flex justify-end">
-                <button 
+                <button
                   onClick={() => setSelectedBook(null)}
                   className="bg-gray-800 dark:bg-white text-white dark:text-gray-900 px-8 py-3 rounded-xl font-bold hover:bg-gray-700 dark:hover:bg-gray-200 transition-colors"
                 >

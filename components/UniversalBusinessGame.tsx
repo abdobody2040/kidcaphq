@@ -2,9 +2,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppStore } from '../store';
 import { useEnergy } from '../hooks/useEnergy';
-import { 
-  ArrowLeft, Play, TrendingUp, AlertTriangle, Zap, ShoppingCart, 
-  CheckCircle, Users, BarChart3, Star, RotateCcw, Trash2, Save, 
+import {
+  ArrowLeft, Play, TrendingUp, AlertTriangle, Zap, ShoppingCart,
+  CheckCircle, Users, BarChart3, Star, RotateCcw, Trash2, Save,
   HelpCircle, ChevronRight, Lock, BatteryWarning
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,22 +37,22 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
   const { user, games, completeGame, getSkillModifiers } = useAppStore();
   const { consumeEnergy } = useEnergy(); // Hook usage
   const gameData = games.find(g => g.business_id === gameId);
-  
+
   // State
   const [day, setDay] = useState(1);
   const [funds, setFunds] = useState(100);
   const [phase, setPhase] = useState<'STRATEGY' | 'SIMULATION' | 'RESULT'>('STRATEGY');
   const [sliderValues, setSliderValues] = useState<Record<string, number>>({});
   const [upgrades, setUpgrades] = useState<string[]>([]);
-  
+
   // Animation/Transient State
   const [progress, setProgress] = useState(0);
-  const [dayStats, setDayStats] = useState<DayStats>({ 
-    revenue: 0, 
-    expenses: 0, 
-    profit: 0, 
-    customers: 0, 
-    satisfaction: 0 
+  const [dayStats, setDayStats] = useState<DayStats>({
+    revenue: 0,
+    expenses: 0,
+    profit: 0,
+    customers: 0,
+    satisfaction: 0
   });
   const [eventLog, setEventLog] = useState<string | null>(null);
   const [activeModifiers, setActiveModifiers] = useState<{
@@ -76,7 +76,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
   // ============================================================================
   // SAVE/LOAD SYSTEM (with debouncing and safety)
   // ============================================================================
-  
+
   const getSaveKey = useCallback(() => {
     if (!user || !gameId) return null;
     return `kidcap_save_${user.id}_${gameId}`;
@@ -91,7 +91,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
       if (!savedString) return false;
 
       const saved: GameSaveData = JSON.parse(savedString);
-      
+
       // Validate save data structure
       if (typeof saved.day !== 'number' || typeof saved.funds !== 'number') {
         console.warn('⚠️ Corrupted save data, resetting...');
@@ -101,27 +101,27 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
       setDay(saved.day);
       setFunds(saved.funds);
       setUpgrades(saved.upgrades || []);
-      
+
       // Sanitize sliderValues to ensure they are numbers
       const sanitizedSliders: Record<string, number> = {};
       if (saved.sliderValues) {
-          Object.keys(saved.sliderValues).forEach(key => {
-              const val = saved.sliderValues[key];
-              if (typeof val === 'number') {
-                  sanitizedSliders[key] = val;
-              } else {
-                  sanitizedSliders[key] = 50; // Fallback default
-              }
-          });
+        Object.keys(saved.sliderValues).forEach(key => {
+          const val = saved.sliderValues[key];
+          if (typeof val === 'number') {
+            sanitizedSliders[key] = val;
+          } else {
+            sanitizedSliders[key] = 50; // Fallback default
+          }
+        });
       }
       setSliderValues(sanitizedSliders);
-      
+
       const mods = getSkillModifiers();
       setActiveModifiers(mods);
-      
+
       console.log('✅ Game loaded successfully');
       return true;
-      
+
     } catch (error) {
       console.error('❌ Failed to load save:', error);
       return false;
@@ -142,7 +142,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
 
     try {
       localStorage.setItem(saveKey, JSON.stringify(stateToSave));
-      
+
       setIsSaving(true);
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
@@ -150,7 +150,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
       saveTimeoutRef.current = setTimeout(() => {
         setIsSaving(false);
       }, 1000);
-      
+
     } catch (error) {
       console.error('❌ Failed to save game:', error);
     }
@@ -161,7 +161,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
     if (!gameData || !user) return;
 
     const loaded = loadGameData();
-    
+
     if (!loaded) {
       // Initialize with defaults
       const initialSliders: Record<string, number> = {};
@@ -172,10 +172,10 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
       setDay(1);
       setFunds(100);
       setUpgrades([]);
-      
+
       const mods = getSkillModifiers();
       setActiveModifiers(mods);
-      
+
       // Show tutorial on first load
       setShowTutorial(true);
       setTutorialStep(0);
@@ -224,7 +224,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
     const confirmed = window.confirm(
       "Are you sure you want to reset your business? You will lose all upgrades and money."
     );
-    
+
     if (!confirmed) return;
 
     const saveKey = getSaveKey();
@@ -240,7 +240,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
       });
       setSliderValues(initialSliders);
     }
-    
+
     setDay(1);
     setFunds(100);
     setUpgrades([]);
@@ -250,21 +250,21 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
   };
 
   const handleStartDay = () => {
-      // ENERGY CHECK
-      const hasEnergy = consumeEnergy();
-      if (!hasEnergy) {
-          setShowPaywall(true);
-          return;
-      }
+    // ENERGY CHECK
+    const hasEnergy = consumeEnergy();
+    if (!hasEnergy) {
+      setShowPaywall(true);
+      return;
+    }
 
-      startSimulation();
+    startSimulation();
   };
 
   const startSimulation = () => {
     setPhase('SIMULATION');
     setProgress(0);
     setEventLog(null);
-    
+
     // Refresh modifiers before day start
     const modifiers = getSkillModifiers();
     setActiveModifiers(modifiers);
@@ -283,7 +283,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
         eventEffect = 0.5;
       }
     }
-    
+
     setEventLog(eventMsg);
 
     // Clear any existing interval
@@ -296,7 +296,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
     simulationIntervalRef.current = setInterval(() => {
       p += 2;
       setProgress(p);
-      
+
       if (p >= 100) {
         if (simulationIntervalRef.current) {
           clearInterval(simulationIntervalRef.current);
@@ -308,33 +308,33 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
   };
 
   const finishDay = (
-    eventMultiplier: number, 
+    eventMultiplier: number,
     modifiers: { priceMultiplier: number; costMultiplier: number }
   ) => {
     // Calculate Stats
     const values = Object.values(sliderValues) as number[];
     const avgInput = values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 50;
     const upgradeMultiplier = 1 + (upgrades.length * 0.5);
-    
+
     // Basic Logic
     const qualityFactor = avgInput / 100;
     const satisfactionBase = 60 + (qualityFactor * 40); // 60-100 base
     const satisfaction = Math.min(100, Math.round(satisfactionBase * (eventMultiplier > 1 ? 1.1 : 1.0)));
-    
+
     const baseCustomers = 20;
     const customers = Math.floor(
       baseCustomers * upgradeMultiplier * eventMultiplier * (satisfaction / 100)
     );
-    
+
     // Apply Skill Modifiers
-    const revenuePerCustomer = (5 + (avgInput * 0.05)) * modifiers.priceMultiplier; 
+    const revenuePerCustomer = (5 + (avgInput * 0.05)) * modifiers.priceMultiplier;
     const expensePerCustomer = 2 + (avgInput * 0.04);
-    
+
     const revenue = Math.floor(customers * revenuePerCustomer);
     const variableExpenses = Math.floor(customers * expensePerCustomer);
     const fixedExpenses = 10;
     const totalExpenses = Math.floor((variableExpenses + fixedExpenses) * modifiers.costMultiplier);
-    
+
     const profit = revenue - totalExpenses;
 
     setDayStats({
@@ -359,11 +359,11 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
   const quitGame = () => {
     // Save one final time before exiting
     saveGameData();
-    
+
     // Award XP/Coins based on performance
     const finalScore = Math.max(0, funds);
     const xpReward = Math.max(10, Math.floor(finalScore / 10));
-    
+
     completeGame(finalScore, xpReward);
     onExit();
   };
@@ -394,8 +394,8 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
       {/* Header */}
       <div className="bg-gray-900 dark:bg-gray-950 text-white p-4 md:p-6 flex justify-between items-center relative z-20 shrink-0">
         <div className="flex items-center gap-4">
-          <button 
-            onClick={onExit} 
+          <button
+            onClick={onExit}
             className="hover:bg-gray-800 p-2 rounded-full transition-colors"
             aria-label="Exit game"
           >
@@ -407,9 +407,9 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
               Day {day}
               <AnimatePresence>
                 {isSaving && (
-                  <motion.span 
-                    initial={{ opacity: 0 }} 
-                    animate={{ opacity: 1 }} 
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className="text-green-400 text-xs flex items-center gap-1"
                   >
@@ -424,12 +424,12 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
           {/* ENERGY BAR Integration */}
           <EnergyBar />
 
-          <button 
-            onClick={() => { 
-              setShowTutorial(true); 
-              setTutorialStep(0); 
-            }} 
-            className="bg-gray-800 hover:bg-gray-700 p-2 rounded-xl text-gray-400 hover:text-white transition-colors" 
+          <button
+            onClick={() => {
+              setShowTutorial(true);
+              setTutorialStep(0);
+            }}
+            className="bg-gray-800 hover:bg-gray-700 p-2 rounded-xl text-gray-400 hover:text-white transition-colors"
             title="How to Play"
             aria-label="Show tutorial"
           >
@@ -438,9 +438,9 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
           <div className="bg-green-600 px-3 py-1 md:px-4 md:py-2 rounded-xl font-mono font-bold text-lg md:text-xl flex items-center gap-2 shadow-inner">
             $ {safeFunds.toLocaleString()}
           </div>
-          <button 
-            onClick={handleReset} 
-            className="bg-gray-800 hover:bg-red-900 p-2 rounded-xl text-gray-400 hover:text-white transition-colors" 
+          <button
+            onClick={handleReset}
+            className="bg-gray-800 hover:bg-red-900 p-2 rounded-xl text-gray-400 hover:text-white transition-colors"
             title="Reset Business"
             aria-label="Reset game"
           >
@@ -450,29 +450,29 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
       </div>
 
       {/* Paywall Modal */}
-      <InvestorPitchModal 
-          isOpen={showPaywall} 
-          onClose={() => setShowPaywall(false)} 
+      <InvestorPitchModal
+        isOpen={showPaywall}
+        onClose={() => setShowPaywall(false)}
       />
 
       {/* TUTORIAL OVERLAY */}
       <AnimatePresence>
         {showTutorial && (
           <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 md:p-8">
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-white dark:bg-gray-800 rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative overflow-hidden"
             >
-              <button 
-                onClick={() => setShowTutorial(false)} 
+              <button
+                onClick={() => setShowTutorial(false)}
                 className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold w-8 h-8 flex items-center justify-center"
                 aria-label="Close tutorial"
               >
                 ×
               </button>
-              
+
               <div className="mb-6 flex justify-center">
                 {tutorialStep === 0 && <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-full text-4xl">🚀</div>}
                 {tutorialStep === 1 && <div className="p-4 bg-yellow-100 dark:bg-yellow-900/30 rounded-full text-4xl">🎯</div>}
@@ -482,10 +482,10 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
               <div className="text-center min-h-[150px]">
                 <AnimatePresence mode='wait'>
                   {tutorialStep === 0 && (
-                    <motion.div 
-                      key="step0" 
-                      initial={{ opacity: 0, x: 20 }} 
-                      animate={{ opacity: 1, x: 0 }} 
+                    <motion.div
+                      key="step0"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -20 }}
                     >
                       <h3 className="text-2xl font-black text-gray-800 dark:text-white mb-2">Welcome, CEO!</h3>
@@ -496,10 +496,10 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                     </motion.div>
                   )}
                   {tutorialStep === 1 && (
-                    <motion.div 
-                      key="step1" 
-                      initial={{ opacity: 0, x: 20 }} 
-                      animate={{ opacity: 1, x: 0 }} 
+                    <motion.div
+                      key="step1"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -20 }}
                     >
                       <h3 className="text-2xl font-black text-gray-800 dark:text-white mb-2">Daily Strategy</h3>
@@ -512,10 +512,10 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                     </motion.div>
                   )}
                   {tutorialStep === 2 && (
-                    <motion.div 
-                      key="step2" 
-                      initial={{ opacity: 0, x: 20 }} 
-                      animate={{ opacity: 1, x: 0 }} 
+                    <motion.div
+                      key="step2"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -20 }}
                     >
                       <h3 className="text-2xl font-black text-gray-800 dark:text-white mb-2">Grow Your Biz</h3>
@@ -533,15 +533,14 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
               <div className="flex justify-between items-center mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
                 <div className="flex gap-1">
                   {[0, 1, 2].map(i => (
-                    <div 
-                      key={i} 
-                      className={`w-2 h-2 rounded-full transition-colors ${
-                        i === tutorialStep ? 'bg-kid-primary' : 'bg-gray-200 dark:bg-gray-600'
-                      }`} 
+                    <div
+                      key={i}
+                      className={`w-2 h-2 rounded-full transition-colors ${i === tutorialStep ? 'bg-kid-primary' : 'bg-gray-200 dark:bg-gray-600'
+                        }`}
                     />
                   ))}
                 </div>
-                <button 
+                <button
                   onClick={() => {
                     if (tutorialStep < 2) {
                       setTutorialStep(s => s + 1);
@@ -581,12 +580,12 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                         {/* Safe render for slider value */}
                         <span>{typeof sliderValues[String(input)] === 'number' ? sliderValues[String(input)] : 50}%</span>
                       </div>
-                      <input 
-                        type="range" 
+                      <input
+                        type="range"
                         className="w-full h-3 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-600"
                         value={typeof sliderValues[String(input)] === 'number' ? sliderValues[String(input)] : 50}
                         onChange={(e) => setSliderValues({
-                          ...sliderValues, 
+                          ...sliderValues,
                           [String(input)]: parseInt(e.target.value)
                         })}
                         min="0"
@@ -607,13 +606,12 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                     const isOwned = upgrades.includes(u.id);
                     const canAfford = safeFunds >= u.cost;
                     return (
-                      <div 
-                        key={u.id} 
-                        className={`p-4 rounded-xl border-2 flex justify-between items-center transition-all ${
-                          isOwned 
-                            ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20' 
-                            : 'border-gray-100 dark:border-gray-700'
-                        }`}
+                      <div
+                        key={u.id}
+                        className={`p-4 rounded-xl border-2 flex justify-between items-center transition-all ${isOwned
+                          ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
+                          : 'border-gray-100 dark:border-gray-700'
+                          }`}
                       >
                         <div className="flex-1 pr-2">
                           <div className="font-bold text-gray-800 dark:text-gray-200 text-sm md:text-base">{safeRender(u.name)}</div>
@@ -621,17 +619,16 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                         </div>
                         {isOwned ? (
                           <div className="text-green-600 font-bold flex items-center gap-1 text-sm">
-                            <CheckCircle size={16}/> <span className="hidden sm:inline">Owned</span>
+                            <CheckCircle size={16} /> <span className="hidden sm:inline">Owned</span>
                           </div>
                         ) : (
-                          <button 
+                          <button
                             onClick={() => buyUpgrade(u.id, u.cost)}
                             disabled={!canAfford}
-                            className={`px-3 py-2 md:px-4 md:py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap ${
-                              canAfford 
-                                ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md' 
-                                : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-                            }`}
+                            className={`px-3 py-2 md:px-4 md:py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap ${canAfford
+                              ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'
+                              : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                              }`}
                           >
                             ${u.cost}
                           </button>
@@ -643,7 +640,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
               </div>
             </div>
 
-            <button 
+            <button
               onClick={handleStartDay}
               className="w-full bg-kid-primary text-yellow-900 font-black py-4 rounded-2xl shadow-[0_4px_0_0_rgba(202,138,4,1)] btn-juicy text-xl flex items-center justify-center gap-3 hover:bg-yellow-400 transition-colors"
             >
@@ -655,9 +652,9 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
         {phase === 'SIMULATION' && (
           <div className="flex flex-col items-center justify-center h-full text-center space-y-8">
             <h3 className="text-2xl font-bold text-gray-500 dark:text-gray-400 animate-pulse">Simulating Market...</h3>
-            
+
             <div className="w-full max-w-md bg-gray-200 dark:bg-gray-700 h-6 rounded-full overflow-hidden border-2 border-gray-300 dark:border-gray-600">
-              <motion.div 
+              <motion.div
                 className="h-full bg-blue-500"
                 style={{ width: `${progress}%` }}
               />
@@ -665,7 +662,7 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
 
             <div className="h-20">
               {eventLog && (
-                <motion.div 
+                <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   className="inline-flex items-center gap-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 px-6 py-3 rounded-full font-bold border-2 border-yellow-400 dark:border-yellow-600 shadow-sm text-sm md:text-base"
@@ -683,9 +680,8 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
               <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2">
                 Day {day} Report
               </div>
-              <h2 className={`text-6xl font-black mb-2 ${
-                dayStats.profit >= 0 ? 'text-green-500' : 'text-red-500'
-              }`}>
+              <h2 className={`text-6xl font-black mb-2 ${dayStats.profit >= 0 ? 'text-green-500' : 'text-red-500'
+                }`}>
                 {dayStats.profit >= 0 ? '+' : '-'}${Math.abs(dayStats.profit)}
               </h2>
               <p className="text-gray-500 font-bold">Net Profit</p>
@@ -693,12 +689,12 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                 <div className="flex justify-center gap-3 mt-4 flex-wrap">
                   {activeModifiers.priceMultiplier > 1 && (
                     <span className="bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-300 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                      <Zap size={12}/> Charisma Boost
+                      <Zap size={12} /> Charisma Boost
                     </span>
                   )}
                   {activeModifiers.costMultiplier < 1 && (
                     <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                      <Zap size={12}/> Efficiency Save
+                      <Zap size={12} /> Efficiency Save
                     </span>
                   )}
                 </div>
@@ -708,21 +704,21 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center">
                 <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-full text-green-600 dark:text-green-400 mb-2">
-                  <TrendingUp size={20}/>
+                  <TrendingUp size={20} />
                 </div>
                 <div className="text-sm text-gray-400 font-bold uppercase">Revenue</div>
                 <div className="text-2xl font-black text-gray-800 dark:text-white">${dayStats.revenue}</div>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center">
                 <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded-full text-red-600 dark:text-red-400 mb-2">
-                  <BarChart3 size={20}/>
+                  <BarChart3 size={20} />
                 </div>
                 <div className="text-sm text-gray-400 font-bold uppercase">Expenses</div>
                 <div className="text-2xl font-black text-gray-800 dark:text-white">${dayStats.expenses}</div>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center">
                 <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full text-blue-600 dark:text-blue-400 mb-2">
-                  <Users size={20}/>
+                  <Users size={20} />
                 </div>
                 <div className="text-sm text-gray-400 font-bold uppercase">Customers</div>
                 <div className="text-2xl font-black text-gray-800 dark:text-white">{dayStats.customers}</div>
@@ -740,46 +736,45 @@ const UniversalBusinessGame: React.FC<Props> = ({ gameId, onExit }) => {
                 </span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 h-4 rounded-full overflow-hidden mb-4">
-                <div 
-                  className={`h-full transition-all ${
-                    dayStats.satisfaction > 70 
-                      ? 'bg-green-500' 
-                      : dayStats.satisfaction > 40 
-                        ? 'bg-yellow-500' 
-                        : 'bg-red-500'
-                  }`} 
+                <div
+                  className={`h-full transition-all ${dayStats.satisfaction > 70
+                    ? 'bg-green-500'
+                    : dayStats.satisfaction > 40
+                      ? 'bg-yellow-500'
+                      : 'bg-red-500'
+                    }`}
                   style={{ width: `${dayStats.satisfaction}%` }}
                 />
               </div>
               <div className="flex justify-center gap-1 text-yellow-400">
                 {[1, 2, 3, 4, 5].map(star => (
-                  <Star 
-                    key={star} 
-                    fill={dayStats.satisfaction >= star * 20 ? "currentColor" : "none"} 
+                  <Star
+                    key={star}
+                    fill={dayStats.satisfaction >= star * 20 ? "currentColor" : "none"}
                     className={dayStats.satisfaction >= star * 20 ? "" : "text-gray-300 dark:text-gray-600"}
                   />
                 ))}
               </div>
               <p className="text-center text-sm font-bold text-gray-400 mt-2">
-                {dayStats.satisfaction > 80 
-                  ? "Customers loved it!" 
-                  : dayStats.satisfaction > 50 
-                    ? "Customers thought it was okay." 
+                {dayStats.satisfaction > 80
+                  ? "Customers loved it!"
+                  : dayStats.satisfaction > 50
+                    ? "Customers thought it was okay."
                     : "Customers were unhappy."}
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <button 
+              <button
                 onClick={quitGame}
                 className="py-4 rounded-xl font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 transition-all"
               >
                 Save & Exit
               </button>
-              <button 
-                onClick={() => { 
-                  setDay(d => d + 1); 
-                  setPhase('STRATEGY'); 
+              <button
+                onClick={() => {
+                  setDay(d => d + 1);
+                  setPhase('STRATEGY');
                 }}
                 className="py-4 bg-kid-secondary text-white rounded-xl font-black shadow-[0_4px_0_0_rgba(21,128,61,1)] btn-juicy flex items-center justify-center gap-2 hover:bg-green-600 transition-colors"
               >

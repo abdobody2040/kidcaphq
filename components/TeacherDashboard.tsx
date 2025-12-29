@@ -661,7 +661,7 @@ const TeacherDashboard: React.FC = () => {
        {/* --- TAB: GRADING (Phase 4) --- */}
        {activeTab === 'GRADING' && (
            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden min-h-[500px]">
-               {gradingSubmission ? (
+               {gradingSubmission && gradingAssignment && gradingStudent ? (
                    <GradingWorkspace 
                        submission={gradingSubmission}
                        assignment={gradingAssignment}

@@ -1,8 +1,8 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { 
-  User, UserRole, LemonadeState, ShopItem, LeaderboardEntry, Classroom, UserSettings, 
+import {
+  User, UserRole, LemonadeState, ShopItem, LeaderboardEntry, Classroom, UserSettings,
   BusinessLogo, Skill, HQLevel, PortfolioItem, UniversalLessonUnit, BusinessSimulation,
   StudentGroup, Rubric, Assignment, Submission, CMSContent, Book, SubscriptionTier
 } from './types';
@@ -75,10 +75,10 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: 'item_astro', name: 'Astro Helmet', description: 'To the moon!', cost: 600, type: 'AVATAR', icon: '👩‍🚀' },
   { id: 'item_chef', name: 'Chef Hat', description: 'Cooking up profits.', cost: 100, type: 'AVATAR', icon: '👨‍🍳' },
   { id: 'item_beret', name: 'Artist Beret', description: 'Creative genius.', cost: 90, type: 'AVATAR', icon: '🎨' },
-  
+
   // Powerups
   { id: 'item_freeze', name: 'Streak Freeze', description: 'Miss a day without losing your streak!', cost: 200, type: 'POWERUP', icon: '❄️' },
-  
+
   // Consumables (New)
   { id: 'cons_consultant', name: 'The Consultant', description: 'Removes 2 wrong answers in a quiz.', cost: 30, type: 'CONSUMABLE', icon: '🕵️‍♂️', effectType: 'HINT' },
   { id: 'cons_bailout', name: 'Bailout Potion', description: 'Continue a game after failing.', cost: 50, type: 'CONSUMABLE', icon: '🧪', effectType: 'SECOND_LIFE' },
@@ -100,7 +100,7 @@ export const SKILLS_DB: Skill[] = [
   { id: 'skl_silver_tongue', name: 'Silver Tongue', category: 'CHARISMA', description: 'Customers pay 5% more.', cost: 200, effect: { type: 'PASSIVE_PRICE', value: 0.05 } },
   { id: 'skl_negotiator', name: 'Negotiator', category: 'CHARISMA', description: 'Supplier costs reduced by 10%.', cost: 500, effect: { type: 'PASSIVE_COST', value: 0.10 } },
   { id: 'skl_famous', name: 'Local Celebrity', category: 'CHARISMA', description: 'Can charge 15% more for everything.', cost: 1500, effect: { type: 'PASSIVE_PRICE', value: 0.15 } },
-  
+
   // Efficiency Branch
   { id: 'skl_fast_hands', name: 'Fast Hands', category: 'EFFICIENCY', description: 'Click/Swipe actions are 10% faster.', cost: 200, effect: { type: 'ACTIVE_CLICK', value: 0.10 } },
   { id: 'skl_multitasker', name: 'Multitasker', category: 'EFFICIENCY', description: 'Game timers run 15% slower.', cost: 500, effect: { type: 'PASSIVE_SPEED', value: 0.15 } },
@@ -195,11 +195,11 @@ const MOCK_USER: User = {
   inventory: ['item_sunglasses'],
   settings: DEFAULT_SETTINGS,
   businessLogo: {
-      companyName: 'Leo Corp',
-      backgroundColor: '#FFC800',
-      icon: 'rocket',
-      iconColor: '#FFFFFF',
-      shape: 'circle'
+    companyName: 'Leo Corp',
+    backgroundColor: '#FFC800',
+    icon: 'rocket',
+    iconColor: '#FFFFFF',
+    shape: 'circle'
   },
   hqLevel: 'hq_garage',
   unlockedSkills: ['skl_silver_tongue', 'skl_fast_hands'],
@@ -318,11 +318,11 @@ interface AppState {
   lemonadeState: LemonadeState;
   showLevelUpModal: boolean;
   levelUpData: { level: number, xp: number } | null;
-  
+
   // Classrooms
   classroom: Classroom | null; // Active classroom
   classrooms: Classroom[]; // All classrooms (for persistence)
-  
+
   // Content State
   lessons: UniversalLessonUnit[];
   games: BusinessSimulation[];
@@ -330,15 +330,15 @@ interface AppState {
   cmsContent: CMSContent; // CMS Data
   library: Book[];
   isAdminMode: boolean;
-  
+
   // Teacher Feature State (New)
   studentGroups: StudentGroup[];
   rubrics: Rubric[];
   assignments: Assignment[];
   submissions: Submission[];
-  
+
   // Actions
-  login: (role: UserRole) => void; 
+  login: (role: UserRole) => void;
   loginWithCredentials: (username: string, password: string) => boolean;
   impersonateUser: (userId: string) => void; // New Admin Action
   registerUser: (name: string, username: string, password: string, role: UserRole) => string | undefined;
@@ -350,7 +350,7 @@ interface AppState {
   toggleEquipItem: (itemId: string) => void;
   closeLevelUpModal: () => void;
   updateLemonadeState: (newState: Partial<LemonadeState>) => void;
-  
+
   // SaaS / Admin Actions
   joinClass: (code: string) => boolean;
   toggleModuleLock: (moduleId: string) => void;
@@ -376,7 +376,7 @@ interface AppState {
   updateGame: (id: string, updates: Partial<BusinessSimulation>) => void;
   deleteGame: (id: string) => void;
   syncGames: () => void;
-  
+
   // Library CRUD
   addBook: (book: Book) => void;
   updateBook: (id: string, updates: Partial<Book>) => void; // Added this
@@ -392,15 +392,15 @@ interface AppState {
   addStudentGroup: (group: StudentGroup) => void;
   updateStudentGroup: (id: string, updates: Partial<StudentGroup>) => void;
   deleteStudentGroup: (id: string) => void;
-  
+
   addRubric: (rubric: Rubric) => void;
   updateRubric: (id: string, updates: Partial<Rubric>) => void;
   deleteRubric: (id: string) => void;
-  
-  addAssignment: (assignment) => void;
+
+  addAssignment: (assignment: Assignment) => void;
   updateAssignment: (id: string, updates: Partial<Assignment>) => void;
   deleteAssignment: (id: string) => void;
-  
+
   addSubmission: (submission: Submission) => void;
   updateSubmission: (id: string, updates: Partial<Submission>) => void;
   deleteSubmission: (id: string) => void; // New Action
@@ -426,7 +426,7 @@ export const useAppStore = create<AppState>()(
       cmsContent: DEFAULT_CMS_CONTENT,
       library: INITIAL_LIBRARY,
       isAdminMode: false,
-      
+
       // Initialize Teacher Feature Data
       studentGroups: MOCK_STUDENT_GROUPS,
       rubrics: MOCK_RUBRICS,
@@ -441,15 +441,15 @@ export const useAppStore = create<AppState>()(
         const targetUser = get().users.find(u => u.role === role);
         let user = null;
         let classroom = null;
-        
+
         if (targetUser) {
-            user = { ...targetUser };
-            if (role === UserRole.TEACHER) classroom = { ...MOCK_CLASSROOM };
+          user = { ...targetUser };
+          if (role === UserRole.TEACHER) classroom = { ...MOCK_CLASSROOM };
         } else {
-            if (role === UserRole.KID) user = { ...MOCK_USER };
-            if (role === UserRole.PARENT) user = { ...MOCK_PARENT };
-            if (role === UserRole.TEACHER) user = { ...MOCK_TEACHER };
-            if (role === UserRole.ADMIN) user = { ...MOCK_ADMIN };
+          if (role === UserRole.KID) user = { ...MOCK_USER };
+          if (role === UserRole.PARENT) user = { ...MOCK_PARENT };
+          if (role === UserRole.TEACHER) user = { ...MOCK_TEACHER };
+          if (role === UserRole.ADMIN) user = { ...MOCK_ADMIN };
         }
 
         set({ user, classroom });
@@ -457,154 +457,154 @@ export const useAppStore = create<AppState>()(
       },
 
       loginWithCredentials: (username, password) => {
-          const { users, classrooms } = get();
-          const matchedUser = users.find(u => u.username === username && u.password === password);
-          
-          if (matchedUser) {
-              let activeClassroom = null;
-              
-              // Correctly load the teacher's classroom
-              if (matchedUser.role === UserRole.TEACHER) {
-                  activeClassroom = classrooms.find(c => c.teacherId === matchedUser.id) || null;
-              }
-              
-              // Load student's classroom if linked
-              if (matchedUser.role === UserRole.KID && matchedUser.classId) {
-                  activeClassroom = classrooms.find(c => c.id === matchedUser.classId) || null;
-              }
-              
-              set({ user: matchedUser, classroom: activeClassroom });
-              if (matchedUser.role === UserRole.KID) get().checkStreak();
-              return true;
+        const { users, classrooms } = get();
+        const matchedUser = users.find(u => u.username === username && u.password === password);
+
+        if (matchedUser) {
+          let activeClassroom = null;
+
+          // Correctly load the teacher's classroom
+          if (matchedUser.role === UserRole.TEACHER) {
+            activeClassroom = classrooms.find(c => c.teacherId === matchedUser.id) || null;
           }
-          return false;
+
+          // Load student's classroom if linked
+          if (matchedUser.role === UserRole.KID && matchedUser.classId) {
+            activeClassroom = classrooms.find(c => c.id === matchedUser.classId) || null;
+          }
+
+          set({ user: matchedUser, classroom: activeClassroom });
+          if (matchedUser.role === UserRole.KID) get().checkStreak();
+          return true;
+        }
+        return false;
       },
 
       // Admin Impersonation Action
       impersonateUser: (userId: string) => {
-          const { users, classrooms } = get();
-          const matchedUser = users.find(u => u.id === userId);
-          if (matchedUser) {
-              let activeClassroom = null;
-              if (matchedUser.role === UserRole.TEACHER) {
-                  activeClassroom = classrooms.find(c => c.teacherId === matchedUser.id) || null;
-              }
-              if (matchedUser.role === UserRole.KID && matchedUser.classId) {
-                  activeClassroom = classrooms.find(c => c.id === matchedUser.classId) || null;
-              }
-              set({ user: matchedUser, classroom: activeClassroom });
+        const { users, classrooms } = get();
+        const matchedUser = users.find(u => u.id === userId);
+        if (matchedUser) {
+          let activeClassroom = null;
+          if (matchedUser.role === UserRole.TEACHER) {
+            activeClassroom = classrooms.find(c => c.teacherId === matchedUser.id) || null;
           }
+          if (matchedUser.role === UserRole.KID && matchedUser.classId) {
+            activeClassroom = classrooms.find(c => c.id === matchedUser.classId) || null;
+          }
+          set({ user: matchedUser, classroom: activeClassroom });
+        }
       },
 
       registerUser: (name, username, password, role) => {
-          const state = get();
-          const currentUsers = state.users;
-          
-          if (currentUsers.length >= MAX_LOCAL_USERS) {
-              return `Device limit reached! This device can only hold ${MAX_LOCAL_USERS} accounts.`;
-          }
+        const state = get();
+        const currentUsers = state.users;
 
-          if (currentUsers.some(u => u.username === username)) {
-              return "Username already taken. Please choose another.";
-          }
+        if (currentUsers.length >= MAX_LOCAL_USERS) {
+          return `Device limit reached! This device can only hold ${MAX_LOCAL_USERS} accounts.`;
+        }
 
-          const newUser: User = {
-              id: `user_${Date.now()}`,
-              name,
-              username,
-              password,
-              role,
-              xp: 0,
-              level: 1,
-              streak: 1,
-              lastActivityDate: getToday(),
-              bizCoins: 100, // Sign up bonus
-              currentModuleId: 'mod_1',
-              completedLessonIds: [],
-              readBookIds: [],
-              badges: ['Newbie'],
-              inventory: [],
-              settings: DEFAULT_SETTINGS,
-              hqLevel: 'hq_garage',
-              unlockedSkills: [],
-              portfolio: [],
-              equippedItems: [],
-              subscriptionStatus: 'FREE',
-              subscriptionTier: 'intern',
-              energy: 5,
-              lastEnergyRefill: Date.now()
+        if (currentUsers.some(u => u.username === username)) {
+          return "Username already taken. Please choose another.";
+        }
+
+        const newUser: User = {
+          id: `user_${Date.now()}`,
+          name,
+          username,
+          password,
+          role,
+          xp: 0,
+          level: 1,
+          streak: 1,
+          lastActivityDate: getToday(),
+          bizCoins: 100, // Sign up bonus
+          currentModuleId: 'mod_1',
+          completedLessonIds: [],
+          readBookIds: [],
+          badges: ['Newbie'],
+          inventory: [],
+          settings: DEFAULT_SETTINGS,
+          hqLevel: 'hq_garage',
+          unlockedSkills: [],
+          portfolio: [],
+          equippedItems: [],
+          subscriptionStatus: 'FREE',
+          subscriptionTier: 'intern',
+          energy: 5,
+          lastEnergyRefill: Date.now()
+        };
+
+        let newClassroom: Classroom | null = null;
+        let updatedClassrooms = state.classrooms;
+
+        if (role === UserRole.KID) {
+          newUser.businessLogo = {
+            companyName: `${name}'s Biz`,
+            backgroundColor: '#3B82F6',
+            icon: 'rocket',
+            iconColor: '#FFFFFF',
+            shape: 'circle'
           };
+        }
 
-          let newClassroom: Classroom | null = null;
-          let updatedClassrooms = state.classrooms;
+        if (role === UserRole.TEACHER) {
+          newClassroom = {
+            id: `class_${newUser.id}`,
+            name: `${name}'s Class`,
+            code: Math.random().toString(36).substring(2, 8).toUpperCase(),
+            teacherId: newUser.id,
+            studentIds: [],
+            lockedModules: []
+          };
+          updatedClassrooms = [...state.classrooms, newClassroom];
+        }
 
-          if (role === UserRole.KID) {
-              newUser.businessLogo = {
-                  companyName: `${name}'s Biz`,
-                  backgroundColor: '#3B82F6',
-                  icon: 'rocket',
-                  iconColor: '#FFFFFF',
-                  shape: 'circle'
-              };
+        if (role === UserRole.PARENT) {
+          const demoKid = currentUsers.find(u => u.role === UserRole.KID);
+          if (demoKid) {
+            newUser.linkedChildId = demoKid.id;
           }
+        }
 
-          if (role === UserRole.TEACHER) {
-              newClassroom = {
-                  id: `class_${newUser.id}`,
-                  name: `${name}'s Class`,
-                  code: Math.random().toString(36).substring(2, 8).toUpperCase(),
-                  teacherId: newUser.id,
-                  studentIds: [],
-                  lockedModules: []
-              };
-              updatedClassrooms = [...state.classrooms, newClassroom];
-          }
-
-          if (role === UserRole.PARENT) {
-              const demoKid = currentUsers.find(u => u.role === UserRole.KID);
-              if (demoKid) {
-                  newUser.linkedChildId = demoKid.id;
-              }
-          }
-
-          set((state) => ({ 
-              users: [...state.users, newUser],
-              user: newUser,
-              classroom: newClassroom, 
-              classrooms: updatedClassrooms
-          }));
-          return undefined; // Success
+        set((state) => ({
+          users: [...state.users, newUser],
+          user: newUser,
+          classroom: newClassroom,
+          classrooms: updatedClassrooms
+        }));
+        return undefined; // Success
       },
-      
+
       logout: () => set({ user: null, classroom: null }),
 
       checkStreak: () => set((state) => {
         if (!state.user) return {};
         const today = getToday();
         const yesterday = getYesterday();
-        
-        if (state.user.lastActivityDate === today) return {}; 
+
+        if (state.user.lastActivityDate === today) return {};
 
         let newStreak = state.user.streak;
         let newInventory = [...state.user.inventory];
-        
+
         if (state.user.lastActivityDate === yesterday) {
-          newStreak += 1; 
+          newStreak += 1;
         } else {
           const freezeIndex = newInventory.indexOf('item_freeze');
           if (freezeIndex !== -1) {
-             console.log("Streak Freeze Activated!");
-             newInventory.splice(freezeIndex, 1);
+            console.log("Streak Freeze Activated!");
+            newInventory.splice(freezeIndex, 1);
           } else {
-             newStreak = 1; 
+            newStreak = 1;
           }
         }
 
-        const updatedUser = { 
-            ...state.user, 
-            lastActivityDate: today,
-            streak: newStreak,
-            inventory: newInventory
+        const updatedUser = {
+          ...state.user,
+          lastActivityDate: today,
+          streak: newStreak,
+          inventory: newInventory
         };
 
         const updatedUsers = state.users.map(u => u.id === state.user!.id ? updatedUser : u);
@@ -625,21 +625,21 @@ export const useAppStore = create<AppState>()(
         const oldLevel = state.user.level;
         const newLevel = getLevel(newXp);
         const leveledUp = newLevel > oldLevel;
-        
+
         if (leveledUp && state.user.settings.soundEnabled) SoundService.playLevelUp();
         else if (state.user.settings.soundEnabled) SoundService.playSuccess();
 
         const updatedUser = {
-            ...state.user,
-            completedLessonIds: [...state.user.completedLessonIds, lessonId],
-            xp: newXp,
-            level: newLevel,
-            bizCoins: state.user.bizCoins + baseCoins
+          ...state.user,
+          completedLessonIds: [...state.user.completedLessonIds, lessonId],
+          xp: newXp,
+          level: newLevel,
+          bizCoins: state.user.bizCoins + baseCoins
         };
 
         set({
           user: updatedUser,
-          users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u), 
+          users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u),
           showLevelUpModal: leveledUp,
           levelUpData: leveledUp ? { level: newLevel, xp: newXp } : null
         });
@@ -651,33 +651,33 @@ export const useAppStore = create<AppState>()(
         const currentBooks = state.user.readBookIds || [];
         if (currentBooks.includes(bookId)) return {};
 
-        const updatedUser = { 
-            ...state.user, 
-            readBookIds: [...currentBooks, bookId] 
+        const updatedUser = {
+          ...state.user,
+          readBookIds: [...currentBooks, bookId]
         };
-        
-        return { 
-            user: updatedUser, 
-            users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u) 
+
+        return {
+          user: updatedUser,
+          users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u)
         };
       }),
 
       buyItem: (item) => set((state) => {
         if (!state.user) return {};
         if (state.user.bizCoins < item.cost) {
-            if (state.user.settings.soundEnabled) SoundService.playError();
-            return {}; 
+          if (state.user.settings.soundEnabled) SoundService.playError();
+          return {};
         }
-        
+
         const isUnique = item.type === 'AVATAR';
         if (isUnique && state.user.inventory.includes(item.id)) return {};
 
         if (state.user.settings.soundEnabled) SoundService.playCoin();
 
         const updatedUser = {
-            ...state.user,
-            bizCoins: state.user.bizCoins - item.cost,
-            inventory: [...state.user.inventory, item.id]
+          ...state.user,
+          bizCoins: state.user.bizCoins - item.cost,
+          inventory: [...state.user.inventory, item.id]
         };
 
         return {
@@ -689,24 +689,24 @@ export const useAppStore = create<AppState>()(
       toggleEquipItem: (itemId: string) => set((state) => {
         if (!state.user) return {};
         if (state.user.settings.soundEnabled) SoundService.playClick();
-        
+
         const isEquipped = state.user.equippedItems.includes(itemId);
         let newEquipped = [...state.user.equippedItems];
 
         // Slot Definition
         const getSlot = (id: string) => {
-            if (id.includes('hat') || id.includes('crown') || id.includes('helmet') || id.includes('cap') || id.includes('beret') || id.includes('tiara')) return 'head';
-            if (id.includes('sunglasses') || id.includes('monocle')) return 'eyes';
-            if (id.includes('suit') || id.includes('cape') || id.includes('gear')) return 'body';
-            return 'misc';
+          if (id.includes('hat') || id.includes('crown') || id.includes('helmet') || id.includes('cap') || id.includes('beret') || id.includes('tiara')) return 'head';
+          if (id.includes('sunglasses') || id.includes('monocle')) return 'eyes';
+          if (id.includes('suit') || id.includes('cape') || id.includes('gear')) return 'body';
+          return 'misc';
         };
 
         if (isEquipped) {
-            newEquipped = newEquipped.filter(id => id !== itemId);
+          newEquipped = newEquipped.filter(id => id !== itemId);
         } else {
-            const targetSlot = getSlot(itemId);
-            newEquipped = newEquipped.filter(id => getSlot(id) !== targetSlot);
-            newEquipped.push(itemId);
+          const targetSlot = getSlot(itemId);
+          newEquipped = newEquipped.filter(id => getSlot(id) !== targetSlot);
+          newEquipped.push(itemId);
         }
 
         const updatedUser = { ...state.user, equippedItems: newEquipped };
@@ -722,16 +722,16 @@ export const useAppStore = create<AppState>()(
       joinClass: (code) => {
         const { classrooms } = get();
         const targetClass = classrooms.find(c => c.code === code);
-        
+
         if (targetClass) {
           set((state) => {
-             if(!state.user) return {};
-             const updatedUser = { ...state.user, classId: targetClass.id };
-             return {
-                 user: updatedUser,
-                 users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u),
-                 classroom: targetClass
-             };
+            if (!state.user) return {};
+            const updatedUser = { ...state.user, classId: targetClass.id };
+            return {
+              user: updatedUser,
+              users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u),
+              classroom: targetClass
+            };
           });
           return true;
         }
@@ -739,23 +739,23 @@ export const useAppStore = create<AppState>()(
       },
 
       toggleModuleLock: (moduleId) => set((state) => {
-          if (!state.classroom) return {};
-          const isLocked = state.classroom.lockedModules.includes(moduleId);
-          const newLocked = isLocked 
-            ? state.classroom.lockedModules.filter(id => id !== moduleId)
-            : [...state.classroom.lockedModules, moduleId];
-            
-          const updatedClassroom = { ...state.classroom, lockedModules: newLocked };
-          return { 
-              classroom: updatedClassroom,
-              classrooms: state.classrooms.map(c => c.id === updatedClassroom.id ? updatedClassroom : c)
-          };
+        if (!state.classroom) return {};
+        const isLocked = state.classroom.lockedModules.includes(moduleId);
+        const newLocked = isLocked
+          ? state.classroom.lockedModules.filter(id => id !== moduleId)
+          : [...state.classroom.lockedModules, moduleId];
+
+        const updatedClassroom = { ...state.classroom, lockedModules: newLocked };
+        return {
+          classroom: updatedClassroom,
+          classrooms: state.classrooms.map(c => c.id === updatedClassroom.id ? updatedClassroom : c)
+        };
       }),
 
       updateUserSettings: (newSettings) => set((state) => {
-          if (!state.user) return {};
-          const updatedUser = { ...state.user, settings: { ...state.user.settings, ...newSettings }};
-          return { user: updatedUser, users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u) };
+        if (!state.user) return {};
+        const updatedUser = { ...state.user, settings: { ...state.user.settings, ...newSettings } };
+        return { user: updatedUser, users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u) };
       }),
 
       updateBusinessLogo: (logo) => set((state) => {
@@ -765,32 +765,32 @@ export const useAppStore = create<AppState>()(
       }),
 
       completeGame: (score, xpReward) => {
-          const state = get();
-          if (!state.user) return;
-          
-          const modifiers = state.getSkillModifiers();
-          const newXp = state.user.xp + Math.round(xpReward * modifiers.xpMultiplier);
-          const oldLevel = state.user.level;
-          const newLevel = getLevel(newXp);
-          const leveledUp = newLevel > oldLevel;
-          const coinReward = Math.floor(xpReward / 5);
+        const state = get();
+        if (!state.user) return;
 
-          if (leveledUp && state.user.settings.soundEnabled) SoundService.playLevelUp();
-          else if (state.user.settings.soundEnabled) SoundService.playSuccess();
+        const modifiers = state.getSkillModifiers();
+        const newXp = state.user.xp + Math.round(xpReward * modifiers.xpMultiplier);
+        const oldLevel = state.user.level;
+        const newLevel = getLevel(newXp);
+        const leveledUp = newLevel > oldLevel;
+        const coinReward = Math.floor(xpReward / 5);
 
-          const updatedUser = {
-              ...state.user,
-              xp: newXp,
-              level: newLevel,
-              bizCoins: state.user.bizCoins + coinReward
-          };
+        if (leveledUp && state.user.settings.soundEnabled) SoundService.playLevelUp();
+        else if (state.user.settings.soundEnabled) SoundService.playSuccess();
 
-          set({
-              user: updatedUser,
-              users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u),
-              showLevelUpModal: leveledUp,
-              levelUpData: leveledUp ? { level: newLevel, xp: newXp } : null
-          });
+        const updatedUser = {
+          ...state.user,
+          xp: newXp,
+          level: newLevel,
+          bizCoins: state.user.bizCoins + coinReward
+        };
+
+        set({
+          user: updatedUser,
+          users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u),
+          showLevelUpModal: leveledUp,
+          levelUpData: leveledUp ? { level: newLevel, xp: newXp } : null
+        });
       },
 
       upgradeHQ: (hqId) => set((state) => {
@@ -798,8 +798,8 @@ export const useAppStore = create<AppState>()(
         const hq = HQ_LEVELS.find(h => h.id === hqId);
         if (!hq) return {};
         if (state.user.bizCoins < hq.cost) {
-            if (state.user.settings.soundEnabled) SoundService.playError();
-            return {};
+          if (state.user.settings.soundEnabled) SoundService.playError();
+          return {};
         }
         if (state.user.settings.soundEnabled) SoundService.playSuccess();
 
@@ -812,8 +812,8 @@ export const useAppStore = create<AppState>()(
         const skill = SKILLS_DB.find(s => s.id === skillId);
         if (!skill) return {};
         if (state.user.bizCoins < skill.cost) {
-            if (state.user.settings.soundEnabled) SoundService.playError();
-            return {};
+          if (state.user.settings.soundEnabled) SoundService.playError();
+          return {};
         }
         if (state.user.unlockedSkills.includes(skillId)) return {};
         if (state.user.settings.soundEnabled) SoundService.playSuccess();
@@ -850,14 +850,14 @@ export const useAppStore = create<AppState>()(
 
         const item = state.user.portfolio[itemIndex];
         const last = new Date(item.lastCollected);
-        
+
         // FIX: NaN Safety Check
         if (isNaN(last.getTime())) {
-            console.warn("Found corrupted date in portfolio, resetting timestamp.");
-            const updatedPortfolio = [...state.user.portfolio];
-            updatedPortfolio[itemIndex] = { ...item, lastCollected: new Date().toISOString() };
-            set({ user: { ...state.user, portfolio: updatedPortfolio }});
-            return 0; 
+          console.warn("Found corrupted date in portfolio, resetting timestamp.");
+          const updatedPortfolio = [...state.user.portfolio];
+          updatedPortfolio[itemIndex] = { ...item, lastCollected: new Date().toISOString() };
+          set({ user: { ...state.user, portfolio: updatedPortfolio } });
+          return 0;
         }
 
         const now = new Date();
@@ -878,38 +878,38 @@ export const useAppStore = create<AppState>()(
       },
 
       collectAllIdleIncome: () => set((state) => {
-          if (!state.user) return {};
-          let totalEarned = 0;
-          const now = new Date();
-          const updatedPortfolio = state.user.portfolio.map(item => {
-              const last = new Date(item.lastCollected);
-              
-              // FIX: NaN Safety Check Loop
-              if (isNaN(last.getTime())) {
-                  return { ...item, lastCollected: now.toISOString() };
-              }
+        if (!state.user) return {};
+        let totalEarned = 0;
+        const now = new Date();
+        const updatedPortfolio = state.user.portfolio.map(item => {
+          const last = new Date(item.lastCollected);
 
-              const diffMs = now.getTime() - last.getTime();
-              const diffMinutes = Math.min(1440, diffMs / (1000 * 60));
-              const hourlyRate = 10 * item.managerLevel;
-              const earned = Math.floor((hourlyRate / 60) * diffMinutes);
-              if (earned > 0) {
-                  totalEarned += earned;
-                  return { ...item, lastCollected: now.toISOString() };
-              }
-              return item;
-          });
-
-          if (totalEarned > 0) {
-              if (state.user.settings.soundEnabled) SoundService.playCoin();
-              const updatedUser = {
-                  ...state.user,
-                  bizCoins: state.user.bizCoins + totalEarned,
-                  portfolio: updatedPortfolio
-              };
-              return { user: updatedUser, users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u) };
+          // FIX: NaN Safety Check Loop
+          if (isNaN(last.getTime())) {
+            return { ...item, lastCollected: now.toISOString() };
           }
-          return {};
+
+          const diffMs = now.getTime() - last.getTime();
+          const diffMinutes = Math.min(1440, diffMs / (1000 * 60));
+          const hourlyRate = 10 * item.managerLevel;
+          const earned = Math.floor((hourlyRate / 60) * diffMinutes);
+          if (earned > 0) {
+            totalEarned += earned;
+            return { ...item, lastCollected: now.toISOString() };
+          }
+          return item;
+        });
+
+        if (totalEarned > 0) {
+          if (state.user.settings.soundEnabled) SoundService.playCoin();
+          const updatedUser = {
+            ...state.user,
+            bizCoins: state.user.bizCoins + totalEarned,
+            portfolio: updatedPortfolio
+          };
+          return { user: updatedUser, users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u) };
+        }
+        return {};
       }),
 
       getSkillModifiers: () => {
@@ -928,54 +928,55 @@ export const useAppStore = create<AppState>()(
       },
 
       upgradeSubscription: (tier) => set((state) => {
-          if (!state.user) return {};
-          if (state.user.settings.soundEnabled) SoundService.playLevelUp();
-          const updatedUser = { 
-              ...state.user, 
-              subscriptionTier: tier,
-              subscriptionStatus: (tier === 'intern' ? 'FREE' : 'PREMIUM') as 'FREE' | 'PREMIUM'
-          };
-          return { user: updatedUser, users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u) };
+        if (!state.user) return {};
+        if (state.user.settings.soundEnabled) SoundService.playLevelUp();
+        const updatedUser = {
+          ...state.user,
+          subscriptionTier: tier,
+          subscriptionStatus: (tier === 'intern' ? 'FREE' : 'PREMIUM') as 'FREE' | 'PREMIUM'
+        };
+        return { user: updatedUser, users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u) };
       }),
 
       hasUnlimitedEnergy: () => {
-          const user = get().user;
-          if (!user) return false;
-          // IMPORTANT: If tier is missing or undefined, assume intern (false)
-          return ['founder', 'board', 'tycoon'].includes(user.subscriptionTier || 'intern');
+        const user = get().user;
+        if (!user) return false;
+        // IMPORTANT: If tier is missing or undefined, assume intern (false)
+        return ['founder', 'board', 'tycoon'].includes(user.subscriptionTier || 'intern');
       },
 
       hasAiAccess: () => {
-          const user = get().user;
-          if (!user) return false;
-          return user.subscriptionTier === 'tycoon';
+        const user = get().user;
+        if (!user) return false;
+        return user.subscriptionTier === 'tycoon';
       },
 
       consumeEnergy: () => {
-          const state = get();
-          if (!state.user) return false;
-          
-          const isUnlimited = ['founder', 'board', 'tycoon'].includes(state.user.subscriptionTier || 'intern');
-          if (isUnlimited) return true;
+        const state = get();
+        if (!state.user) return false;
 
-          if (state.user.energy > 0) {
-              const newEnergy = state.user.energy - 1;
-              const updates: Partial<User> = { energy: newEnergy };
-              
-              // If we are consuming from MAX, set the timestamp to start refill timer
-              if (state.user.energy === 5) {
-                  updates.lastEnergyRefill = Date.now();
-              }
-              
-              // Directly update state to ensure consistency
-              const updatedUser = { ...state.user, ...updates };
-              set({
-                  user: updatedUser,
-                  users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u)
-              });
-              return true;
+        const isUnlimited = ['founder', 'board', 'tycoon'].includes(state.user.subscriptionTier || 'intern');
+        console.log(`[Store] consumeEnergy: Tier=${state.user.subscriptionTier}, Energy=${state.user.energy}, Unlimited=${isUnlimited}`);
+        if (isUnlimited) return true;
+
+        if (state.user.energy > 0) {
+          const newEnergy = state.user.energy - 1;
+          const updates: Partial<User> = { energy: newEnergy };
+
+          // If we are consuming from MAX, set the timestamp to start refill timer
+          if (state.user.energy === 5) {
+            updates.lastEnergyRefill = Date.now();
           }
-          return false;
+
+          // Directly update state to ensure consistency
+          const updatedUser = { ...state.user, ...updates };
+          set({
+            user: updatedUser,
+            users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u)
+          });
+          return true;
+        }
+        return false;
       },
 
       // --- ADMIN ACTIONS ---
@@ -985,12 +986,12 @@ export const useAppStore = create<AppState>()(
       addGame: (game) => set((state) => ({ games: [...state.games, game] })),
       updateGame: (id, updates) => set((state) => ({ games: state.games.map(g => g.business_id === id ? { ...g, ...updates } : g) })),
       deleteGame: (id) => set((state) => ({ games: [...state.games.filter(g => g.business_id !== id)] })),
-      
+
       syncGames: () => set((state) => {
-          const currentGames = state.games || [];
-          const staticIds = new Set(GAMES_DB.map(g => g.business_id));
-          const customGames = currentGames.filter(g => !staticIds.has(g.business_id));
-          return { games: [...GAMES_DB, ...customGames] };
+        const currentGames = state.games || [];
+        const staticIds = new Set(GAMES_DB.map(g => g.business_id));
+        const customGames = currentGames.filter(g => !staticIds.has(g.business_id));
+        return { games: [...GAMES_DB, ...customGames] };
       }),
 
       // LIBRARY ACTIONS
@@ -1001,16 +1002,16 @@ export const useAppStore = create<AppState>()(
 
       // USER ACTIONS
       addUser: (newUser) => set((state) => {
-          if (state.users.length >= MAX_LOCAL_USERS) {
-              alert(`Cannot add user: Device limit of ${MAX_LOCAL_USERS} reached.`);
-              return {};
-          }
-          return { users: [...state.users, newUser] };
+        if (state.users.length >= MAX_LOCAL_USERS) {
+          alert(`Cannot add user: Device limit of ${MAX_LOCAL_USERS} reached.`);
+          return {};
+        }
+        return { users: [...state.users, newUser] };
       }),
       updateUser: (id, updates) => set((state) => {
-          const updatedUsers = state.users.map(u => u.id === id ? { ...u, ...updates } : u);
-          const updatedCurrentUser = state.user && state.user.id === id ? { ...state.user, ...updates } : state.user;
-          return { users: updatedUsers, user: updatedCurrentUser };
+        const updatedUsers = state.users.map(u => u.id === id ? { ...u, ...updates } : u);
+        const updatedCurrentUser = state.user && state.user.id === id ? { ...state.user, ...updates } : state.user;
+        return { users: updatedUsers, user: updatedCurrentUser };
       }),
       deleteUser: (id) => set((state) => ({ users: [...state.users.filter(u => u.id !== id)] })),
 
@@ -1018,15 +1019,15 @@ export const useAppStore = create<AppState>()(
       addStudentGroup: (group) => set((state) => ({ studentGroups: [...state.studentGroups, group] })),
       updateStudentGroup: (id, updates) => set((state) => ({ studentGroups: state.studentGroups.map(g => g.id === id ? { ...g, ...updates } : g) })),
       deleteStudentGroup: (id) => set((state) => ({ studentGroups: state.studentGroups.filter(g => g.id !== id) })),
-      
+
       addRubric: (rubric) => set((state) => ({ rubrics: [...state.rubrics, rubric] })),
       updateRubric: (id, updates) => set((state) => ({ rubrics: state.rubrics.map(r => r.id === id ? { ...r, ...updates } : r) })),
       deleteRubric: (id) => set((state) => ({ rubrics: state.rubrics.filter(r => r.id !== id) })),
-      
+
       addAssignment: (assignment) => set((state) => ({ assignments: [...state.assignments, assignment] })),
       updateAssignment: (id, updates) => set((state) => ({ assignments: state.assignments.map(a => a.id === id ? { ...a, ...updates } : a) })),
       deleteAssignment: (id) => set((state) => ({ assignments: state.assignments.filter(a => a.id !== id) })),
-      
+
       addSubmission: (submission) => set((state) => ({ submissions: [...state.submissions, submission] })),
       updateSubmission: (id, updates) => set((state) => ({ submissions: state.submissions.map(s => s.id === id ? { ...s, ...updates } : s) })),
       deleteSubmission: (id) => set((state) => ({ submissions: state.submissions.filter(s => s.id !== id) })),
@@ -1035,18 +1036,18 @@ export const useAppStore = create<AppState>()(
       addClassroom: (classroom) => set((state) => ({ classrooms: [...state.classrooms, classroom] })),
       updateClassroom: (id, updates) => set((state) => ({ classrooms: state.classrooms.map(c => c.id === id ? { ...c, ...updates } : c) })),
       deleteClassroom: (id) => set((state) => ({ classrooms: state.classrooms.filter(c => c.id !== id) })),
-      
+
       updateCMSContent: (updates) => set((state) => ({ cmsContent: { ...state.cmsContent, ...updates } })),
     }),
     {
       name: 'kidcap-storage-v6', // CHANGED VERSION TO FORCE RESET
-      partialize: (state) => ({ 
+      partialize: (state) => ({
         user: state.user,
         lemonadeState: state.lemonadeState,
-        lessons: state.lessons, 
+        lessons: state.lessons,
         games: state.games,
         users: state.users,
-        classrooms: state.classrooms, 
+        classrooms: state.classrooms,
         studentGroups: state.studentGroups,
         rubrics: state.rubrics,
         assignments: state.assignments,
